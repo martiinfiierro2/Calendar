@@ -4,7 +4,7 @@ import 'react-calendar/dist/Calendar.css';
 
 export default function Calendario() {
   const [fecha, setFecha] = useState(new Date());
-  const [vistaCompletaAbierta, setVistaCompletaAbierta] = useState(false); // ← false para ver el mes primero
+  const [vistaCompletaAbierta, setVistaCompletaAbierta] = useState(true); // ← false para ver el mes primero
 
   const alCambiarFecha = (nuevaFecha) => {
     setFecha(nuevaFecha);
@@ -55,8 +55,6 @@ function VistaMes({ fecha, comidasFijas, alSeleccionarDia }) {
 
   const primerDia = new Date(año, mes, 1);
   const ultimoDia = new Date(año, mes + 1, 0);
-
-  // Lunes = 0, ajustamos para que la semana empiece en lunes
   const offsetInicio = (primerDia.getDay() + 6) % 7;
   const totalDias = ultimoDia.getDate();
 
@@ -64,42 +62,53 @@ function VistaMes({ fecha, comidasFijas, alSeleccionarDia }) {
   for (let i = 0; i < offsetInicio; i++) celdas.push(null);
   for (let d = 1; d <= totalDias; d++) celdas.push(d);
 
-  const nombreMes = mesVisible.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
-
-  const esHoy = (d) =>
-    d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
-
-  const esSeleccionado = (d) =>
-    d === fecha.getDate() && mes === fecha.getMonth() && año === fecha.getFullYear();
+  const nombreMes = mesVisible.toLocaleDateString('es-ES', { month: 'long' });
+  const esHoy = (d) => d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
 
   return (
     <div className="vista-mes">
-      <div className="mes-navegacion">
-        <span className="mes-titulo">{nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)}</span>
+
+      <div className="cabecera-calendario">
+        <button className="botonAnyo">
+          {fecha.toLocaleDateString('es-ES', { month: 'long' }).replace(/^./, str => str.toUpperCase())}
+        </button>
+        <div className="cabecera-dia">
+          <button className='btnSinEstilo'>🍳</button>
+          <button className='btnSinEstilo'>➕</button>
+        </div>
+      </div>
+
+      <div className="mes-nombre-grande">
+        {nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)} {año}
       </div>
 
       <div className="mes-semana-cabecera">
-        {diasSemana.map(d => 
-          <span 
-            className="dia-cabecera"
-            key={d}>{d}
-          </span>)}
+        {diasSemana.map(d => (
+          <span className="dia-cabecera" key={d}>{d}</span>
+        ))}
       </div>
 
       <div className="mes-grid">
         {celdas.map((d, i) => (
           <div
             key={i}
-            className={`mes-celda ${d ? 'mes-celda-activa' : ''} ${d && esHoy(d) ? 'mes-hoy' : ''} ${d && esSeleccionado(d) ? 'mes-seleccionado' : ''}`}
+            className="mes-celda"
             onClick={() => d && alSeleccionarDia(new Date(año, mes, d))}
           >
-            {d && <span className="mes-numero">{d}</span>}
-            {d && Object.keys(comidasFijas).length > 0 && (
-              <span className={`mes-punto ${esSeleccionado(d) ? 'mes-punto-blanco' : esHoy(d) ? 'mes-punto-rojo' : ''}`} />
+            {d && (
+              <>
+                <span className={`mes-numero ${esHoy(d) ? 'hoy-numero' : ''}`}>
+                  {d}
+                </span>
+                {Object.keys(comidasFijas).length > 0 && (
+                  <span className="mes-punto" />
+                )}
+              </>
             )}
           </div>
         ))}
       </div>
+
     </div>
   );
 }
@@ -115,10 +124,14 @@ function TablaDia({ fecha, alCerrar, horasDelDia, comidasFijas }) {
 
   return (
     <div className="pantalla-completa-dia">
-      <div className="cabecera-dia">
-        <button className="boton-volver" onClick={alCerrar}>
-          ⬅️ Ver Mes Completo
+      <div className="cabecera-calendario">
+        <button className="botonMes" onClick={alCerrar}>
+          {fecha.toLocaleDateString('es-ES', { month: 'long' }).replace(/^./, str => str.toUpperCase())}
         </button>
+        <div className="cabecera-dia">
+          <button className='btnSinEstilo'>🍳</button>
+          <button className='btnSinEstilo'>➕</button>
+        </div>
       </div>
 
       <div className="tarjeta-fecha-grande">

@@ -1,7 +1,10 @@
 :root {
   --appDecorationColor: #6DDE76;
   --appTextWhite: white;
-  --appBackground: #F5F5F5;
+  --appBackground: #f8f8f8;
+  --appHeaderBackground: white;
+  --footerBackgroundColor: white;
+  --appCalendarBorder: black;
 }
 
 body {
@@ -20,6 +23,8 @@ body {
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  border: 2px solid black;
+  border-radius: 2em;
 }
 
 .main-container {
@@ -37,6 +42,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   width: 430px;
+  background-color: var(--appBackground);
 }
 
 @media (max-width: 430px) {
@@ -130,8 +136,6 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding-left: 10px;
-  padding-right: 10px;
   scrollbar-width: none;
 }
 
@@ -142,10 +146,12 @@ body {
 .hora-fila {
   display: flex;
   position: relative;
+  border-top: 1px solid var(--appCalendarBorder);
 }
 
 .hora-fila:last-child {
   margin-bottom: 0;
+  border-bottom: 1px solid var(--appCalendarBorder);
 }
 
 .hora-eje {
@@ -153,15 +159,16 @@ body {
   font-size: 12px;
   font-weight: 700;
   color: #000000;
-  padding-top: 0.5em;
+  padding: 0.5em;
   text-align: left;
 }
 
 .hora-contenido {
   flex: 1;
   padding-left: 14px;
-  border-left: 2px solid #e2e8f0;
+  border-left: 1px solid var(--appCalendarBorder);
   position: relative;
+  padding-right: 0.5em;
 }
 
 .tarjeta-evento {
@@ -171,6 +178,27 @@ body {
   transition: transform 0.1s ease;
 }
 
+.botonMes, .botonAnyo{
+  background-color: var(--appHeaderBackground);
+  font-size: large;
+  border-radius: 5em;
+  padding: 0.5em 1em;
+  border: none;
+  height: 100%;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.btnSinEstilo{
+  border: none;
+  background-color: var(--appHeaderBackground);
+}
+
+.cabecera-dia{
+  background-color: var(--appHeaderBackground);
+  font-size: large;
+  border-radius: 5em;
+  border: none;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
 .desayuno  { background-color: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
 .almuerzo  { background-color: #ecfdf5; color: #065f46; border-left: 4px solid #10b981; }
 .comida    { background-color: #e0f2fe; color: #0369a1; border-left: 4px solid #3b82f6; }
@@ -178,52 +206,58 @@ body {
 .cena      { background-color: #f1f5f9; color: #334155; border-left: 4px solid #64748b; }
 
 /*MES*/
+
 .vista-mes {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--appBackground);
 }
 
-.mes-navegacion {
+.cabecera-calendario {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 8px 8px;
+  padding: 16px 20px 8px;
 }
 
-.mes-titulo {
-  font-size: 17px;
-  font-weight: 600;
+.boton-año {
+  font-size: 16px;
+  font-weight: 500;
   color: #000;
+  background-color: #f2f2f2;
+  border-radius: 20px;
+  padding: 6px 14px;
 }
 
-.mes-flecha {
-  background: none;
-  border: none;
-  font-size: 26px;
-  color: #007aff;
-  cursor: pointer;
-  padding: 0 12px;
-  line-height: 1;
+.mes-nombre-grande {
+  flex-shrink: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+  text-align: center;
+  padding: 4px 0 12px;
+  text-transform: capitalize;
 }
 
-.mes-semana-cabecera{
+.mes-semana-cabecera {
   flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
   padding: 4px 0;
-  background-color: var(--appBackground);
+  border-top: 1px solid var(--appBorder);
+  border-bottom: 1px solid var(--appBorder);
 }
 
-.dia-cabecera{
-  color: black;
-  font-size: 16px;
+.dia-cabecera {
+  font-size: 12px;
   font-weight: 500;
+  color: var(--appGray);
+  text-align: center;
   padding: 4px 0;
 }
 
@@ -233,7 +267,6 @@ body {
   grid-template-columns: repeat(7, 1fr);
   grid-auto-rows: 1fr;
   min-height: 0;
-  background-color: var(--appBackground);
 }
 
 .mes-celda {
@@ -241,35 +274,27 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: default;
-  gap: 2px;
-}
-
-.mes-celda-activa {
   cursor: pointer;
+  gap: 3px;
+  border-bottom: 1px solid #f2f2f2;
 }
 
 .mes-numero {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
   color: #000;
   border-radius: 50%;
 }
 
-.mes-hoy .mes-numero {
-  color: #ff3b30;
-  font-weight: 600;
-}
-
-.mes-seleccionado .mes-numero {
-  background-color: #000;
+.hoy-numero {
+  background-color: var(--appDecorationColor);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .mes-punto {
@@ -279,26 +304,16 @@ body {
   background-color: var(--appDecorationColor);
 }
 
-.mes-punto-blanco {
-  background-color: #fff;
-}
-
-.mes-punto-rojo {
-  background-color: #ff3b30;
-}
-
 /*FOOTER*/
 .footer {
   position: sticky;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 65px;
-  border-top: 1px solid #e5e7eb;
+  height: 4em;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background-color: #ffffff;
+  background-color: var(--footerBackgroundColor);
   z-index: 100;
-  padding-bottom: env(safe-area-inset-bottom);
 }
