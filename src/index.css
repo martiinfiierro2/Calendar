@@ -1,28 +1,42 @@
-/*PANTALLA ENTERA*/
+:root {
+  --appDecorationColor: #6DDE76;
+  --appTextWhite: white;
+  --appBackground: #F5F5F5;
+}
+
 body {
   margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* 1. Obliga a la app a ocupar toda la altura de la pantalla del PC */
-  background-color: #f3f4f6;
+  min-height: 100vh;
 }
 
-.app-container{
+.app-container {
   max-width: 430px;
   width: 100%;
-  max-width: 430px;
-  height: 100vh; /* 2. Obliga al "teléfono" a medir siempre el 100% del alto del dispositivo */
+  height: 100vh;
   display: flex;
-  flex-direction: column; /* 3. Alinea el contenido y el footer en columna vertical */
+  flex-direction: column;
   overflow: hidden;
-  background-color: #ffffff;
   position: relative;
 }
 
-.main-container{
-  flex: 1; /* 🚀 ¡ESTA ES LA MAGIA! Hace que el contenido se estire como un chicle para ocupar todo el espacio vacío, empujando al footer al fondo del todo */
-  overflow-y: auto; 
+.main-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.contenedor-calendario {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 430px;
 }
 
 @media (max-width: 430px) {
@@ -32,12 +46,13 @@ body {
   }
 }
 
-/*CALENDARIO*/
+/*DIA*/
 .pantalla-completa-dia {
-  width: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  animation: deslizarPantalla 0.25s ease-out;
+  overflow: hidden;
 }
 
 @keyframes deslizarPantalla {
@@ -46,12 +61,10 @@ body {
 }
 
 .cabecera-dia {
-  background-color: white;
+  flex-shrink: 0;
   padding: 16px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  border-bottom: 1px solid #e2e8f0;
 }
 
 .boton-volver {
@@ -64,15 +77,20 @@ body {
   padding: 4px 0;
 }
 
-.contenido-dia-completo {
-  display: flex;
-  flex-direction: column;
-}
-
 .tarjeta-fecha-grande {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.fecha {
+  padding: 0.2em;
+  border-radius: .5em;
+  color: black;
+  font-weight: 600;
+  font-size: x-large;
 }
 
 .numero-dia {
@@ -88,35 +106,41 @@ body {
   opacity: 0.9;
 }
 
-/* --- TIMELINE DE HORAS CON SCROLL INTERNO --- */
+.contenido-dia-completo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .bloque-horas {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  background-color: var(--appBackground);
 }
 
-/* Contenedor que recorta de 06:00 a 22:00 y guarda el scroll interno */
-.timeline-horas-scroll {
-  max-height: 100%; 
-  overflow-y: auto;  
-  scrollbar-width: none; /* Oculta barra en Firefox */
-}
-
-.timeline-horas-scroll::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-}
-
+/* ← aquí va el scroll, directamente en .timeline-horas */
 .timeline-horas {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
+  scrollbar-width: none;
+}
+
+.timeline-horas::-webkit-scrollbar {
+  display: none;
 }
 
 .hora-fila {
   display: flex;
-  margin-bottom: 12px;
   position: relative;
 }
 
@@ -126,10 +150,10 @@ body {
 
 .hora-eje {
   width: 50px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  color: #64748b;
-  padding-top: 10px;
+  color: #000000;
+  padding-top: 0.5em;
   text-align: left;
 }
 
@@ -140,45 +164,128 @@ body {
   position: relative;
 }
 
-.hora-contenido::before {
-  content: '';
-  position: absolute;
-  left: -6px;
-  top: 15px;
-  width: 10px;
-  height: 10px;
-  background-color: #cbd5e1;
-  border-radius: 50%;
-  border: 2px solid white;
-}
-
-/* Tarjetas de eventos */
 .tarjeta-evento {
-  padding: 10px 12px;
+  padding: 0.5em;
   border-radius: 12px;
   font-size: 14px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   transition: transform 0.1s ease;
 }
 
-.tarjeta-evento:active {
-  transform: scale(0.98);
+.desayuno  { background-color: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+.almuerzo  { background-color: #ecfdf5; color: #065f46; border-left: 4px solid #10b981; }
+.comida    { background-color: #e0f2fe; color: #0369a1; border-left: 4px solid #3b82f6; }
+.merienda  { background-color: #faf5ff; color: #6b21a8; border-left: 4px solid #a855f7; }
+.cena      { background-color: #f1f5f9; color: #334155; border-left: 4px solid #64748b; }
+
+/*MES*/
+.vista-mes {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #ffffff;
 }
 
-.evento-vacio {
-  padding: 10px 12px;
-  font-size: 13px;
-  color: #94a3b8;
-  font-style: italic;
+.mes-navegacion {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 8px 8px;
+}
+
+.mes-titulo {
+  font-size: 17px;
+  font-weight: 600;
+  color: #000;
+}
+
+.mes-flecha {
+  background: none;
+  border: none;
+  font-size: 26px;
+  color: #007aff;
+  cursor: pointer;
+  padding: 0 12px;
+  line-height: 1;
+}
+
+.mes-semana-cabecera{
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  padding: 4px 0;
+  background-color: var(--appBackground);
+}
+
+.dia-cabecera{
+  color: black;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 4px 0;
+}
+
+.mes-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  min-height: 0;
+  background-color: var(--appBackground);
+}
+
+.mes-celda {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  gap: 2px;
+}
+
+.mes-celda-activa {
   cursor: pointer;
 }
 
-/* Colores de las comidas */
-.desayuno { background-color: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
-.almuerzo { background-color: #ecfdf5; color: #065f46; border-left: 4px solid #10b981; }
-.comida { background-color: #e0f2fe; color: #0369a1; border-left: 4px solid #3b82f6; }
-.merienda { background-color: #faf5ff; color: #6b21a8; border-left: 4px solid #a855f7; }
-.cena { background-color: #f1f5f9; color: #334155; border-left: 4px solid #64748b; }
+.mes-numero {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: #000;
+  border-radius: 50%;
+}
+
+.mes-hoy .mes-numero {
+  color: #ff3b30;
+  font-weight: 600;
+}
+
+.mes-seleccionado .mes-numero {
+  background-color: #000;
+  color: #fff;
+  font-weight: 600;
+}
+
+.mes-punto {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--appDecorationColor);
+}
+
+.mes-punto-blanco {
+  background-color: #fff;
+}
+
+.mes-punto-rojo {
+  background-color: #ff3b30;
+}
 
 /*FOOTER*/
 .footer {
@@ -192,6 +299,6 @@ body {
   justify-content: space-around;
   align-items: center;
   background-color: #ffffff;
-  z-index: 100; /* Asegura que el footer siempre quede por ENCIMA del contenido que hace scroll */
-  padding-bottom: env(safe-area-inset-bottom); /* Evita que la barra de iPhone tape los botones */
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
 }
