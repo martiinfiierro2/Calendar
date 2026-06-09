@@ -1,10 +1,11 @@
 :root {
   --appDecorationColor: #6DDE76;
   --appTextWhite: white;
-  --appBackground: #f8f8f8;
+  --appBackground: #f6f2f2;
   --appHeaderBackground: white;
   --footerBackgroundColor: white;
   --appCalendarBorder: black;
+  --colorTextBlack: black;
 }
 
 body {
@@ -33,6 +34,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  width: 400px;
 }
 
 .contenedor-calendario {
@@ -41,7 +43,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  width: 430px;
+  width: 100%;
   background-color: var(--appBackground);
 }
 
@@ -304,6 +306,54 @@ body {
   background-color: var(--appDecorationColor);
 }
 
+/*ANYO*/
+.anyo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 0 8px;
+  height: 90%;
+}
+
+.anyo-mes-card {
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--colorTextBlack);
+}
+
+.anyo-mes-card:hover {
+  border: none;
+  background: var(--appDecorationColor);
+  color: var(--appTextWhite);
+}
+
+.anyo-mes-nombre {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.anyo-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.anyo-mini-celda {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.hoy-mini {
+  background: var(--appDecorationColor);
+  color: white;
+  border-radius: 50%;
+}
+
 /*FOOTER*/
 .footer {
   position: sticky;
@@ -316,4 +366,112 @@ body {
   align-items: center;
   background-color: var(--footerBackgroundColor);
   z-index: 100;
+}
+
+/*RECETEAS*/
+
+.recetas-pantalla {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100vh;
+  background: var(--appBackground);
+  width: 100%;
+}
+
+.recetas-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 16px 12px;
+  background: #f2f2f2;
+}
+
+.recetas-titulo {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 1px;
+}
+
+.recetas-buscador {
+  flex: 1;
+  font-size: 16px;
+  border: none;
+  border-bottom: 1.5px solid #ccc;
+  background: transparent;
+  outline: none;
+  padding: 4px 0;
+  color: #1a1a1a;
+}
+
+.recetas-cabecera-acciones {
+  display: flex;
+  gap: 4px;
+}
+
+.recetas-btn-icono {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.recetas-btn-icono:hover {
+  background: #e0e0e0;
+}
+
+.recetas-lista {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.receta-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+.receta-imagen {
+  width: 110px;
+  height: 85px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.receta-info {
+  flex: 1;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.receta-nombre {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.receta-fecha {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4caf50;
+}
+
+.receta-no-añadida {
+  font-size: 13px;
+  color: #aaa;
 }

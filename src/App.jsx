@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Footer from './componentes/footer';
 import Calendario from './componentes/calendario';
+import Recetas from './componentes/recetas';
 import './index.css';
 
 // Pantallas provisionales
@@ -17,7 +18,7 @@ function App() {
         <main className="main-container">
           <Routes>
             <Route path="/" element={<Calendario />} />
-            <Route path="/recetas" element={<RecetasScreen />} />
+            <Route path="/recetas" element={<Recetas />} />
             <Route path="/compra" element={<CompraScreen />} />
             <Route path="/perfil" element={<PerfilScreen />} />
           </Routes>

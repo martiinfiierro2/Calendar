@@ -1,15 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
 
 export default function Calendario() {
+  const hoy = new Date();
   const [fecha, setFecha] = useState(new Date());
-  const [vistaCompletaAbierta, setVistaCompletaAbierta] = useState(true); // ← false para ver el mes primero
-
-  const alCambiarFecha = (nuevaFecha) => {
-    setFecha(nuevaFecha);
-    setVistaCompletaAbierta(true);
-  };
+  const [vista, setVista] = useState('dia'); // 'anyo' | 'mes' | 'dia'
+  const [añoVisible, setAñoVisible] = useState(hoy.getFullYear());
+  const [mesVisible, setMesVisible] = useState(hoy.getMonth());
 
   const comidasFijas = {
     "08:00": { tipo: "desayuno", icono: "☕", titulo: "Desayuno", detalle: "Tostadas con aguacate y café" },
@@ -24,34 +20,118 @@ export default function Calendario() {
     horasDelDia.push(`${i.toString().padStart(2, '0')}:00`);
   }
 
+  const irAAnyo = (anyo) => {
+    setAñoVisible(anyo);
+    setVista('anyo');
+  };
+
+  const irAMes = (anyo, mes) => {
+    setAñoVisible(anyo);
+    setMesVisible(mes);
+    setVista('mes');
+  };
+
+  const irADia = (nuevaFecha) => {
+    setFecha(nuevaFecha);
+    setAñoVisible(nuevaFecha.getFullYear());
+    setMesVisible(nuevaFecha.getMonth());
+    setVista('dia');
+  };
+
   return (
     <div className="contenedor-calendario">
-      {vistaCompletaAbierta ? (
+      {vista === 'anyo' && (
+        <VistaAnyo
+          año={añoVisible}
+          alSeleccionarMes={(mes) => irAMes(añoVisible, mes)}
+        />
+      )}
+      {vista === 'mes' && (
+        <VistaMes
+          año={añoVisible}
+          mes={mesVisible}
+          comidasFijas={comidasFijas}
+          alSeleccionarDia={irADia}
+          alVolverAlAnyo={() => irAAnyo(añoVisible)}
+        />
+      )}
+      {vista === 'dia' && (
         <TablaDia
           fecha={fecha}
-          alCerrar={() => setVistaCompletaAbierta(false)}
+          alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())}
+          alVolverAlAnyo={() => irAAnyo(fecha.getFullYear())}
           horasDelDia={horasDelDia}
           comidasFijas={comidasFijas}
-        />
-      ) : (
-        <VistaMes
-          fecha={fecha}
-          comidasFijas={comidasFijas}
-          alSeleccionarDia={alCambiarFecha}
         />
       )}
     </div>
   );
 }
 
-function VistaMes({ fecha, comidasFijas, alSeleccionarDia }) {
-  const [mesVisible, setMesVisible] = useState(new Date(fecha.getFullYear(), fecha.getMonth(), 1));
-
+function VistaAnyo({ año, alSeleccionarMes }) {
   const hoy = new Date();
-  const diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  const MESES = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
 
-  const año = mesVisible.getFullYear();
-  const mes = mesVisible.getMonth();
+  return (
+    <div className="vista-anyo">
+      <div className="cabecera-calendario">
+        <h2></h2>
+        <div className="cabecera-dia">
+          <button className="btnSinEstilo">🍳</button>
+          <button className="btnSinEstilo">➕</button>
+        </div>
+      </div>
+
+      <div className="mes-nombre-grande">{año}</div>
+
+      <div className="anyo-grid">
+        {MESES.map((nombreMes, i) => {
+          const primerDia = new Date(año, i, 1);
+          const totalDias = new Date(año, i + 1, 0).getDate();
+          const offset = (primerDia.getDay() + 6) % 7;
+
+          const celdas = [];
+          for (let x = 0; x < offset; x++) celdas.push(null);
+          for (let d = 1; d <= totalDias; d++) celdas.push(d);
+
+          return (
+            <div
+              key={i}
+              className="anyo-mes-card"
+              onClick={() => alSeleccionarMes(i)}
+            >
+              <div className="anyo-mes-nombre">{nombreMes}</div>
+              <div className="anyo-mini-grid">
+                {celdas.map((d, j) => {
+                  const esHoy =
+                    d === hoy.getDate() &&
+                    i === hoy.getMonth() &&
+                    año === hoy.getFullYear();
+                  return (
+                    <span key={j} className={`anyo-mini-celda ${esHoy ? 'hoy-mini' : ''}`}>
+                      {d ?? ''}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function VistaMes({ año, mes, comidasFijas, alSeleccionarDia, alVolverAlAnyo }) {
+  const hoy = new Date();
+  const MESES = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+  const diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
   const primerDia = new Date(año, mes, 1);
   const ultimoDia = new Date(año, mes + 1, 0);
@@ -62,24 +142,25 @@ function VistaMes({ fecha, comidasFijas, alSeleccionarDia }) {
   for (let i = 0; i < offsetInicio; i++) celdas.push(null);
   for (let d = 1; d <= totalDias; d++) celdas.push(d);
 
-  const nombreMes = mesVisible.toLocaleDateString('es-ES', { month: 'long' });
-  const esHoy = (d) => d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
+  const esHoy = (d) =>
+    d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
+
+  const nombreMes = MESES[mes];
 
   return (
     <div className="vista-mes">
-
       <div className="cabecera-calendario">
-        <button className="botonAnyo">
-          {fecha.toLocaleDateString('es-ES', { month: 'long' }).replace(/^./, str => str.toUpperCase())}
+        <button className="botonAnyo" onClick={alVolverAlAnyo}>
+          {año}
         </button>
         <div className="cabecera-dia">
-          <button className='btnSinEstilo'>🍳</button>
-          <button className='btnSinEstilo'>➕</button>
+          <button className="btnSinEstilo">🍳</button>
+          <button className="btnSinEstilo">➕</button>
         </div>
       </div>
 
       <div className="mes-nombre-grande">
-        {nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)} {año}
+        {nombreMes}
       </div>
 
       <div className="mes-semana-cabecera">
@@ -108,13 +189,16 @@ function VistaMes({ fecha, comidasFijas, alSeleccionarDia }) {
           </div>
         ))}
       </div>
-
     </div>
   );
 }
 
-function TablaDia({ fecha, alCerrar, horasDelDia, comidasFijas }) {
+function TablaDia({ fecha, alVolverAlMes, alVolverAlAnyo, horasDelDia, comidasFijas }) {
   const ref6h = useRef(null);
+  const MESES = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
 
   useEffect(() => {
     if (ref6h.current) {
@@ -122,15 +206,18 @@ function TablaDia({ fecha, alCerrar, horasDelDia, comidasFijas }) {
     }
   }, [fecha]);
 
+  const nombreMes = MESES[fecha.getMonth()];
+  const año = fecha.getFullYear();
+
   return (
     <div className="pantalla-completa-dia">
       <div className="cabecera-calendario">
-        <button className="botonMes" onClick={alCerrar}>
-          {fecha.toLocaleDateString('es-ES', { month: 'long' }).replace(/^./, str => str.toUpperCase())}
-        </button>
+          <button className="botonMes" onClick={alVolverAlMes}>
+            {nombreMes}
+          </button>
         <div className="cabecera-dia">
-          <button className='btnSinEstilo'>🍳</button>
-          <button className='btnSinEstilo'>➕</button>
+          <button className="btnSinEstilo">🍳</button>
+          <button className="btnSinEstilo">➕</button>
         </div>
       </div>
 
