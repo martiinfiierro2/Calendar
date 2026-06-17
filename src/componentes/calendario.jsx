@@ -216,7 +216,7 @@ function TablaDia({ fecha, alVolverAlMes, alVolverAlAnyo, horasDelDia, comidasFi
             {nombreMes}
           </button>
         <div className="cabecera-dia">
-          <button className="btnSinEstilo">🍳</button>
+          <button className="btnSinEstilo">🔍</button>
           <button className="btnSinEstilo">➕</button>
         </div>
       </div>

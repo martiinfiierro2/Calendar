@@ -73,6 +73,10 @@ body {
   padding: 16px;
   display: flex;
   align-items: center;
+  background-color: var(--appHeaderBackground);
+  font-size: large;
+  border-radius: 5em;
+  border: none;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .boton-volver {
@@ -192,13 +196,6 @@ body {
 .btnSinEstilo{
   border: none;
   background-color: var(--appHeaderBackground);
-}
-
-.cabecera-dia{
-  background-color: var(--appHeaderBackground);
-  font-size: large;
-  border-radius: 5em;
-  border: none;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .desayuno  { background-color: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
@@ -376,35 +373,46 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 100vh;
   background: var(--appBackground);
   width: 100%;
 }
 
 .recetas-cabecera {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 16px 12px;
   background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 8px;
+}
+
+
+.botones-recetas{
+  flex-shrink: 0;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  background-color: var(--appHeaderBackground);
+  font-size: large;
+  border-radius: 5em;
+  border: none;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .recetas-titulo {
   font-size: 26px;
   font-weight: 800;
-  color: #1a1a1a;
+  color: var(--colorTextBlack);
   letter-spacing: 1px;
 }
 
-.recetas-buscador {
-  flex: 1;
-  font-size: 16px;
+.recetas-buscar {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--colorTextBlack);
   border: none;
-  border-bottom: 1.5px solid #ccc;
   background: transparent;
   outline: none;
-  padding: 4px 0;
-  color: #1a1a1a;
+  padding: 18px 0 18px 0; 
+  width: 100%;
 }
 
 .recetas-cabecera-acciones {
@@ -428,11 +436,17 @@ body {
 
 .recetas-lista {
   flex: 1;
-  overflow-y: auto;
+  min-height: 0;
   padding: 8px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  overflow-y: auto;
+}
+
+.recetas-lista {
+  scrollbar-width: none;
+}
+
+.recetas-lista::-webkit-scrollbar {
+  display: none;
 }
 
 .receta-card {
@@ -442,6 +456,8 @@ body {
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  margin-bottom: 10px;
+  flex-shrink: 0; 
 }
 
 .receta-imagen {

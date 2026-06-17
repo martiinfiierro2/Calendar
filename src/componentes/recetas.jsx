@@ -64,21 +64,20 @@ export default function Recetas() {
 
       {/* CABECERA */}
       <div className="recetas-cabecera">
-        {busquedaAbierta ? (
-          <input
-            className="recetas-buscador"
-            autoFocus
-            placeholder="Buscar receta..."
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            onBlur={() => { if (!query) setBusquedaAbierta(false); }}
-          />
-        ) : (
-          <h1 className="recetas-titulo">RECETAS</h1>
-        )}
-        <div className="recetas-cabecera-acciones">
-          <button className="recetas-btn-icono" onClick={() => setBusquedaAbierta(true)}>🔍</button>
-          <button className="recetas-btn-icono">➕</button>
+          {busquedaAbierta ? (
+            <input className="recetas-buscar"
+              autoFocus
+              placeholder="Buscar receta..."
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onBlur={() => { if (!query) setBusquedaAbierta(false); }}
+            />
+          ) : (
+            <h1 className="recetas-titulo">RECETAS</h1>
+          )}
+        <div className="botones-recetas">
+          <button className="btnSinEstilo" onClick={() => setBusquedaAbierta(true)}>🔍</button>
+          <button className="btnSinEstilo">➕</button>
         </div>
       </div>
 
