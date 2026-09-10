@@ -7,6 +7,7 @@ export default function Calendario() {
   const [añoVisible, setAñoVisible] = useState(hoy.getFullYear());
   const [mesVisible, setMesVisible] = useState(hoy.getMonth());
   const [mostrarMenuAnadir, setMostrarMenuAnadir] = useState(false);
+  const [formulario, setFormulario] = useState(null);
 
   const comidasFijas = {
     "08:00": { tipo: "desayuno", icono: "☕", titulo: "Desayuno", detalle: "Tostadas con aguacate y café" },
@@ -25,6 +26,8 @@ export default function Calendario() {
   const cambiarDia = (cantidad) => { const nuevaFecha = new Date(fecha); nuevaFecha.setDate(nuevaFecha.getDate() + cantidad); irADia(nuevaFecha); };
   const abrirMenuAnadir = () => setMostrarMenuAnadir(true);
   const cerrarMenuAnadir = () => setMostrarMenuAnadir(false);
+  const abrirFormulario = (tipo) => { setMostrarMenuAnadir(false); setFormulario(tipo); };
+  const cerrarFormulario = () => setFormulario(null);
 
   return (
     <div className="contenedor-calendario">
@@ -37,13 +40,91 @@ export default function Calendario() {
           <div className="menu-anadir-overlay" onClick={cerrarMenuAnadir} />
           <div className="menu-anadir">
             <div className="menu-anadir-indicador" />
-            <button className="menu-anadir-opcion" onClick={cerrarMenuAnadir}>📖 Receta</button>
-            <button className="menu-anadir-opcion" onClick={cerrarMenuAnadir}>⚡ Comida rápida</button>
+            <button className="menu-anadir-opcion" onClick={() => abrirFormulario('receta')}>📖 Receta</button>
+            <button className="menu-anadir-opcion" onClick={() => abrirFormulario('rapida')}>⚡ Comida rápida</button>
             <button className="menu-anadir-cancelar" onClick={cerrarMenuAnadir}>Cancelar</button>
           </div>
         </>
       )}
+
+      {formulario && (
+        <FormularioComida tipo={formulario} fecha={fecha} alCerrar={cerrarFormulario} />
+      )}
     </div>
+  );
+}
+
+function FormularioComida({ tipo, fecha, alCerrar }) {
+  const esReceta = tipo === 'receta';
+
+  return (
+    <>
+      <div className="menu-anadir-overlay" onClick={alCerrar} />
+      <div className="menu-anadir formulario-comida">
+        <div className="menu-anadir-indicador" />
+        <div className="formulario-cabecera">
+          <button className="formulario-volver" onClick={alCerrar}>‹</button>
+          <h2>{esReceta ? 'Añadir receta' : 'Comida rápida'}</h2>
+          <div />
+        </div>
+
+        <form className="formulario-campos" onSubmit={(e) => e.preventDefault()}>
+          <div className="campo-formulario">
+            <label htmlFor="nombre">Nombre</label>
+            <input id="nombre" type="text" placeholder={esReceta ? 'Nombre de la receta' : '¿Qué vas a comer?'} required />
+          </div>
+
+          {esReceta ? (
+            <>
+              <div className="campo-formulario">
+                <label htmlFor="descripcion">Descripción</label>
+                <textarea id="descripcion" placeholder="Describe brevemente la receta" rows="3" />
+              </div>
+
+              <div className="campo-formulario">
+                <label htmlFor="ingredientes">Ingredientes</label>
+                <textarea id="ingredientes" placeholder="Ej.: 200 g de pollo, 100 g de arroz..." rows="4" />
+              </div>
+
+              <div className="campos-formulario-fila">
+                <div className="campo-formulario">
+                  <label htmlFor="tiempo">Tiempo (min)</label>
+                  <input id="tiempo" type="number" min="1" placeholder="30" />
+                </div>
+                <div className="campo-formulario">
+                  <label htmlFor="raciones">Raciones</label>
+                  <input id="raciones" type="number" min="1" placeholder="2" />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="campo-formulario">
+              <label htmlFor="tipo-comida">Tipo de comida</label>
+              <select id="tipo-comida" defaultValue="comida">
+                <option value="desayuno">Desayuno</option>
+                <option value="almuerzo">Almuerzo</option>
+                <option value="comida">Comida</option>
+                <option value="merienda">Merienda</option>
+                <option value="cena">Cena</option>
+              </select>
+            </div>
+          )}
+
+          <div className="campos-formulario-fila">
+            <div className="campo-formulario">
+              <label htmlFor="fecha">Fecha</label>
+              <input id="fecha" type="date" defaultValue={fecha.toISOString().split('T')[0]} required />
+            </div>
+            <div className="campo-formulario">
+              <label htmlFor="hora">Hora</label>
+              <input id="hora" type="time" defaultValue="14:00" required />
+            </div>
+          </div>
+
+          <button className="boton-formulario-guardar" type="submit">Guardar</button>
+        </form>
+      </div>
+    </>
   );
 }
 
