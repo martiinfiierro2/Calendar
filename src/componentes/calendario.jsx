@@ -43,7 +43,6 @@ export default function Calendario() {
             <div className="menu-anadir-indicador" />
             <button className="menu-anadir-opcion" onClick={() => abrirFormulario('receta')}>📖 Receta</button>
             <button className="menu-anadir-opcion" onClick={() => abrirFormulario('rapida')}>⚡ Comida rápida</button>
-            <button className="menu-anadir-opcion" onClick={() => abrirFormulario('comida')}>🍽️ Comida</button>
             <button className="menu-anadir-cancelar" onClick={cerrarMenuAnadir}>Cancelar</button>
           </div>
         </>
@@ -58,7 +57,6 @@ export default function Calendario() {
 
 function FormularioComida({ tipo, fecha, horaInicial = '14:00', alCerrar }) {
   const esReceta = tipo === 'receta';
-  const esComida = tipo === 'comida';
 
   return (
     <>
@@ -67,7 +65,7 @@ function FormularioComida({ tipo, fecha, horaInicial = '14:00', alCerrar }) {
         <div className="menu-anadir-indicador" />
         <div className="formulario-cabecera">
           <button className="formulario-volver" onClick={alCerrar}>‹</button>
-          <h2>{esReceta ? 'Añadir receta' : esComida ? 'Añadir comida' : 'Comida rápida'}</h2>
+          <h2>{esReceta ? 'Añadir receta' : 'Comida rápida'}</h2>
           <div />
         </div>
 
@@ -100,7 +98,7 @@ function FormularioComida({ tipo, fecha, horaInicial = '14:00', alCerrar }) {
                 </div>
               </div>
             </>
-          ) : !esComida ? (
+          ) : (
             <div className="campo-formulario">
               <label htmlFor="tipo-comida">Tipo de comida</label>
               <select id="tipo-comida" defaultValue="comida">
@@ -111,7 +109,7 @@ function FormularioComida({ tipo, fecha, horaInicial = '14:00', alCerrar }) {
                 <option value="cena">Cena</option>
               </select>
             </div>
-          ) : null}
+          )}
 
           <div className="campos-formulario-fila">
             <div className="campo-formulario">
