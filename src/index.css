@@ -6,107 +6,507 @@
   --footerBackgroundColor: white;
   --appCalendarBorder: black;
   --colorTextBlack: black;
-  --appBorder: #e5e5e5;
-  --appGray: #777;
 }
 
-body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-.app-container { max-width: 430px; width: 100%; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 2px solid black; border-radius: 2em; }
-.main-container { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; width: 400px; }
-.contenedor-calendario { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; width: 100%; background-color: var(--appBackground); }
-@media (max-width: 430px) { .app-container { max-width: 100%; box-shadow: none; } }
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
 
-/* DIA */
-.pantalla-completa-dia { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-.cabecera-calendario { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
-.cabecera-dia { flex-shrink: 0; padding: 10px 14px; display: flex; align-items: center; gap: 8px; background-color: var(--appHeaderBackground); font-size: large; border-radius: 5em; box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03); }
-.btnSinEstilo, .botonAnyo, .botonMes, .boton-hoy, .navegacion-dia button, .navegacion-periodo button { cursor: pointer; border: none; }
-.btnSinEstilo { background-color: var(--appHeaderBackground); font-size: 18px; padding: 3px 6px; }
-.botonMes, .botonAnyo { background-color: var(--appHeaderBackground); font-size: large; border-radius: 5em; padding: .5em 1em; height: 100%; box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03); }
-.tarjeta-fecha-grande { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,.02); }
-.fecha { padding: .2em; border-radius: .5em; color: black; font-weight: 600; font-size: x-large; }
-.navegacion-dia { display: flex; align-items: center; gap: 12px; margin: 8px 0 12px; }
-.navegacion-dia button { min-width: 42px; min-height: 34px; padding: 4px 12px; background: white; border-radius: 18px; font-size: 20px; }
-.navegacion-dia button:nth-child(2) { font-size: 13px; font-weight: 700; }
-.navegacion-dia button.activo { background: var(--appDecorationColor); color: white; }
-.buscador-calendario { display: flex; align-items: center; gap: 8px; padding: 6px 16px 10px; background: var(--appHeaderBackground); }
-.buscador-calendario input { flex: 1; border: 1px solid var(--appBorder); border-radius: 18px; padding: 9px 13px; font-size: 14px; outline: none; }
-.buscador-calendario span { font-size: 12px; color: var(--appGray); white-space: nowrap; }
-.contenido-dia-completo { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-.bloque-horas { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background-color: var(--appBackground); }
-.timeline-horas { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; scrollbar-width: none; }
-.timeline-horas::-webkit-scrollbar { display: none; }
-.hora-fila { display: flex; position: relative; border-top: 1px solid var(--appCalendarBorder); min-height: 52px; }
-.hora-fila:last-child { margin-bottom: 0; border-bottom: 1px solid var(--appCalendarBorder); }
-.hora-eje { width: 50px; font-size: 12px; font-weight: 700; color: #000; padding: .5em; text-align: left; }
-.hora-contenido { flex: 1; padding-left: 14px; border-left: 1px solid var(--appCalendarBorder); position: relative; padding-right: .5em; }
-.tarjeta-evento { width: 100%; box-sizing: border-box; padding: .6em; border-radius: 12px; font-size: 14px; transition: transform .1s ease; text-align: left; margin: 3px 0; }
-.tarjeta-evento:hover { transform: translateY(-1px); }
-.evento-vacio { border: 1px dashed #bbb; background: transparent; color: #888; cursor: pointer; }
-.evento-eliminar { float: right; border: none; background: transparent; cursor: pointer; font-size: 18px; line-height: 1; }
-.desayuno { background-color: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
-.almuerzo { background-color: #ecfdf5; color: #065f46; border-left: 4px solid #10b981; }
-.comida { background-color: #e0f2fe; color: #0369a1; border-left: 4px solid #3b82f6; }
-.merienda { background-color: #faf5ff; color: #6b21a8; border-left: 4px solid #a855f7; }
-.cena { background-color: #f1f5f9; color: #334155; border-left: 4px solid #64748b; }
-.nota { background-color: #fff; color: #444; border-left: 4px solid #999; }
+.app-container {
+  max-width: 430px;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid black;
+  border-radius: 2em;
+}
 
-/* NAVEGACION DE MES */
-.vista-mes { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background-color: var(--appBackground); }
-.navegacion-periodo { display: flex; align-items: center; justify-content: space-between; padding: 0 14px 4px; }
-.navegacion-periodo button { width: 40px; height: 40px; border-radius: 50%; background: white; font-size: 28px; line-height: 1; }
-.mes-nombre-grande { flex-shrink: 0; font-size: 20px; font-weight: 700; color: #000; text-align: center; padding: 4px 0 12px; text-transform: capitalize; }
-.boton-hoy { align-self: center; background: white; border-radius: 16px; padding: 5px 12px; margin-bottom: 7px; font-size: 12px; font-weight: 700; }
-.boton-hoy:hover, .navegacion-periodo button:hover, .navegacion-dia button:hover { background: #ececec; }
-.mes-semana-cabecera { flex-shrink: 0; display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; padding: 4px 0; border-top: 1px solid var(--appBorder); border-bottom: 1px solid var(--appBorder); }
-.dia-cabecera { font-size: 12px; font-weight: 500; color: var(--appGray); text-align: center; padding: 4px 0; }
-.mes-grid { flex: 1; display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 1fr; min-height: 0; }
-.mes-celda { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; gap: 3px; border: none; border-bottom: 1px solid #f2f2f2; background: transparent; min-width: 0; }
-.mes-celda:hover { background: rgba(109,222,118,.12); }
-.mes-celda:disabled { cursor: default; }
-.mes-numero { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 400; color: #000; border-radius: 50%; }
-.hoy-numero { background-color: var(--appDecorationColor); color: #fff; font-weight: 700; }
-.mes-punto { width: 5px; height: 5px; border-radius: 50%; background-color: var(--appDecorationColor); }
+.main-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 400px;
+}
 
-/* ANYO */
-.vista-anyo { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-.anyo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 0 8px; height: 90%; overflow-y: auto; }
-.anyo-mes-card { border: .5px solid #e0e0e0; border-radius: 8px; padding: 8px; cursor: pointer; transition: background .15s; color: var(--colorTextBlack); background: transparent; text-align: left; }
-.anyo-mes-card:hover { border: none; background: var(--appDecorationColor); color: var(--appTextWhite); }
-.anyo-mes-nombre { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
-.anyo-mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
-.anyo-mini-celda { font-size: 10px; text-align: center; line-height: 1.2; }
-.hoy-mini { background: var(--appDecorationColor); color: white; border-radius: 50%; }
+.contenedor-calendario {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  background-color: var(--appBackground);
+}
 
-/* EDITOR */
-.modal-fondo { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.35); }
-.modal-evento { width: min(430px, 100%); box-sizing: border-box; background: white; border-radius: 22px 22px 0 0; padding: 18px; box-shadow: 0 -5px 25px rgba(0,0,0,.15); }
-.modal-cabecera { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.modal-cabecera h3 { margin: 0; }
-.modal-cabecera button { border: none; background: transparent; font-size: 25px; cursor: pointer; }
-.modal-evento label { display: flex; flex-direction: column; gap: 5px; margin: 10px 0; font-size: 13px; font-weight: 600; }
-.modal-evento input, .modal-evento textarea, .modal-evento select { box-sizing: border-box; width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: 10px; font: inherit; font-weight: 400; }
-.modal-acciones { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-.modal-acciones button { border: none; border-radius: 10px; padding: 10px 15px; cursor: pointer; }
-.modal-guardar { background: var(--appDecorationColor); color: white; font-weight: 700; }
+@media (max-width: 430px) {
+  .app-container {
+    max-width: 100%;
+    box-shadow: none;
+  }
+}
 
-/* FOOTER */
-.footer { position: sticky; bottom: 0; left: 0; width: 100%; height: 4em; display: flex; justify-content: space-around; align-items: center; background-color: var(--footerBackgroundColor); z-index: 100; }
+/*DIA*/
+.pantalla-completa-dia {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-/* RECETAS */
-.recetas-pantalla { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--appBackground); width: 100%; }
-.recetas-cabecera { background: #f2f2f2; display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
-.botones-recetas { flex-shrink: 0; padding: 16px; display: flex; align-items: center; background-color: var(--appHeaderBackground); font-size: large; border-radius: 5em; border: none; box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03); }
-.recetas-titulo { font-size: 26px; font-weight: 800; color: var(--colorTextBlack); letter-spacing: 1px; }
-.recetas-buscar { font-size: 20px; font-weight: 800; color: var(--colorTextBlack); border: none; background: transparent; outline: none; padding: 18px 0; width: 100%; }
-.recetas-cabecera-acciones { display: flex; gap: 4px; }
-.recetas-btn-icono { background: none; border: none; cursor: pointer; font-size: 20px; padding: 4px 6px; border-radius: 8px; transition: background .15s; }
-.recetas-btn-icono:hover { background: #e0e0e0; }
-.recetas-lista { flex: 1; min-height: 0; padding: 8px 12px; overflow-y: auto; scrollbar-width: none; }
-.recetas-lista::-webkit-scrollbar { display: none; }
-.receta-card { display: flex; align-items: center; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.07); margin-bottom: 10px; flex-shrink: 0; }
-.receta-imagen { width: 110px; height: 85px; object-fit: cover; flex-shrink: 0; }
-.receta-info { flex: 1; padding: 0 16px; display: flex; flex-direction: column; gap: 6px; }
-.receta-nombre { font-size: 15px; font-weight: 600; color: #1a1a1a; }
-.receta-fecha { font-size: 13px; font-weight: 500; color: #4caf50; }
-.receta-no-añadida { font-size: 13px; color: #aaa; }
+@keyframes deslizarPantalla {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.cabecera-dia {
+  flex-shrink: 0;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  background-color: var(--appHeaderBackground);
+  font-size: large;
+  border-radius: 5em;
+  border: none;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.boton-volver {
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: #3b82f6;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.tarjeta-fecha-grande {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.fecha {
+  padding: 0.2em;
+  border-radius: .5em;
+  color: black;
+  font-weight: 600;
+  font-size: x-large;
+}
+
+.numero-dia {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.texto-mes {
+  font-size: 15px;
+  text-transform: capitalize;
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+.contenido-dia-completo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bloque-horas {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--appBackground);
+}
+
+.timeline-horas {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none;
+}
+
+.timeline-horas::-webkit-scrollbar {
+  display: none;
+}
+
+.hora-fila {
+  display: flex;
+  position: relative;
+  border-top: 1px solid var(--appCalendarBorder);
+}
+
+.hora-fila:last-child {
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--appCalendarBorder);
+}
+
+.hora-eje {
+  width: 50px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #000000;
+  padding: 0.5em;
+  text-align: left;
+}
+
+.hora-contenido {
+  flex: 1;
+  padding-left: 14px;
+  border-left: 1px solid var(--appCalendarBorder);
+  position: relative;
+  padding-right: 0.5em;
+}
+
+.tarjeta-evento {
+  padding: 0.5em;
+  border-radius: 12px;
+  font-size: 14px;
+  transition: transform 0.1s ease;
+}
+
+.botonMes, .botonAnyo{
+  background-color: var(--appHeaderBackground);
+  font-size: large;
+  border-radius: 5em;
+  padding: 0.5em 1em;
+  border: none;
+  height: 100%;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.btnSinEstilo{
+  border: none;
+  background-color: var(--appHeaderBackground);
+}
+
+/* Flechas de navegación entre días */
+.navegacion-dia {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.flecha-dia {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 32px;
+  line-height: 1;
+  padding: 4px 18px;
+  color: #000;
+}
+
+.flecha-dia:hover {
+  background-color: #f0f0f0;
+  border-radius: 50%;
+}
+
+.desayuno  { background-color: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+.almuerzo  { background-color: #ecfdf5; color: #065f46; border-left: 4px solid #10b981; }
+.comida    { background-color: #e0f2fe; color: #0369a1; border-left: 4px solid #3b82f6; }
+.merienda  { background-color: #faf5ff; color: #6b21a8; border-left: 4px solid #a855f7; }
+.cena      { background-color: #f1f5f9; color: #334155; border-left: 4px solid #64748b; }
+
+/*MES*/
+.vista-mes {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--appBackground);
+}
+
+.cabecera-calendario {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 8px;
+}
+
+.boton-año {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+  background-color: #f2f2f2;
+  border-radius: 20px;
+  padding: 6px 14px;
+}
+
+.mes-nombre-grande {
+  flex-shrink: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+  text-align: center;
+  padding: 4px 0 12px;
+  text-transform: capitalize;
+}
+
+.mes-semana-cabecera {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  padding: 4px 0;
+  border-top: 1px solid var(--appBorder);
+  border-bottom: 1px solid var(--appBorder);
+}
+
+.dia-cabecera {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--appGray);
+  text-align: center;
+  padding: 4px 0;
+}
+
+.mes-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  min-height: 0;
+}
+
+.mes-celda {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 3px;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.mes-numero {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 400;
+  color: #000;
+  border-radius: 50%;
+}
+
+.hoy-numero {
+  background-color: var(--appDecorationColor);
+  color: #fff;
+  font-weight: 700;
+}
+
+.mes-punto {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--appDecorationColor);
+}
+
+/*ANYO*/
+.anyo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 0 8px;
+  height: 90%;
+}
+
+.anyo-mes-card {
+  border: 0.5px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--colorTextBlack);
+}
+
+.anyo-mes-card:hover {
+  border: none;
+  background: var(--appDecorationColor);
+  color: var(--appTextWhite);
+}
+
+.anyo-mes-nombre {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.anyo-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.anyo-mini-celda {
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.hoy-mini {
+  background: var(--appDecorationColor);
+  color: white;
+  border-radius: 50%;
+}
+
+/*FOOTER*/
+.footer {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4em;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: var(--footerBackgroundColor);
+  z-index: 100;
+}
+
+/*RECETEAS*/
+.recetas-pantalla {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--appBackground);
+  width: 100%;
+}
+
+.recetas-cabecera {
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 8px;
+}
+
+.botones-recetas{
+  flex-shrink: 0;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  background-color: var(--appHeaderBackground);
+  font-size: large;
+  border-radius: 5em;
+  border: none;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.recetas-titulo {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--colorTextBlack);
+  letter-spacing: 1px;
+}
+
+.recetas-buscar {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--colorTextBlack);
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 18px 0 18px 0; 
+  width: 100%;
+}
+
+.recetas-cabecera-acciones {
+  display: flex;
+  gap: 4px;
+}
+
+.recetas-btn-icono {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.recetas-btn-icono:hover {
+  background: #e0e0e0;
+}
+
+.recetas-lista {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 12px;
+  overflow-y: auto;
+}
+
+.recetas-lista {
+  scrollbar-width: none;
+}
+
+.recetas-lista::-webkit-scrollbar {
+  display: none;
+}
+
+.receta-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  margin-bottom: 10px;
+  flex-shrink: 0; 
+}
+
+.receta-imagen {
+  width: 110px;
+  height: 85px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.receta-info {
+  flex: 1;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.receta-nombre {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.receta-fecha {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4caf50;
+}
+
+.receta-no-añadida {
+  font-size: 13px;
+  color: #aaa;
+}
