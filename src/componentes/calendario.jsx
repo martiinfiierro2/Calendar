@@ -40,8 +40,6 @@ export default function Calendario() {
   const [formulario, setFormulario] = useState(null);
   const [comidas, setComidas] = useState(obtenerComidasIniciales);
   const [comidaEditando, setComidaEditando] = useState(null);
-  const [busqueda, setBusqueda] = useState('');
-  const [mostrarBusqueda, setMostrarBusqueda] = useState(false);
 
   const comidasFijas = {
     "08:00": { tipo: "desayuno", icono: "☕", titulo: "Desayuno", detalle: "Tostadas con aguacate y café" },
@@ -65,7 +63,7 @@ export default function Calendario() {
   const abrirMenuAnadir = (hora = '14:00') => { setHoraSeleccionada(hora); setMostrarMenuAnadir(true); };
   const cerrarMenuAnadir = () => setMostrarMenuAnadir(false);
   const abrirFormulario = (tipo) => { setMostrarMenuAnadir(false); setFormulario({ tipo, hora: horaSeleccionada }); };
-  const cerrarFormulario = () => setFormulario(null);
+  const cerrarFormulario = () => { setFormulario(null); setComidaEditando(null); setMostrarMenuAnadir(true); };
 
   const guardarComida = (datos) => {
     const nuevaComida = {
@@ -105,10 +103,10 @@ export default function Calendario() {
   const cancelarFormulario = () => {
     setFormulario(null);
     setComidaEditando(null);
+    setMostrarMenuAnadir(true);
   };
 
   const comidasDelDia = comidas.filter(comida => comida.fecha === fechaClave(fecha));
-  const comidasVisiblesDelDia = comidasDelDia.filter(comida => comida.nombre.toLowerCase().includes(busqueda.toLowerCase()));
 
   return (
     <div className="contenedor-calendario">
@@ -121,15 +119,11 @@ export default function Calendario() {
           alCambiarDia={cambiarDia}
           horasDelDia={horasDelDia}
           comidasFijas={comidasFijas}
-          comidas={comidasVisiblesDelDia}
+          comidas={comidasDelDia}
           alAnadir={abrirMenuAnadir}
           alAnadirComida={abrirMenuAnadir}
           alEditar={editarComida}
           alEliminar={eliminarComida}
-          busqueda={busqueda}
-          mostrarBusqueda={mostrarBusqueda}
-          alCambiarBusqueda={setBusqueda}
-          alAlternarBusqueda={() => { setMostrarBusqueda(actual => !actual); setBusqueda(''); }}
         />
       )}
 
@@ -177,15 +171,14 @@ function FormularioComida({ tipo, fecha, horaInicial = '14:00', comidaInicial, a
   const enviar = (e) => {
     e.preventDefault();
     if (!nombre.trim() || !fechaFormulario || !hora) return;
-    const tipoFinal = esReceta ? tipoComida : tipoComida;
-    const tipoInfo = TIPOS_COMIDA.find(item => item.valor === tipoFinal) || TIPOS_COMIDA[2];
+    const tipoInfo = TIPOS_COMIDA.find(item => item.valor === tipoComida) || TIPOS_COMIDA[2];
     alGuardar({
       nombre: nombre.trim(),
       descripcion,
       ingredientes,
       tiempo,
       raciones,
-      tipo: tipoFinal,
+      tipo: tipoComida,
       icono: tipoInfo.icono,
       fecha: fechaFormulario,
       hora,
@@ -302,7 +295,7 @@ function VistaMes({ año, mes, comidasFijas, comidas, alSeleccionarDia, alVolver
   );
 }
 
-function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFijas, comidas, alAnadir, alAnadirComida, alEditar, alEliminar, busqueda, mostrarBusqueda, alCambiarBusqueda, alAlternarBusqueda }) {
+function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFijas, comidas, alAnadir, alAnadirComida, alEditar, alEliminar }) {
   const ref6h = useRef(null);
   const [mostrarAcciones, setMostrarAcciones] = useState(null);
   useEffect(() => { if (ref6h.current) ref6h.current.scrollIntoView({ block: 'start' }); }, [fecha]);
@@ -315,7 +308,6 @@ function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFija
       <div className="cabecera-calendario">
         <button className="botonMes" onClick={alVolverAlMes}>{MESES[fecha.getMonth()]}</button>
         <div className="cabecera-dia">
-          {mostrarBusqueda ? <input className="recetas-buscar" autoFocus value={busqueda} onChange={(e) => alCambiarBusqueda(e.target.value)} placeholder="Buscar comida..." /> : <button className="btnSinEstilo" onClick={alAlternarBusqueda}>🔍</button>}
           <button className="btnSinEstilo" onClick={alAnadir}>➕</button>
         </div>
       </div>
