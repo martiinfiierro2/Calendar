@@ -63,7 +63,6 @@ export default function Calendario() {
   const abrirMenuAnadir = (hora = '14:00') => { setHoraSeleccionada(hora); setMostrarMenuAnadir(true); };
   const cerrarMenuAnadir = () => setMostrarMenuAnadir(false);
   const abrirFormulario = (tipo) => { setMostrarMenuAnadir(false); setFormulario({ tipo, hora: horaSeleccionada }); };
-  const cerrarFormulario = () => { setFormulario(null); setComidaEditando(null); setMostrarMenuAnadir(true); };
 
   const guardarComida = (datos) => {
     const nuevaComida = {
@@ -112,20 +111,7 @@ export default function Calendario() {
     <div className="contenedor-calendario">
       {vista === 'anyo' && <VistaAnyo año={añoVisible} comidas={comidas} alSeleccionarMes={(mes) => irAMes(añoVisible, mes)} alAnadir={() => abrirMenuAnadir()} />}
       {vista === 'mes' && <VistaMes año={añoVisible} mes={mesVisible} comidasFijas={comidasFijas} comidas={comidas} alSeleccionarDia={irADia} alVolverAlAnyo={() => irAAnyo(añoVisible)} alAnadir={() => abrirMenuAnadir()} />}
-      {vista === 'dia' && (
-        <TablaDia
-          fecha={fecha}
-          alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())}
-          alCambiarDia={cambiarDia}
-          horasDelDia={horasDelDia}
-          comidasFijas={comidasFijas}
-          comidas={comidasDelDia}
-          alAnadir={abrirMenuAnadir}
-          alAnadirComida={abrirMenuAnadir}
-          alEditar={editarComida}
-          alEliminar={eliminarComida}
-        />
-      )}
+      {vista === 'dia' && <TablaDia fecha={fecha} alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())} alCambiarDia={cambiarDia} horasDelDia={horasDelDia} comidasFijas={comidasFijas} comidas={comidasDelDia} alAnadir={abrirMenuAnadir} alAnadirComida={abrirMenuAnadir} alEditar={editarComida} alEliminar={eliminarComida} />}
 
       {mostrarMenuAnadir && (
         <>
@@ -139,16 +125,7 @@ export default function Calendario() {
         </>
       )}
 
-      {formulario && (
-        <FormularioComida
-          tipo={formulario.tipo}
-          fecha={fecha}
-          horaInicial={formulario.hora}
-          comidaInicial={formulario.comida}
-          alCerrar={cancelarFormulario}
-          alGuardar={guardarComida}
-        />
-      )}
+      {formulario && <FormularioComida tipo={formulario.tipo} fecha={fecha} horaInicial={formulario.hora} comidaInicial={formulario.comida} alCerrar={cancelarFormulario} alGuardar={guardarComida} />}
     </div>
   );
 }
@@ -158,7 +135,6 @@ function FormularioComida({ tipo, fecha, horaInicial = '14:00', comidaInicial, a
   const fechaInicial = comidaInicial?.fecha || fechaClave(fecha);
   const horaInicialFormulario = comidaInicial?.hora || horaInicial;
   const tipoInicial = comidaInicial?.tipo || 'comida';
-
   const [nombre, setNombre] = useState(comidaInicial?.nombre || '');
   const [descripcion, setDescripcion] = useState(comidaInicial?.descripcion || '');
   const [ingredientes, setIngredientes] = useState(comidaInicial?.ingredientes || '');
@@ -172,18 +148,7 @@ function FormularioComida({ tipo, fecha, horaInicial = '14:00', comidaInicial, a
     e.preventDefault();
     if (!nombre.trim() || !fechaFormulario || !hora) return;
     const tipoInfo = TIPOS_COMIDA.find(item => item.valor === tipoComida) || TIPOS_COMIDA[2];
-    alGuardar({
-      nombre: nombre.trim(),
-      descripcion,
-      ingredientes,
-      tiempo,
-      raciones,
-      tipo: tipoComida,
-      icono: tipoInfo.icono,
-      fecha: fechaFormulario,
-      hora,
-      modo: tipo
-    });
+    alGuardar({ nombre: nombre.trim(), descripcion, ingredientes, tiempo, raciones, tipo: tipoComida, icono: tipoInfo.icono, fecha: fechaFormulario, hora, modo: tipo });
   };
 
   return (
@@ -196,63 +161,11 @@ function FormularioComida({ tipo, fecha, horaInicial = '14:00', comidaInicial, a
           <h2>{esReceta ? 'Añadir receta' : 'Comida rápida'}</h2>
           <div />
         </div>
-
         <form className="formulario-campos" onSubmit={enviar}>
-          <div className="campo-formulario">
-            <label htmlFor="nombre">Comida</label>
-            <input id="nombre" type="text" placeholder="¿Qué vas a comer?" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
-          </div>
-
-          {esReceta ? (
-            <>
-              <div className="campo-formulario">
-                <label htmlFor="descripcion">Descripción</label>
-                <textarea id="descripcion" placeholder="Describe brevemente la receta" rows="3" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
-              </div>
-              <div className="campo-formulario">
-                <label htmlFor="ingredientes">Ingredientes</label>
-                <textarea id="ingredientes" placeholder="Ej.: 200 g de pollo, 100 g de arroz..." rows="4" value={ingredientes} onChange={(e) => setIngredientes(e.target.value)} />
-              </div>
-              <div className="campos-formulario-fila">
-                <div className="campo-formulario">
-                  <label htmlFor="tiempo">Tiempo (min)</label>
-                  <input id="tiempo" type="number" min="1" placeholder="30" value={tiempo} onChange={(e) => setTiempo(e.target.value)} />
-                </div>
-                <div className="campo-formulario">
-                  <label htmlFor="raciones">Raciones</label>
-                  <input id="raciones" type="number" min="1" placeholder="2" value={raciones} onChange={(e) => setRaciones(e.target.value)} />
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="campo-formulario">
-              <label htmlFor="tipo-comida">Tipo de comida</label>
-              <select id="tipo-comida" value={tipoComida} onChange={(e) => setTipoComida(e.target.value)}>
-                {TIPOS_COMIDA.map(tipo => <option key={tipo.valor} value={tipo.valor}>{tipo.nombre}</option>)}
-              </select>
-            </div>
-          )}
-
-          {esReceta && (
-            <div className="campo-formulario">
-              <label htmlFor="tipo-comida-receta">Tipo de comida</label>
-              <select id="tipo-comida-receta" value={tipoComida} onChange={(e) => setTipoComida(e.target.value)}>
-                {TIPOS_COMIDA.map(tipo => <option key={tipo.valor} value={tipo.valor}>{tipo.nombre}</option>)}
-              </select>
-            </div>
-          )}
-
-          <div className="campos-formulario-fila">
-            <div className="campo-formulario">
-              <label htmlFor="fecha">Fecha</label>
-              <input id="fecha" type="date" value={fechaFormulario} onChange={(e) => setFechaFormulario(e.target.value)} required />
-            </div>
-            <div className="campo-formulario">
-              <label htmlFor="hora">Hora</label>
-              <input id="hora" type="time" value={hora} onChange={(e) => setHora(e.target.value)} required />
-            </div>
-          </div>
-
+          <div className="campo-formulario"><label htmlFor="nombre">Comida</label><input id="nombre" type="text" placeholder="¿Qué vas a comer?" value={nombre} onChange={(e) => setNombre(e.target.value)} required /></div>
+          {esReceta ? <><div className="campo-formulario"><label htmlFor="descripcion">Descripción</label><textarea id="descripcion" placeholder="Describe brevemente la receta" rows="3" value={descripcion} onChange={(e) => setDescripcion(e.target.value)} /></div><div className="campo-formulario"><label htmlFor="ingredientes">Ingredientes</label><textarea id="ingredientes" placeholder="Ej.: 200 g de pollo, 100 g de arroz..." rows="4" value={ingredientes} onChange={(e) => setIngredientes(e.target.value)} /></div><div className="campos-formulario-fila"><div className="campo-formulario"><label htmlFor="tiempo">Tiempo (min)</label><input id="tiempo" type="number" min="1" placeholder="30" value={tiempo} onChange={(e) => setTiempo(e.target.value)} /></div><div className="campo-formulario"><label htmlFor="raciones">Raciones</label><input id="raciones" type="number" min="1" placeholder="2" value={raciones} onChange={(e) => setRaciones(e.target.value)} /></div></div></> : <div className="campo-formulario"><label htmlFor="tipo-comida">Tipo de comida</label><select id="tipo-comida" value={tipoComida} onChange={(e) => setTipoComida(e.target.value)}>{TIPOS_COMIDA.map(tipo => <option key={tipo.valor} value={tipo.valor}>{tipo.nombre}</option>)}</select></div>}
+          {esReceta && <div className="campo-formulario"><label htmlFor="tipo-comida-receta">Tipo de comida</label><select id="tipo-comida-receta" value={tipoComida} onChange={(e) => setTipoComida(e.target.value)}>{TIPOS_COMIDA.map(tipo => <option key={tipo.valor} value={tipo.valor}>{tipo.nombre}</option>)}</select></div>}
+          <div className="campos-formulario-fila"><div className="campo-formulario"><label htmlFor="fecha">Fecha</label><input id="fecha" type="date" value={fechaFormulario} onChange={(e) => setFechaFormulario(e.target.value)} required /></div><div className="campo-formulario"><label htmlFor="hora">Hora</label><input id="hora" type="time" value={hora} onChange={(e) => setHora(e.target.value)} required /></div></div>
           <button className="boton-formulario-guardar" type="submit">Guardar</button>
         </form>
       </div>
@@ -262,20 +175,7 @@ function FormularioComida({ tipo, fecha, horaInicial = '14:00', comidaInicial, a
 
 function VistaAnyo({ año, comidas, alSeleccionarMes, alAnadir }) {
   const hoy = new Date();
-  return (
-    <div className="vista-anyo">
-      <div className="cabecera-calendario"><h2></h2><div className="cabecera-dia"><button className="btnSinEstilo">🍳</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div>
-      <div className="mes-nombre-grande">{año}</div>
-      <div className="anyo-grid">
-        {MESES.map((nombreMes, i) => {
-          const primerDia = new Date(año, i, 1); const totalDias = new Date(año, i + 1, 0).getDate(); const offset = (primerDia.getDay() + 6) % 7;
-          const celdas = []; for (let x = 0; x < offset; x++) celdas.push(null); for (let d = 1; d <= totalDias; d++) celdas.push(d);
-          const tieneComidas = comidas.some(comida => { const f = fechaDesdeClave(comida.fecha); return f.getFullYear() === año && f.getMonth() === i; });
-          return <div key={i} className="anyo-mes-card" onClick={() => alSeleccionarMes(i)}><div className="anyo-mes-nombre">{nombreMes}{tieneComidas && <span className="mes-punto" />}</div><div className="anyo-mini-grid">{celdas.map((d, j) => { const esHoy = d === hoy.getDate() && i === hoy.getMonth() && año === hoy.getFullYear(); return <span key={j} className={`anyo-mini-celda ${esHoy ? 'hoy-mini' : ''}`}>{d ?? ''}</span>; })}</div></div>;
-        })}
-      </div>
-    </div>
-  );
+  return <div className="vista-anyo"><div className="cabecera-calendario"><h2></h2><div className="cabecera-dia"><button className="btnSinEstilo">🍳</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div><div className="mes-nombre-grande">{año}</div><div className="anyo-grid">{MESES.map((nombreMes, i) => { const primerDia = new Date(año, i, 1); const totalDias = new Date(año, i + 1, 0).getDate(); const offset = (primerDia.getDay() + 6) % 7; const celdas = []; for (let x = 0; x < offset; x++) celdas.push(null); for (let d = 1; d <= totalDias; d++) celdas.push(d); const tieneComidas = comidas.some(comida => { const f = fechaDesdeClave(comida.fecha); return f.getFullYear() === año && f.getMonth() === i; }); return <div key={i} className="anyo-mes-card" onClick={() => alSeleccionarMes(i)}><div className="anyo-mes-nombre">{nombreMes}{tieneComidas && <span className="mes-punto" />}</div><div className="anyo-mini-grid">{celdas.map((d, j) => { const esHoy = d === hoy.getDate() && i === hoy.getMonth() && año === hoy.getFullYear(); return <span key={j} className={`anyo-mini-celda ${esHoy ? 'hoy-mini' : ''}`}>{d ?? ''}</span>; })}</div></div>; })}</div></div>;
 }
 
 function VistaMes({ año, mes, comidasFijas, comidas, alSeleccionarDia, alVolverAlAnyo, alAnadir }) {
@@ -285,55 +185,14 @@ function VistaMes({ año, mes, comidasFijas, comidas, alSeleccionarDia, alVolver
   const celdas = []; for (let i = 0; i < offsetInicio; i++) celdas.push(null); for (let d = 1; d <= totalDias; d++) celdas.push(d);
   const esHoy = (d) => d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
   const tieneComida = (dia) => comidas.some(comida => comida.fecha === `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`) || (año === hoy.getFullYear() && mes === hoy.getMonth() && dia === hoy.getDate() && Object.keys(comidasFijas).length > 0);
-  return (
-    <div className="vista-mes">
-      <div className="cabecera-calendario"><button className="botonAnyo" onClick={alVolverAlAnyo}>{año}</button><div className="cabecera-dia"><button className="btnSinEstilo">🍳</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div>
-      <div className="mes-nombre-grande">{MESES[mes]}</div>
-      <div className="mes-semana-cabecera">{diasSemana.map(d => <span className="dia-cabecera" key={d}>{d}</span>)}</div>
-      <div className="mes-grid">{celdas.map((d, i) => <div key={i} className="mes-celda" onClick={() => d && alSeleccionarDia(new Date(año, mes, d))}>{d && <><span className={`mes-numero ${esHoy(d) ? 'hoy-numero' : ''}`}>{d}</span>{tieneComida(d) && <span className="mes-punto" />}</>}</div>)}</div>
-    </div>
-  );
+  return <div className="vista-mes"><div className="cabecera-calendario"><button className="botonAnyo" onClick={alVolverAlAnyo}>{año}</button><div className="cabecera-dia"><button className="btnSinEstilo">🍳</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div><div className="mes-nombre-grande">{MESES[mes]}</div><div className="mes-semana-cabecera">{diasSemana.map(d => <span className="dia-cabecera" key={d}>{d}</span>)}</div><div className="mes-grid">{celdas.map((d, i) => <div key={i} className="mes-celda" onClick={() => d && alSeleccionarDia(new Date(año, mes, d))}>{d && <><span className={`mes-numero ${esHoy(d) ? 'hoy-numero' : ''}`}>{d}</span>{tieneComida(d) && <span className="mes-punto" />}</>}</div>)}</div></div>;
 }
 
 function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFijas, comidas, alAnadir, alAnadirComida, alEditar, alEliminar }) {
   const ref6h = useRef(null);
   const [mostrarAcciones, setMostrarAcciones] = useState(null);
   useEffect(() => { if (ref6h.current) ref6h.current.scrollIntoView({ block: 'start' }); }, [fecha]);
-
   const obtenerComida = (hora) => comidas.find(comida => comida.hora === hora);
   const obtenerComidaFija = (hora) => comidasFijas[hora];
-
-  return (
-    <div className="pantalla-completa-dia">
-      <div className="cabecera-calendario">
-        <button className="botonMes" onClick={alVolverAlMes}>{MESES[fecha.getMonth()]}</button>
-        <div className="cabecera-dia">
-          <button className="btnSinEstilo" onClick={alAnadir}>➕</button>
-        </div>
-      </div>
-      <div className="tarjeta-fecha-grande"><div className="navegacion-dia"><button className="flecha-dia" onClick={() => alCambiarDia(-1)} aria-label="Día anterior">‹</button><span className="fecha">{fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span><button className="flecha-dia" onClick={() => alCambiarDia(1)} aria-label="Día siguiente">›</button></div></div>
-      <div className="contenido-dia-completo"><div className="bloque-horas"><div className="timeline-horas">
-        {horasDelDia.map((hora) => {
-          const comidaFija = obtenerComidaFija(hora);
-          const comida = obtenerComida(hora);
-          const contenido = comida || comidaFija;
-          return <div className="hora-fila" key={hora} ref={hora === '06:00' ? ref6h : null}>
-            <div className="hora-eje">{hora}</div>
-            {contenido ? (
-              <div className="hora-contenido">
-                <div className={`tarjeta-evento ${contenido.tipo}`} onClick={() => comida && setMostrarAcciones(mostrarAcciones === comida.id ? null : comida.id)}>
-                  <span className="evento-info">{contenido.icono} <b>{TIPOS_COMIDA.find(t => t.valor === contenido.tipo)?.nombre || contenido.titulo || 'Comida'}:</b> {contenido.nombre || contenido.detalle}</span>
-                </div>
-                {comida && mostrarAcciones === comida.id && <div className="evento-acciones"><button onClick={() => alEditar(comida)}>Editar</button><button onClick={() => alEliminar(comida.id)}>Eliminar</button></div>}
-              </div>
-            ) : (
-              <div className="hora-contenido boton-anadir-comida" onClick={() => alAnadirComida(hora)} role="button" tabIndex="0" onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && alAnadirComida(hora)} aria-label={`Añadir comida a las ${hora}`}>
-                + Añadir comida
-              </div>
-            )}
-          </div>;
-        })}
-      </div></div></div>
-    </div>
-  );
+  return <div className="pantalla-completa-dia"><div className="cabecera-calendario"><button className="botonMes" onClick={alVolverAlMes}>{MESES[fecha.getMonth()]}</button><div className="cabecera-dia"><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div><div className="tarjeta-fecha-grande"><div className="navegacion-dia"><button className="flecha-dia" onClick={() => alCambiarDia(-1)} aria-label="Día anterior">‹</button><span className="fecha">{fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span><button className="flecha-dia" onClick={() => alCambiarDia(1)} aria-label="Día siguiente">›</button></div></div><div className="contenido-dia-completo"><div className="bloque-horas"><div className="timeline-horas">{horasDelDia.map((hora) => { const comidaFija = obtenerComidaFija(hora); const comida = obtenerComida(hora); const contenido = comida || comidaFija; return <div className="hora-fila" key={hora} ref={hora === '06:00' ? ref6h : null}><div className="hora-eje">{hora}</div>{contenido ? <div className="hora-contenido"><div className={`tarjeta-evento ${contenido.tipo}`} onClick={() => setMostrarAcciones(mostrarAcciones === (comida?.id || `fija-${hora}`) ? null : (comida?.id || `fija-${hora}`))}><span className="evento-info">{contenido.icono} <b>{TIPOS_COMIDA.find(t => t.valor === contenido.tipo)?.nombre || contenido.titulo || 'Comida'}:</b> {contenido.nombre || contenido.detalle}</span></div>{mostrarAcciones === (comida?.id || `fija-${hora}`) && <div className="evento-acciones">{comida ? <button onClick={() => alEditar(comida)} aria-label="Editar comida" title="Editar">✏️</button> : <button aria-label="Editar comida por defecto" title="Editar">✏️</button>}<button onClick={() => comida && alEliminar(comida.id)} aria-label={comida ? 'Eliminar comida' : 'Eliminar comida por defecto'} title="Eliminar">🗑️</button></div>}</div> : <div className="hora-contenido boton-anadir-comida" onClick={() => alAnadirComida(hora)} role="button" tabIndex="0" onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && alAnadirComida(hora)} aria-label={`Añadir comida a las ${hora}`}>+ Añadir comida</div>}</div>; })}</div></div></div></div>;
 }
