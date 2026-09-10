@@ -7,7 +7,6 @@ export default function Calendario() {
   const [añoVisible, setAñoVisible] = useState(hoy.getFullYear());
   const [mesVisible, setMesVisible] = useState(hoy.getMonth());
   const [mostrarMenuAnadir, setMostrarMenuAnadir] = useState(false);
-  const [mostrarOpcionesComida, setMostrarOpcionesComida] = useState(false);
 
   const comidasFijas = {
     "08:00": { tipo: "desayuno", icono: "☕", titulo: "Desayuno", detalle: "Tostadas con aguacate y café" },
@@ -26,9 +25,6 @@ export default function Calendario() {
   const cambiarDia = (cantidad) => { const nuevaFecha = new Date(fecha); nuevaFecha.setDate(nuevaFecha.getDate() + cantidad); irADia(nuevaFecha); };
   const abrirMenuAnadir = () => setMostrarMenuAnadir(true);
   const cerrarMenuAnadir = () => setMostrarMenuAnadir(false);
-  const abrirOpcionesComida = () => { setMostrarMenuAnadir(false); setMostrarOpcionesComida(true); };
-  const cerrarOpcionesComida = () => setMostrarOpcionesComida(false);
-  const volverMenuAnadir = () => { setMostrarOpcionesComida(false); setMostrarMenuAnadir(true); };
 
   return (
     <div className="contenedor-calendario">
@@ -41,20 +37,9 @@ export default function Calendario() {
           <div className="menu-anadir-overlay" onClick={cerrarMenuAnadir} />
           <div className="menu-anadir">
             <div className="menu-anadir-indicador" />
-            <button className="menu-anadir-opcion" onClick={abrirOpcionesComida}>🍽️ Añadir comida</button>
+            <button className="menu-anadir-opcion" onClick={cerrarMenuAnadir}>📖 Receta</button>
+            <button className="menu-anadir-opcion" onClick={cerrarMenuAnadir}>⚡ Comida rápida</button>
             <button className="menu-anadir-cancelar" onClick={cerrarMenuAnadir}>Cancelar</button>
-          </div>
-        </>
-      )}
-
-      {mostrarOpcionesComida && (
-        <>
-          <div className="menu-anadir-overlay" onClick={cerrarOpcionesComida} />
-          <div className="menu-anadir">
-            <div className="menu-anadir-indicador" />
-            <button className="menu-anadir-opcion" onClick={cerrarOpcionesComida}>📖 Desde recetas</button>
-            <button className="menu-anadir-opcion" onClick={cerrarOpcionesComida}>✏️ Comida rápida</button>
-            <button className="menu-anadir-cancelar" onClick={volverMenuAnadir}>Atrás</button>
           </div>
         </>
       )}
