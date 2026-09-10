@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 export default function Calendario() {
   const hoy = new Date();
   const [fecha, setFecha] = useState(new Date());
-  const [vista, setVista] = useState('dia'); // 'anyo' | 'mes' | 'dia'
+  const [vista, setVista] = useState('dia');
   const [añoVisible, setAñoVisible] = useState(hoy.getFullYear());
   const [mesVisible, setMesVisible] = useState(hoy.getMonth());
   const [mostrarMenuAnadir, setMostrarMenuAnadir] = useState(false);
@@ -23,21 +23,22 @@ export default function Calendario() {
   const irAMes = (anyo, mes) => { setAñoVisible(anyo); setMesVisible(mes); setVista('mes'); };
   const irADia = (nuevaFecha) => { setFecha(nuevaFecha); setAñoVisible(nuevaFecha.getFullYear()); setMesVisible(nuevaFecha.getMonth()); setVista('dia'); };
   const cambiarDia = (cantidad) => { const nuevaFecha = new Date(fecha); nuevaFecha.setDate(nuevaFecha.getDate() + cantidad); irADia(nuevaFecha); };
+  const abrirMenuAnadir = () => setMostrarMenuAnadir(true);
+  const cerrarMenuAnadir = () => setMostrarMenuAnadir(false);
 
   return (
     <div className="contenedor-calendario">
-      {vista === 'anyo' && <VistaAnyo año={añoVisible} alSeleccionarMes={(mes) => irAMes(añoVisible, mes)} alAnadir={() => setMostrarMenuAnadir(true)} />}
-      {vista === 'mes' && <VistaMes año={añoVisible} mes={mesVisible} comidasFijas={comidasFijas} alSeleccionarDia={irADia} alVolverAlAnyo={() => irAAnyo(añoVisible)} alAnadir={() => setMostrarMenuAnadir(true)} />}
-      {vista === 'dia' && <TablaDia fecha={fecha} alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())} alCambiarDia={cambiarDia} horasDelDia={horasDelDia} comidasFijas={comidasFijas} alAnadir={() => setMostrarMenuAnadir(true)} />}
+      {vista === 'anyo' && <VistaAnyo año={añoVisible} alSeleccionarMes={(mes) => irAMes(añoVisible, mes)} alAnadir={abrirMenuAnadir} />}
+      {vista === 'mes' && <VistaMes año={añoVisible} mes={mesVisible} comidasFijas={comidasFijas} alSeleccionarDia={irADia} alVolverAlAnyo={() => irAAnyo(añoVisible)} alAnadir={abrirMenuAnadir} />}
+      {vista === 'dia' && <TablaDia fecha={fecha} alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())} alCambiarDia={cambiarDia} horasDelDia={horasDelDia} comidasFijas={comidasFijas} alAnadir={abrirMenuAnadir} />}
 
       {mostrarMenuAnadir && (
         <>
-          <div className="menu-anadir-overlay" onClick={() => setMostrarMenuAnadir(false)} />
+          <div className="menu-anadir-overlay" onClick={cerrarMenuAnadir} />
           <div className="menu-anadir">
             <div className="menu-anadir-indicador" />
-            <button className="menu-anadir-opcion">🍽️ Añadir comida</button>
-            <button className="menu-anadir-opcion">📝 Añadir nota</button>
-            <button className="menu-anadir-cancelar" onClick={() => setMostrarMenuAnadir(false)}>Cancelar</button>
+            <button className="menu-anadir-opcion" onClick={cerrarMenuAnadir}>🍽️ Añadir comida</button>
+            <button className="menu-anadir-cancelar" onClick={cerrarMenuAnadir}>Cancelar</button>
           </div>
         </>
       )}
@@ -88,7 +89,7 @@ function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFija
     <div className="pantalla-completa-dia">
       <div className="cabecera-calendario"><button className="botonMes" onClick={alVolverAlMes}>{MESES[fecha.getMonth()]}</button><div className="cabecera-dia"><button className="btnSinEstilo">🔍</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div>
       <div className="tarjeta-fecha-grande"><div className="navegacion-dia"><button className="flecha-dia" onClick={() => alCambiarDia(-1)} aria-label="Día anterior">‹</button><span className="fecha">{fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span><button className="flecha-dia" onClick={() => alCambiarDia(1)} aria-label="Día siguiente">›</button></div></div>
-      <div className="contenido-dia-completo"><div className="bloque-horas"><div className="timeline-horas">{horasDelDia.map((hora) => { const comida = comidasFijas[hora]; return <div className="hora-fila" key={hora} ref={hora === '06:00' ? ref6h : null}><div className="hora-eje">{hora}</div><div className="hora-contenido">{comida ? <div className={`tarjeta-evento ${comida.tipo}`}><span className="evento-info">{comida.icono} <b>{comida.titulo}:</b> {comida.detalle}</span></div> : <div className="tarjeta-evento">+ Añadir nota o comida</div>}</div></div>; })}</div></div></div>
+      <div className="contenido-dia-completo"><div className="bloque-horas"><div className="timeline-horas">{horasDelDia.map((hora) => { const comida = comidasFijas[hora]; return <div className="hora-fila" key={hora} ref={hora === '06:00' ? ref6h : null}><div className="hora-eje">{hora}</div><div className="hora-contenido">{comida ? <div className={`tarjeta-evento ${comida.tipo}`}><span className="evento-info">{comida.icono} <b>{comida.titulo}:</b> {comida.detalle}</span></div> : <div className="tarjeta-evento">+ Añadir comida</div>}</div></div>; })}</div></div></div>
     </div>
   );
 }
