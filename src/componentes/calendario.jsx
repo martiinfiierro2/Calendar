@@ -6,6 +6,7 @@ export default function Calendario() {
   const [vista, setVista] = useState('dia'); // 'anyo' | 'mes' | 'dia'
   const [añoVisible, setAñoVisible] = useState(hoy.getFullYear());
   const [mesVisible, setMesVisible] = useState(hoy.getMonth());
+  const [mostrarMenuAnadir, setMostrarMenuAnadir] = useState(false);
 
   const comidasFijas = {
     "08:00": { tipo: "desayuno", icono: "☕", titulo: "Desayuno", detalle: "Tostadas con aguacate y café" },
@@ -16,273 +17,78 @@ export default function Calendario() {
   };
 
   const horasDelDia = [];
-  for (let i = 0; i <= 23; i++) {
-    horasDelDia.push(`${i.toString().padStart(2, '0')}:00`);
-  }
+  for (let i = 0; i <= 23; i++) horasDelDia.push(`${i.toString().padStart(2, '0')}:00`);
 
-  const irAAnyo = (anyo) => {
-    setAñoVisible(anyo);
-    setVista('anyo');
-  };
-
-  const irAMes = (anyo, mes) => {
-    setAñoVisible(anyo);
-    setMesVisible(mes);
-    setVista('mes');
-  };
-
-  const irADia = (nuevaFecha) => {
-    setFecha(nuevaFecha);
-    setAñoVisible(nuevaFecha.getFullYear());
-    setMesVisible(nuevaFecha.getMonth());
-    setVista('dia');
-  };
-
-  const cambiarDia = (cantidad) => {
-    const nuevaFecha = new Date(fecha);
-    nuevaFecha.setDate(nuevaFecha.getDate() + cantidad);
-    irADia(nuevaFecha);
-  };
+  const irAAnyo = (anyo) => { setAñoVisible(anyo); setVista('anyo'); };
+  const irAMes = (anyo, mes) => { setAñoVisible(anyo); setMesVisible(mes); setVista('mes'); };
+  const irADia = (nuevaFecha) => { setFecha(nuevaFecha); setAñoVisible(nuevaFecha.getFullYear()); setMesVisible(nuevaFecha.getMonth()); setVista('dia'); };
+  const cambiarDia = (cantidad) => { const nuevaFecha = new Date(fecha); nuevaFecha.setDate(nuevaFecha.getDate() + cantidad); irADia(nuevaFecha); };
 
   return (
     <div className="contenedor-calendario">
-      {vista === 'anyo' && (
-        <VistaAnyo
-          año={añoVisible}
-          alSeleccionarMes={(mes) => irAMes(añoVisible, mes)}
-        />
-      )}
-      {vista === 'mes' && (
-        <VistaMes
-          año={añoVisible}
-          mes={mesVisible}
-          comidasFijas={comidasFijas}
-          alSeleccionarDia={irADia}
-          alVolverAlAnyo={() => irAAnyo(añoVisible)}
-        />
-      )}
-      {vista === 'dia' && (
-        <TablaDia
-          fecha={fecha}
-          alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())}
-          alVolverAlAnyo={() => irAAnyo(fecha.getFullYear())}
-          alCambiarDia={cambiarDia}
-          horasDelDia={horasDelDia}
-          comidasFijas={comidasFijas}
-        />
+      {vista === 'anyo' && <VistaAnyo año={añoVisible} alSeleccionarMes={(mes) => irAMes(añoVisible, mes)} alAnadir={() => setMostrarMenuAnadir(true)} />}
+      {vista === 'mes' && <VistaMes año={añoVisible} mes={mesVisible} comidasFijas={comidasFijas} alSeleccionarDia={irADia} alVolverAlAnyo={() => irAAnyo(añoVisible)} alAnadir={() => setMostrarMenuAnadir(true)} />}
+      {vista === 'dia' && <TablaDia fecha={fecha} alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())} alCambiarDia={cambiarDia} horasDelDia={horasDelDia} comidasFijas={comidasFijas} alAnadir={() => setMostrarMenuAnadir(true)} />}
+
+      {mostrarMenuAnadir && (
+        <>
+          <div className="menu-anadir-overlay" onClick={() => setMostrarMenuAnadir(false)} />
+          <div className="menu-anadir">
+            <div className="menu-anadir-indicador" />
+            <button className="menu-anadir-opcion">🍽️ Añadir comida</button>
+            <button className="menu-anadir-opcion">📝 Añadir nota</button>
+            <button className="menu-anadir-cancelar" onClick={() => setMostrarMenuAnadir(false)}>Cancelar</button>
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-function VistaAnyo({ año, alSeleccionarMes }) {
+function VistaAnyo({ año, alSeleccionarMes, alAnadir }) {
   const hoy = new Date();
-  const MESES = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
-
+  const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   return (
     <div className="vista-anyo">
-      <div className="cabecera-calendario">
-        <h2></h2>
-        <div className="cabecera-dia">
-          <button className="btnSinEstilo">🍳</button>
-          <button className="btnSinEstilo">➕</button>
-        </div>
-      </div>
-
+      <div className="cabecera-calendario"><h2></h2><div className="cabecera-dia"><button className="btnSinEstilo">🍳</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div>
       <div className="mes-nombre-grande">{año}</div>
-
       <div className="anyo-grid">
         {MESES.map((nombreMes, i) => {
-          const primerDia = new Date(año, i, 1);
-          const totalDias = new Date(año, i + 1, 0).getDate();
-          const offset = (primerDia.getDay() + 6) % 7;
-
-          const celdas = [];
-          for (let x = 0; x < offset; x++) celdas.push(null);
-          for (let d = 1; d <= totalDias; d++) celdas.push(d);
-
-          return (
-            <div
-              key={i}
-              className="anyo-mes-card"
-              onClick={() => alSeleccionarMes(i)}
-            >
-              <div className="anyo-mes-nombre">{nombreMes}</div>
-              <div className="anyo-mini-grid">
-                {celdas.map((d, j) => {
-                  const esHoy =
-                    d === hoy.getDate() &&
-                    i === hoy.getMonth() &&
-                    año === hoy.getFullYear();
-                  return (
-                    <span key={j} className={`anyo-mini-celda ${esHoy ? 'hoy-mini' : ''}`}>
-                      {d ?? ''}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          );
+          const primerDia = new Date(año, i, 1); const totalDias = new Date(año, i + 1, 0).getDate(); const offset = (primerDia.getDay() + 6) % 7;
+          const celdas = []; for (let x = 0; x < offset; x++) celdas.push(null); for (let d = 1; d <= totalDias; d++) celdas.push(d);
+          return <div key={i} className="anyo-mes-card" onClick={() => alSeleccionarMes(i)}><div className="anyo-mes-nombre">{nombreMes}</div><div className="anyo-mini-grid">{celdas.map((d, j) => { const esHoy = d === hoy.getDate() && i === hoy.getMonth() && año === hoy.getFullYear(); return <span key={j} className={`anyo-mini-celda ${esHoy ? 'hoy-mini' : ''}`}>{d ?? ''}</span>; })}</div></div>;
         })}
       </div>
     </div>
   );
 }
 
-function VistaMes({ año, mes, comidasFijas, alSeleccionarDia, alVolverAlAnyo }) {
+function VistaMes({ año, mes, comidasFijas, alSeleccionarDia, alVolverAlAnyo, alAnadir }) {
   const hoy = new Date();
-  const MESES = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
+  const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-
-  const primerDia = new Date(año, mes, 1);
-  const ultimoDia = new Date(año, mes + 1, 0);
-  const offsetInicio = (primerDia.getDay() + 6) % 7;
-  const totalDias = ultimoDia.getDate();
-
-  const celdas = [];
-  for (let i = 0; i < offsetInicio; i++) celdas.push(null);
-  for (let d = 1; d <= totalDias; d++) celdas.push(d);
-
-  const esHoy = (d) =>
-    d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
-
-  const nombreMes = MESES[mes];
-
+  const primerDia = new Date(año, mes, 1); const ultimoDia = new Date(año, mes + 1, 0); const offsetInicio = (primerDia.getDay() + 6) % 7; const totalDias = ultimoDia.getDate();
+  const celdas = []; for (let i = 0; i < offsetInicio; i++) celdas.push(null); for (let d = 1; d <= totalDias; d++) celdas.push(d);
+  const esHoy = (d) => d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
   return (
     <div className="vista-mes">
-      <div className="cabecera-calendario">
-        <button className="botonAnyo" onClick={alVolverAlAnyo}>
-          {año}
-        </button>
-        <div className="cabecera-dia">
-          <button className="btnSinEstilo">🍳</button>
-          <button className="btnSinEstilo">➕</button>
-        </div>
-      </div>
-
-      <div className="mes-nombre-grande">
-        {nombreMes}
-      </div>
-
-      <div className="mes-semana-cabecera">
-        {diasSemana.map(d => (
-          <span className="dia-cabecera" key={d}>{d}</span>
-        ))}
-      </div>
-
-      <div className="mes-grid">
-        {celdas.map((d, i) => (
-          <div
-            key={i}
-            className="mes-celda"
-            onClick={() => d && alSeleccionarDia(new Date(año, mes, d))}
-          >
-            {d && (
-              <>
-                <span className={`mes-numero ${esHoy(d) ? 'hoy-numero' : ''}`}>
-                  {d}
-                </span>
-                {Object.keys(comidasFijas).length > 0 && (
-                  <span className="mes-punto" />
-                )}
-              </>
-            )}
-          </div>
-        ))}
-      </div>
+      <div className="cabecera-calendario"><button className="botonAnyo" onClick={alVolverAlAnyo}>{año}</button><div className="cabecera-dia"><button className="btnSinEstilo">🍳</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div>
+      <div className="mes-nombre-grande">{MESES[mes]}</div>
+      <div className="mes-semana-cabecera">{diasSemana.map(d => <span className="dia-cabecera" key={d}>{d}</span>)}</div>
+      <div className="mes-grid">{celdas.map((d, i) => <div key={i} className="mes-celda" onClick={() => d && alSeleccionarDia(new Date(año, mes, d))}>{d && <><span className={`mes-numero ${esHoy(d) ? 'hoy-numero' : ''}`}>{d}</span>{Object.keys(comidasFijas).length > 0 && <span className="mes-punto" />}</>}</div>)}</div>
     </div>
   );
 }
 
-function TablaDia({ fecha, alVolverAlMes, alVolverAlAnyo, alCambiarDia, horasDelDia, comidasFijas }) {
+function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFijas, alAnadir }) {
   const ref6h = useRef(null);
-  const MESES = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-  ];
-
-  useEffect(() => {
-    if (ref6h.current) {
-      ref6h.current.scrollIntoView({ block: 'start' });
-    }
-  }, [fecha]);
-
-  const nombreMes = MESES[fecha.getMonth()];
-  const año = fecha.getFullYear();
-
+  const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  useEffect(() => { if (ref6h.current) ref6h.current.scrollIntoView({ block: 'start' }); }, [fecha]);
   return (
     <div className="pantalla-completa-dia">
-      <div className="cabecera-calendario">
-          <button className="botonMes" onClick={alVolverAlMes}>
-            {nombreMes}
-          </button>
-        <div className="cabecera-dia">
-          <button className="btnSinEstilo">🔍</button>
-          <button className="btnSinEstilo">➕</button>
-        </div>
-      </div>
-
-      <div className="tarjeta-fecha-grande">
-        <div className="navegacion-dia">
-          <button
-            className="flecha-dia"
-            onClick={() => alCambiarDia(-1)}
-            aria-label="Día anterior"
-          >
-            ‹
-          </button>
-
-          <span className="fecha">
-            {fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
-          </span>
-
-          <button
-            className="flecha-dia"
-            onClick={() => alCambiarDia(1)}
-            aria-label="Día siguiente"
-          >
-            ›
-          </button>
-        </div>
-      </div>
-
-      <div className="contenido-dia-completo">
-        <div className="bloque-horas">
-          <div className="timeline-horas">
-            {horasDelDia.map((hora) => {
-              const comida = comidasFijas[hora];
-              return (
-                <div
-                  className="hora-fila"
-                  key={hora}
-                  ref={hora === '06:00' ? ref6h : null}
-                >
-                  <div className="hora-eje">{hora}</div>
-                  <div className="hora-contenido">
-                    {comida ? (
-                      <div className={`tarjeta-evento ${comida.tipo}`}>
-                        <span className="evento-info">
-                          {comida.icono} <b>{comida.titulo}:</b> {comida.detalle}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="tarjeta-evento">
-                        + Añadir nota o comida
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <div className="cabecera-calendario"><button className="botonMes" onClick={alVolverAlMes}>{MESES[fecha.getMonth()]}</button><div className="cabecera-dia"><button className="btnSinEstilo">🔍</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div>
+      <div className="tarjeta-fecha-grande"><div className="navegacion-dia"><button className="flecha-dia" onClick={() => alCambiarDia(-1)} aria-label="Día anterior">‹</button><span className="fecha">{fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span><button className="flecha-dia" onClick={() => alCambiarDia(1)} aria-label="Día siguiente">›</button></div></div>
+      <div className="contenido-dia-completo"><div className="bloque-horas"><div className="timeline-horas">{horasDelDia.map((hora) => { const comida = comidasFijas[hora]; return <div className="hora-fila" key={hora} ref={hora === '06:00' ? ref6h : null}><div className="hora-eje">{hora}</div><div className="hora-contenido">{comida ? <div className={`tarjeta-evento ${comida.tipo}`}><span className="evento-info">{comida.icono} <b>{comida.titulo}:</b> {comida.detalle}</span></div> : <div className="tarjeta-evento">+ Añadir nota o comida</div>}</div></div>; })}</div></div></div>
     </div>
   );
 }
