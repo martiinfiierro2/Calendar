@@ -26,14 +26,14 @@ export default function Calendario() {
   const cambiarDia = (cantidad) => { const nuevaFecha = new Date(fecha); nuevaFecha.setDate(nuevaFecha.getDate() + cantidad); irADia(nuevaFecha); };
   const abrirMenuAnadir = () => setMostrarMenuAnadir(true);
   const cerrarMenuAnadir = () => setMostrarMenuAnadir(false);
-  const abrirFormulario = (tipo) => { setMostrarMenuAnadir(false); setFormulario(tipo); };
+  const abrirFormulario = (tipo, hora = '14:00') => { setMostrarMenuAnadir(false); setFormulario({ tipo, hora }); };
   const cerrarFormulario = () => setFormulario(null);
 
   return (
     <div className="contenedor-calendario">
       {vista === 'anyo' && <VistaAnyo año={añoVisible} alSeleccionarMes={(mes) => irAMes(añoVisible, mes)} alAnadir={abrirMenuAnadir} />}
       {vista === 'mes' && <VistaMes año={añoVisible} mes={mesVisible} comidasFijas={comidasFijas} alSeleccionarDia={irADia} alVolverAlAnyo={() => irAAnyo(añoVisible)} alAnadir={abrirMenuAnadir} />}
-      {vista === 'dia' && <TablaDia fecha={fecha} alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())} alCambiarDia={cambiarDia} horasDelDia={horasDelDia} comidasFijas={comidasFijas} alAnadir={abrirMenuAnadir} />}
+      {vista === 'dia' && <TablaDia fecha={fecha} alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())} alCambiarDia={cambiarDia} horasDelDia={horasDelDia} comidasFijas={comidasFijas} alAnadir={abrirMenuAnadir} alAnadirComida={(hora) => abrirFormulario('comida', hora)} />}
 
       {mostrarMenuAnadir && (
         <>
@@ -48,14 +48,15 @@ export default function Calendario() {
       )}
 
       {formulario && (
-        <FormularioComida tipo={formulario} fecha={fecha} alCerrar={cerrarFormulario} />
+        <FormularioComida tipo={formulario.tipo} fecha={fecha} horaInicial={formulario.hora} alCerrar={cerrarFormulario} />
       )}
     </div>
   );
 }
 
-function FormularioComida({ tipo, fecha, alCerrar }) {
+function FormularioComida({ tipo, fecha, horaInicial = '14:00', alCerrar }) {
   const esReceta = tipo === 'receta';
+  const esComida = tipo === 'comida';
 
   return (
     <>
@@ -64,14 +65,14 @@ function FormularioComida({ tipo, fecha, alCerrar }) {
         <div className="menu-anadir-indicador" />
         <div className="formulario-cabecera">
           <button className="formulario-volver" onClick={alCerrar}>‹</button>
-          <h2>{esReceta ? 'Añadir receta' : 'Comida rápida'}</h2>
+          <h2>{esReceta ? 'Añadir receta' : esComida ? 'Añadir comida' : 'Comida rápida'}</h2>
           <div />
         </div>
 
         <form className="formulario-campos" onSubmit={(e) => e.preventDefault()}>
           <div className="campo-formulario">
-            <label htmlFor="nombre">Nombre</label>
-            <input id="nombre" type="text" placeholder={esReceta ? 'Nombre de la receta' : '¿Qué vas a comer?'} required />
+            <label htmlFor="nombre">Comida</label>
+            <input id="nombre" type="text" placeholder="¿Qué vas a comer?" required />
           </div>
 
           {esReceta ? (
@@ -97,7 +98,7 @@ function FormularioComida({ tipo, fecha, alCerrar }) {
                 </div>
               </div>
             </>
-          ) : (
+          ) : !esComida ? (
             <div className="campo-formulario">
               <label htmlFor="tipo-comida">Tipo de comida</label>
               <select id="tipo-comida" defaultValue="comida">
@@ -108,7 +109,7 @@ function FormularioComida({ tipo, fecha, alCerrar }) {
                 <option value="cena">Cena</option>
               </select>
             </div>
-          )}
+          ) : null}
 
           <div className="campos-formulario-fila">
             <div className="campo-formulario">
@@ -117,7 +118,7 @@ function FormularioComida({ tipo, fecha, alCerrar }) {
             </div>
             <div className="campo-formulario">
               <label htmlFor="hora">Hora</label>
-              <input id="hora" type="time" defaultValue="14:00" required />
+              <input id="hora" type="time" defaultValue={horaInicial} required />
             </div>
           </div>
 
@@ -163,7 +164,7 @@ function VistaMes({ año, mes, comidasFijas, alSeleccionarDia, alVolverAlAnyo, a
   );
 }
 
-function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFijas, alAnadir }) {
+function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFijas, alAnadir, alAnadirComida }) {
   const ref6h = useRef(null);
   const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   useEffect(() => { if (ref6h.current) ref6h.current.scrollIntoView({ block: 'start' }); }, [fecha]);
@@ -171,7 +172,7 @@ function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidasFija
     <div className="pantalla-completa-dia">
       <div className="cabecera-calendario"><button className="botonMes" onClick={alVolverAlMes}>{MESES[fecha.getMonth()]}</button><div className="cabecera-dia"><button className="btnSinEstilo">🔍</button><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div></div>
       <div className="tarjeta-fecha-grande"><div className="navegacion-dia"><button className="flecha-dia" onClick={() => alCambiarDia(-1)} aria-label="Día anterior">‹</button><span className="fecha">{fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span><button className="flecha-dia" onClick={() => alCambiarDia(1)} aria-label="Día siguiente">›</button></div></div>
-      <div className="contenido-dia-completo"><div className="bloque-horas"><div className="timeline-horas">{horasDelDia.map((hora) => { const comida = comidasFijas[hora]; return <div className="hora-fila" key={hora} ref={hora === '06:00' ? ref6h : null}><div className="hora-eje">{hora}</div><div className="hora-contenido">{comida ? <div className={`tarjeta-evento ${comida.tipo}`}><span className="evento-info">{comida.icono} <b>{comida.titulo}:</b> {comida.detalle}</span></div> : <div className="tarjeta-evento">+ Añadir comida</div>}</div></div>; })}</div></div></div>
+      <div className="contenido-dia-completo"><div className="bloque-horas"><div className="timeline-horas">{horasDelDia.map((hora) => { const comida = comidasFijas[hora]; return <div className="hora-fila" key={hora} ref={hora === '06:00' ? ref6h : null}><div className="hora-eje">{hora}</div><div className="hora-contenido">{comida ? <div className={`tarjeta-evento ${comida.tipo}`}><span className="evento-info">{comida.icono} <b>{comida.titulo}:</b> {comida.detalle}</span></div> : <button className="tarjeta-evento boton-anadir-comida" onClick={() => alAnadirComida(hora)}>+ Añadir comida</button>}</div></div>; })}</div></div></div>
     </div>
   );
 }
