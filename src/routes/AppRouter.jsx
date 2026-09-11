@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import Footer from '../componentes/footer';
 import LoginPage from '../features/auth/LoginPage';
 import CalendarPage from '../features/calendar/CalendarPage';
 import ProfilePage from '../features/profile/ProfilePage';
 import RecipesPage from '../features/recipes/RecipesPage';
 import ShoppingPage from '../features/shopping/ShoppingPage';
 import { getSession, hasSession } from '../services/authService';
+import Footer from '../shared/Footer';
 
 // Centraliza la protección de rutas para no repetir la misma comprobación.
 function ProtectedRoute({ authenticated, children }) {
