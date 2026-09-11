@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
 import { getRecipes } from '../../services/recipeService';
 import { syncAutomaticShopping } from '../../services/shoppingService';
