@@ -11,7 +11,7 @@ src/
 ├── config/        # Constantes y configuración común
 ├── data/          # Datos iniciales de la aplicación
 ├── routes/        # Rutas y protección de pantallas
-├── componentes/   # Entradas de compatibilidad y estilos actuales
+├── componentes/   # Hojas de estilo específicas de las pantallas
 ├── App.jsx
 └── main.jsx
 ```
@@ -41,7 +41,7 @@ Cuando exista backend, esta capa será el lugar natural para cambiar `localStora
 
 ## Shared y utils
 
-`shared` contiene componentes usados en varias pantallas, como `Icon` e `IconButton`.
+`shared` contiene componentes usados en varias pantallas, como `Icon`, `IconButton` y `Footer`.
 
 `utils` contiene funciones independientes, por ejemplo conversión de fechas y clasificación de ingredientes. Estas funciones no dependen de React y se pueden probar fácilmente.
 
