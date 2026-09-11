@@ -318,6 +318,61 @@ body {
   flex-shrink: 0;
 }
 
+/* Recetas: las categorías conservan exactamente la misma geometría en todos sus estados. */
+.recetas-pantalla .recetas-filtros {
+  align-items: center;
+}
+
+.recetas-pantalla .recetas-filtros > button,
+.recetas-pantalla .recetas-filtros > button.activo,
+.recetas-pantalla .recetas-filtros > button:hover,
+.recetas-pantalla .recetas-filtros > button:focus,
+.recetas-pantalla .recetas-filtros > button:active {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 0 0 88px;
+  width: 88px;
+  min-width: 88px;
+  max-width: 88px;
+  height: 30px;
+  min-height: 30px;
+  max-height: 30px;
+  margin: 0;
+  padding: 0 8px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+  box-sizing: border-box;
+  font-size: 11px;
+  line-height: 28px;
+  font-weight: 800;
+  letter-spacing: 0;
+  transform: none;
+  scale: 1;
+  outline-offset: 0;
+  white-space: nowrap;
+}
+
+.recetas-pantalla .recetas-filtros > button:not(.activo),
+.recetas-pantalla .recetas-filtros > button:not(.activo):hover,
+.recetas-pantalla .recetas-filtros > button:not(.activo):focus,
+.recetas-pantalla .recetas-filtros > button:not(.activo):active {
+  border-color: #e0e5e0;
+  background: rgba(255,255,255,.76);
+  color: #748078;
+  box-shadow: none;
+}
+
+.recetas-pantalla .recetas-filtros > button.activo,
+.recetas-pantalla .recetas-filtros > button.activo:hover,
+.recetas-pantalla .recetas-filtros > button.activo:focus,
+.recetas-pantalla .recetas-filtros > button.activo:active {
+  border-color: var(--appDecorationStrong);
+  background: var(--appDecorationStrong);
+  color: #fff;
+  box-shadow: none;
+}
+
 /* Adaptación progresiva sin cambiar la geometría entre vistas. */
 @media (max-width: 380px) {
   :root {
