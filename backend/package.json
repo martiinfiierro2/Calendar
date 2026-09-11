@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
+    "dev": "nodemon src/localServer.js",
+    "start": "node src/localServer.js",
     "db:sync": "node scripts/syncDatabase.js"
   },
   "dependencies": {
