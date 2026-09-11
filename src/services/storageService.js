@@ -40,7 +40,9 @@ export function readStorage(baseKey, fallback = null) {
       localStorage.removeItem(baseKey);
       return JSON.parse(legacyValue);
     }
-  } catch {}
+  } catch {
+    return fallback;
+  }
 
   return fallback;
 }
