@@ -78,9 +78,9 @@ textarea {
   overflow-x: hidden;
 }
 
-/* Respeta notch/Dynamic Island y añade un pequeño margen visual extra. */
+/* Respeta notch/Dynamic Island y deja aire suficiente bajo la zona del sistema. */
 .main-container {
-  padding-top: calc(var(--safe-top) + 10px);
+  padding-top: calc(var(--safe-top) + 24px);
 }
 
 /* El login ya gestiona su propia zona segura. */
