@@ -119,7 +119,7 @@ export default function LoginPage({ onAuth }) {
           </button>
         </form>
 
-        <p className="login-nota">Tus datos se guardan localmente en este dispositivo hasta conectar la API.</p>
+        <p className="login-nota">Tu cuenta se sincroniza con la API y tus datos quedan asociados a tu usuario.</p>
       </section>
     </div>
   );
