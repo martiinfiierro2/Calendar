@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Footer from '../componentes/footer';
-import CalendarPage from '../features/calendar/CalendarPage';
 import LoginPage from '../features/auth/LoginPage';
+import CalendarPage from '../features/calendar/CalendarPage';
 import ProfilePage from '../features/profile/ProfilePage';
 import RecipesPage from '../features/recipes/RecipesPage';
 import ShoppingPage from '../features/shopping/ShoppingPage';
