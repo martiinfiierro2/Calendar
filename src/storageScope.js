@@ -14,7 +14,7 @@ function claveReal(key) {
   return `${key}_${sufijoUsuario()}`;
 }
 
-function categoriaIngrediente(nombre = '') {
+export function categoriaIngrediente(nombre = '') {
   const texto = nombre.toLowerCase();
   if (/(tomate|cebolla|zanahoria|pepino|pimiento|patata|lim[oó]n|verdura|fruta|ajo|calabac[ií]n|lechuga)/.test(texto)) return 'Fruta y verdura';
   if (/(pollo|carne|ternera|cerdo|jam[oó]n|salm[oó]n|pescado|at[uú]n|conejo)/.test(texto)) return 'Carne y pescado';
