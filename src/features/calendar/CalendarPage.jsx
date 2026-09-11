@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
 import { getRecipes } from '../../services/recipeService';
+import { syncAutomaticShopping } from '../../services/shoppingService';
 import { readStorage, writeStorage } from '../../services/storageService';
 import { fechaClave, fechaDesdeClave } from '../../utils/dateUtils';
 import Icon from '../../shared/Icon';
@@ -55,9 +56,10 @@ export default function CalendarPage() {
     []
   );
 
-  // Cada cambio del calendario se guarda en la cuenta activa.
+  // Guarda el calendario y actualiza la compra si el usuario activó esa opción.
   useEffect(() => {
     writeStorage(MEALS_KEY, meals);
+    syncAutomaticShopping();
   }, [meals]);
 
   const syncDate = newDate => {
