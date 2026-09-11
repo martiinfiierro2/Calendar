@@ -1,31 +1,45 @@
 :root {
-  --appDecorationColor: #6DDE76;
-  --appTextWhite: white;
-  --appBackground: #f6f2f2;
-  --appHeaderBackground: white;
-  --footerBackgroundColor: white;
-  --appCalendarBorder: black;
-  --colorTextBlack: black;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --appDecorationColor: #63c86c;
+  --appDecorationStrong: #49ad54;
+  --appTextWhite: #fff;
+  --appBackground: #f5f7f5;
+  --appHeaderBackground: #fff;
+  --footerBackgroundColor: rgba(255,255,255,.94);
+  --appCalendarBorder: #e6eae6;
+  --colorTextBlack: #172019;
+  --mutedText: #7a847c;
+  --surface: #fff;
+  --surfaceSoft: #f0f3f0;
+  --shadowSoft: 0 10px 30px rgba(25, 42, 29, .08);
+  --shadowCard: 0 2px 10px rgba(25, 42, 29, .06);
+  color: var(--colorTextBlack);
+  background: #edf1ed;
 }
+
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  background: radial-gradient(circle at top left, rgba(99, 200, 108, .11), transparent 34%), #edf1ed;
 }
 
+button, input, select, textarea { font: inherit; }
+button { color: inherit; }
+
 .app-container {
-  max-width: 430px;
-  width: 100%;
+  width: min(100%, 460px);
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  border: 2px solid black;
-  border-radius: 2em;
+  background: var(--appBackground);
+  box-shadow: var(--shadowSoft);
 }
 
 .main-container {
@@ -34,395 +48,563 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  width: 400px;
+  width: 100%;
 }
 
-.contenedor-calendario {
+.contenedor-calendario,
+.pantalla-completa-dia,
+.vista-mes,
+.vista-anyo,
+.vista-semana {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   width: 100%;
-  background-color: var(--appBackground);
+  background: var(--appBackground);
 }
 
-@media (max-width: 430px) {
-  .app-container {
-    max-width: 100%;
-    box-shadow: none;
-  }
-}
-
-.pantalla-completa-dia {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.cabecera-dia {
+.cabecera-calendario {
   flex-shrink: 0;
-  padding: 16px;
+  min-height: 72px;
   display: flex;
   align-items: center;
-  background-color: var(--appHeaderBackground);
-  font-size: large;
-  border-radius: 5em;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .05), 0 1px 2px rgba(0, 0, 0, .03);
+  justify-content: space-between;
+  padding: 18px 18px 10px;
 }
 
-.boton-volver {
-  background: none;
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  color: #3b82f6;
+.boton-contexto {
+  border: 0;
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 9px 14px;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
-  padding: 4px 0;
+  box-shadow: var(--shadowCard);
+  transition: transform .15s ease, background .15s ease;
 }
 
-.tarjeta-fecha-grande {
+.boton-contexto:hover { transform: translateY(-1px); background: #fbfcfb; }
+
+.boton-icono {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease, border-color .15s ease;
+}
+
+.boton-icono:hover { background: #edf1ed; }
+.boton-icono:active { transform: scale(.96); }
+
+.boton-anadir-principal {
+  background: var(--surface);
+  box-shadow: var(--shadowCard);
+}
+
+.boton-anadir-principal:hover { background: #f8fbf8; border-color: #dce7dd; }
+
+.navegacion-dia,
+.navegacion-semana {
   flex-shrink: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, .02);
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
 }
+
+.mes-nombre-grande {
+  min-width: 150px;
+  padding: 4px 0;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  text-transform: capitalize;
+}
+
+.selector-vista {
+  align-self: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  padding: 4px;
+  margin: 0 18px 12px;
+  border-radius: 14px;
+  background: #e9ede9;
+}
+
+.selector-vista button {
+  border: 0;
+  background: transparent;
+  border-radius: 10px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mutedText);
+  cursor: pointer;
+}
+
+.selector-vista button.activo {
+  background: var(--surface);
+  color: var(--colorTextBlack);
+  box-shadow: 0 1px 5px rgba(25, 42, 29, .08);
+}
+
+.tarjeta-fecha-grande { flex-shrink: 0; padding: 2px 12px 12px; }
 
 .fecha {
-  padding: .2em;
-  border-radius: .5em;
-  color: black;
-  font-weight: 600;
-  font-size: x-large;
+  min-width: 220px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 21px;
+  letter-spacing: -.025em;
+  text-transform: capitalize;
 }
 
-.contenido-dia-completo {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
+.contenido-dia-completo,
 .bloque-horas {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--appBackground);
 }
 
 .timeline-horas {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  padding: 0 14px 16px;
   scrollbar-width: none;
 }
 
-.timeline-horas::-webkit-scrollbar {
-  display: none;
-}
+.timeline-horas::-webkit-scrollbar,
+.formulario-comida::-webkit-scrollbar,
+.recetas-lista::-webkit-scrollbar,
+.selector-recetas::-webkit-scrollbar,
+.semana-scroll::-webkit-scrollbar { display: none; }
 
 .hora-fila {
-  display: flex;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
   position: relative;
   border-top: 1px solid var(--appCalendarBorder);
 }
 
-.hora-fila:last-child {
-  margin-bottom: 0;
-  border-bottom: 1px solid var(--appCalendarBorder);
-}
+.hora-fila:last-child { border-bottom: 1px solid var(--appCalendarBorder); }
 
 .hora-eje {
-  width: 50px;
-  font-size: 12px;
+  padding: 14px 8px 0 2px;
+  font-size: 11px;
   font-weight: 700;
-  color: #000;
-  padding: .5em;
-  text-align: left;
+  color: #8a938c;
 }
 
 .hora-contenido {
-  flex: 1;
-  padding-left: 14px;
-  border-left: 1px solid var(--appCalendarBorder);
   position: relative;
-  padding-right: .5em;
+  min-width: 0;
+  border-left: 1px solid var(--appCalendarBorder);
+  padding: 7px 4px 7px 10px;
 }
 
 .tarjeta-evento {
-  padding: .5em;
-  border-radius: 12px;
-  font-size: 14px;
-  transition: transform .1s ease;
+  width: 100%;
+  min-height: 38px;
+  border: 0;
+  border-left: 3px solid currentColor;
+  border-radius: 10px;
+  padding: 7px 10px;
+  text-align: left;
+  cursor: pointer;
 }
+
+.evento-info { display: flex; align-items: center; gap: 9px; }
+.evento-info > span:last-child { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.evento-info b { font-size: 11px; letter-spacing: .02em; }
+.evento-info small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
 
 .boton-anadir-comida {
-  display: flex;
   width: 100%;
-  box-sizing: border-box;
+  min-height: 100%;
   border: 0;
+  border-left: 1px solid var(--appCalendarBorder);
   background: transparent;
-  text-align: left;
-  font: inherit;
-  color: #777;
+  display: flex;
   align-items: center;
-  padding: .5em;
-  padding-left: 14px;
-  min-height: 0;
-}
-
-.boton-anadir-comida:focus {
-  outline: 2px solid var(--appDecorationColor);
-  outline-offset: -2px;
-  border-radius: 8px;
-}
-
-.botonMes,
-.botonAnyo {
-  background-color: var(--appHeaderBackground);
-  font-size: large;
-  border-radius: 5em;
-  padding: .5em 1em;
-  border: none;
-  height: 100%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .05), 0 1px 2px rgba(0, 0, 0, .03);
-}
-
-.btnSinEstilo {
-  border: none;
-  background-color: var(--appHeaderBackground);
+  gap: 5px;
+  color: #a0a8a1;
   cursor: pointer;
+  font-size: 12px;
 }
 
-.navegacion-dia {
+.boton-anadir-comida:hover { color: var(--appDecorationStrong); background: rgba(99, 200, 108, .04); }
+
+.desayuno { background: #fff6dd; color: #9b6a11; }
+.almuerzo { background: #e8f8ef; color: #267151; }
+.comida { background: #e9f3ff; color: #326ea8; }
+.merienda { background: #f6edff; color: #7550a2; }
+.cena { background: #edf1f5; color: #596979; }
+
+.evento-acciones {
+  position: absolute;
+  top: 50%;
+  right: 9px;
+  transform: translateY(-50%);
+  z-index: 2;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  gap: 8px;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 4px 14px rgba(25,42,29,.12);
 }
 
-.flecha-dia {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-size: 25px;
-  font-weight: 300;
-  line-height: 1;
-  padding: 4px 6px;
-  color: #000;
-  display: flex;
-  align-items: center;
-}
-
-.flecha-dia:hover {
-  background-color: #f0f0f0;
-  border-radius: 50%;
-}
-
-.desayuno {
-  background-color: #fef3c7;
-  color: #92400e;
-  border-left: 4px solid #f59e0b;
-}
-
-.almuerzo {
-  background-color: #ecfdf5;
-  color: #065f46;
-  border-left: 4px solid #10b981;
-}
-
-.comida {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  border-left: 4px solid #3b82f6;
-}
-
-.merienda {
-  background-color: #faf5ff;
-  color: #6b21a8;
-  border-left: 4px solid #a855f7;
-}
-
-.cena {
-  background-color: #f1f5f9;
-  color: #334155;
-  border-left: 4px solid #64748b;
-}
-
-.vista-mes {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background-color: var(--appBackground);
-}
-
-.cabecera-calendario {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px 8px;
-}
-
-.boton-año {
-  font-size: 16px;
-  font-weight: 500;
-  color: #000;
-  background-color: #f2f2f2;
-  border-radius: 20px;
-  padding: 6px 14px;
-}
-
-.mes-nombre-grande {
-  flex-shrink: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: #000;
-  text-align: center;
-  padding: 4px 0 12px;
-  text-transform: capitalize;
-}
-
-.navegacion-dia .mes-nombre-grande {
-  padding: 4px 0;
-}
+.evento-acciones .boton-icono { width: 30px; height: 30px; border-radius: 9px; }
 
 .mes-semana-cabecera {
   flex-shrink: 0;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  text-align: center;
-  padding: 4px 0;
-  border-top: 1px solid var(--appCalendarBorder);
+  margin: 12px 14px 0;
+  padding: 0 0 8px;
   border-bottom: 1px solid var(--appCalendarBorder);
 }
 
-.dia-cabecera {
-  font-size: 12px;
-  font-weight: 500;
-  color: #777;
-  text-align: center;
-  padding: 4px 0;
-}
+.dia-cabecera { text-align: center; font-size: 11px; font-weight: 800; color: var(--mutedText); }
 
 .mes-grid {
   flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-auto-rows: 1fr;
-  min-height: 0;
+  padding: 0 14px 14px;
 }
 
 .mes-celda {
+  border: 0;
+  border-bottom: 1px solid #ebeeeb;
+  background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 5px;
   cursor: pointer;
-  gap: 3px;
-  border-bottom: 1px solid #f2f2f2;
 }
 
+.mes-celda:not(:disabled):hover { background: rgba(255,255,255,.58); }
+.mes-celda:disabled { cursor: default; }
+
 .mes-numero {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 400;
-  color: #000;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .hoy-numero {
-  background-color: var(--appDecorationColor);
-  color: #fff;
-  font-weight: 700;
+  background: var(--appDecorationColor);
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 5px 12px rgba(73, 173, 84, .22);
 }
 
-.mes-punto {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: var(--appDecorationColor);
-  display: inline-block;
-}
+.mes-punto { width: 5px; height: 5px; border-radius: 50%; display: inline-block; background: var(--appDecorationStrong); }
 
 .anyo-grid {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 0 8px;
-  height: 90%;
+  align-content: start;
+  gap: 10px;
+  padding: 12px 14px 18px;
 }
 
 .anyo-mes-card {
-  border: .5px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 8px;
+  min-width: 0;
+  border: 1px solid #e5e9e5;
+  border-radius: 14px;
+  padding: 10px 8px;
+  background: rgba(255,255,255,.72);
+  text-align: left;
   cursor: pointer;
-  transition: background .15s;
-  color: var(--colorTextBlack);
+  transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
 }
 
-.anyo-mes-card:hover {
-  border: none;
-  background: var(--appDecorationColor);
-  color: var(--appTextWhite);
+.anyo-mes-card:hover { transform: translateY(-1px); border-color: #ced8cf; box-shadow: var(--shadowCard); }
+.anyo-mes-nombre { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 11px; font-weight: 800; }
+.anyo-mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+.anyo-mini-celda { min-height: 13px; display: grid; place-items: center; font-size: 8px; line-height: 1; border-radius: 50%; }
+.hoy-mini { background: var(--appDecorationColor); color: white; }
+
+.navegacion-semana { padding: 2px 16px 12px; }
+.navegacion-semana > div { min-width: 210px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.navegacion-semana strong { font-size: 17px; letter-spacing: -.02em; text-transform: capitalize; }
+.navegacion-semana small { font-size: 11px; color: var(--mutedText); font-weight: 700; }
+
+.semana-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 14px 16px;
+  scrollbar-width: none;
 }
 
-.anyo-mes-nombre {
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 4px;
+.semana-grid {
+  height: 100%;
+  min-width: 760px;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(98px, 1fr));
+  gap: 8px;
+}
+
+.semana-dia {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e7e2;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255,255,255,.72);
+}
+
+.semana-dia-hoy { border-color: rgba(73,173,84,.45); box-shadow: 0 0 0 2px rgba(99,200,108,.09); }
+
+.semana-dia-cabecera {
+  border: 0;
+  background: rgba(255,255,255,.76);
+  padding: 10px 8px 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+}
+
+.semana-dia-cabecera:hover { background: #fff; }
+.semana-dia-cabecera span { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--mutedText); }
+.semana-dia-cabecera strong { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 50%; font-size: 14px; }
+.semana-dia-hoy .semana-dia-cabecera strong { background: var(--appDecorationColor); color: white; }
+
+.semana-dia-eventos {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.semana-vacio { margin: auto; writing-mode: vertical-rl; transform: rotate(180deg); color: #b1b8b2; font-size: 10px; letter-spacing: .04em; }
+.semana-evento { border-left: 3px solid currentColor; border-radius: 10px; padding: 7px; }
+.semana-evento-hora { margin-bottom: 4px; font-size: 9px; font-weight: 800; opacity: .74; }
+.semana-evento-contenido { display: flex; align-items: flex-start; gap: 5px; }
+.semana-evento-icono { font-size: 12px; }
+.semana-evento-nombre { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 10px; font-weight: 700; line-height: 1.25; }
+.semana-evento-acciones { display: flex; justify-content: flex-end; gap: 1px; margin-top: 5px; }
+.semana-evento-acciones .boton-icono { width: 24px; height: 24px; border-radius: 7px; }
+
+.semana-anadir {
+  flex-shrink: 0;
+  margin: 6px;
+  padding: 7px 4px;
+  border: 1px dashed #ced6cf;
+  border-radius: 10px;
+  background: transparent;
+  color: #7f8981;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-
-.anyo-mini-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-}
-
-.anyo-mini-celda {
+  justify-content: center;
+  gap: 4px;
   font-size: 10px;
-  text-align: center;
-  line-height: 1.2;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.hoy-mini {
-  background: var(--appDecorationColor);
-  color: white;
-  border-radius: 50%;
-}
+.semana-anadir:hover { border-color: var(--appDecorationStrong); color: var(--appDecorationStrong); background: rgba(99,200,108,.05); }
 
 .footer {
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 4em;
-  display: flex;
-  justify-content: space-around;
+  flex-shrink: 0;
+  height: 68px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   align-items: center;
-  background-color: var(--footerBackgroundColor);
+  padding: 7px 18px max(7px, env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(220,225,220,.84);
+  background: var(--footerBackgroundColor);
+  backdrop-filter: blur(14px);
   z-index: 100;
 }
+
+.footer a {
+  height: 48px;
+  border-radius: 14px;
+  color: #9aa29b;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transition: color .15s ease, background .15s ease;
+}
+
+.footer a:hover { color: #5e685f; }
+.footer a.active { color: var(--appDecorationStrong); background: rgba(99,200,108,.09); }
+.footer a span { font-size: 9px; font-weight: 800; }
+.footer svg { width: 20px; height: 20px; }
+
+.menu-anadir-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 22, 17, .34);
+  backdrop-filter: blur(2px);
+  z-index: 200;
+}
+
+.menu-anadir {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  z-index: 201;
+  padding: 10px 14px calc(20px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 35px rgba(15,22,17,.17);
+  animation: aparecerMenuAnadir .2s ease-out;
+}
+
+.menu-anadir-indicador { width: 38px; height: 4px; margin: 2px auto 14px; border-radius: 999px; background: #d9ded9; }
+
+.menu-anadir-opcion {
+  width: 100%;
+  min-height: 64px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-anadir-opcion:hover { background: #f4f7f4; }
+.menu-anadir-icono { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: #eef6ef; color: var(--appDecorationStrong); }
+.menu-anadir-opcion > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.menu-anadir-opcion strong { font-size: 14px; }
+.menu-anadir-opcion small { color: var(--mutedText); font-size: 11px; }
+
+.menu-anadir-cancelar {
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: #f3f5f3;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@keyframes aparecerMenuAnadir {
+  from { transform: translateY(100%); opacity: .6; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.formulario-comida { max-height: 88%; overflow-y: auto; scrollbar-width: none; }
+
+.formulario-cabecera {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.formulario-cabecera h2 { margin: 0; text-align: center; font-size: 18px; letter-spacing: -.02em; }
+.formulario-campos { display: flex; flex-direction: column; gap: 14px; }
+.campo-formulario { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.campo-formulario label { font-size: 12px; font-weight: 800; color: #4f5951; }
+
+.campo-formulario input,
+.campo-formulario textarea,
+.campo-formulario select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #dde3dd;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #f8faf8;
+  outline: none;
+}
+
+.campo-formulario input:focus,
+.campo-formulario textarea:focus,
+.campo-formulario select:focus {
+  border-color: var(--appDecorationStrong);
+  box-shadow: 0 0 0 3px rgba(99,200,108,.1);
+  background: #fff;
+}
+
+.campos-formulario-fila { display: flex; gap: 10px; }
+
+.boton-formulario-guardar {
+  min-height: 46px;
+  margin-top: 3px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--appDecorationStrong);
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.boton-formulario-guardar:disabled { opacity: .45; cursor: not-allowed; }
+
+.selector-recetas { display: flex; gap: 10px; overflow-x: auto; padding: 7px 2px 13px; scrollbar-width: none; }
+
+.selector-receta-card {
+  min-width: 138px;
+  max-width: 138px;
+  padding: 0;
+  border: 1px solid #e1e6e1;
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
+}
+
+.selector-receta-card.seleccionada { border-color: var(--appDecorationStrong); box-shadow: 0 0 0 2px rgba(99,200,108,.13); }
+.selector-receta-card img { width: 100%; height: 82px; display: block; object-fit: cover; }
+.selector-receta-card span { display: block; padding: 8px; font-size: 12px; font-weight: 700; }
+.receta-seleccionada { margin-bottom: 12px; padding: 9px 11px; border-radius: 10px; background: #f1f7f1; font-size: 12px; }
 
 .recetas-pantalla {
   flex: 1;
@@ -434,328 +616,41 @@ body {
   width: 100%;
 }
 
-.recetas-cabecera {
-  background: #f2f2f2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px 8px;
-}
-
-.botones-recetas {
-  flex-shrink: 0;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  background-color: var(--appHeaderBackground);
-  font-size: large;
-  border-radius: 5em;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .05), 0 1px 2px rgba(0, 0, 0, .03);
-}
-
-.recetas-titulo {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--colorTextBlack);
-  letter-spacing: 1px;
-}
-
-.recetas-buscar {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--colorTextBlack);
-  border: none;
-  background: transparent;
-  outline: none;
-  padding: 18px 0;
-  width: 100%;
-}
-
-.recetas-cabecera-acciones {
-  display: flex;
-  gap: 4px;
-}
-
-.recetas-btn-icono {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-  padding: 4px 6px;
-  border-radius: 8px;
-  transition: background .15s;
-}
-
-.recetas-btn-icono:hover {
-  background: #e0e0e0;
-}
-
-.recetas-lista {
-  flex: 1;
-  min-height: 0;
-  padding: 8px 12px;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-
-.recetas-lista::-webkit-scrollbar {
-  display: none;
-}
+.recetas-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 18px 18px 10px; background: transparent; }
+.botones-recetas { flex-shrink: 0; min-height: 42px; padding: 0 13px; display: flex; align-items: center; border: 0; border-radius: 14px; background: var(--surface); box-shadow: var(--shadowCard); }
+.recetas-titulo { font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+.recetas-buscar { box-sizing: border-box; max-width: 180px; border: 1px solid #e1e5e1; border-radius: 12px; background: #fff; outline: none; padding: 9px 11px; font-size: 13px; font-weight: 600; }
+.recetas-cabecera-acciones { display: flex; gap: 4px; }
+.recetas-btn-icono { width: 38px; height: 38px; border: 0; border-radius: 12px; background: var(--surface); cursor: pointer; box-shadow: var(--shadowCard); }
+.recetas-lista { flex: 1; min-height: 0; padding: 10px 14px 18px; overflow-y: auto; scrollbar-width: none; }
 
 .receta-card {
   display: flex;
   align-items: center;
-  background: white;
-  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .07);
   margin-bottom: 10px;
-  flex-shrink: 0;
-}
-
-.receta-imagen {
-  width: 110px;
-  height: 85px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.receta-info {
-  flex: 1;
-  padding: 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.receta-nombre {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.receta-fecha {
-  font-size: 13px;
-  font-weight: 500;
-  color: #4caf50;
-}
-
-.receta-no-añadida {
-  font-size: 13px;
-  color: #aaa;
-}
-
-.menu-anadir-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, .25);
-  z-index: 200;
-}
-
-.menu-anadir {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 201;
-  background: var(--appHeaderBackground);
-  border-radius: 22px 22px 0 0;
-  padding: 10px 16px 20px;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, .12);
-  animation: aparecerMenuAnadir .2s ease-out;
-}
-
-.menu-anadir-indicador {
-  width: 40px;
-  height: 4px;
-  border-radius: 4px;
-  background: #d0d0d0;
-  margin: 2px auto 14px;
-}
-
-.menu-anadir-opcion,
-.menu-anadir-cancelar {
-  width: 100%;
-  border: none;
-  background: transparent;
-  padding: 15px 8px;
-  text-align: left;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 10px;
-}
-
-.menu-anadir-opcion:hover,
-.menu-anadir-cancelar:hover {
-  background: #f2f2f2;
-}
-
-.menu-anadir-cancelar {
-  margin-top: 4px;
-  text-align: center;
-  font-weight: 600;
-}
-
-@keyframes aparecerMenuAnadir {
-  from {
-    transform: translateY(100%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-
-.formulario-comida {
-  max-height: 88%;
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-
-.formulario-comida::-webkit-scrollbar {
-  display: none;
-}
-
-.formulario-cabecera {
-  display: grid;
-  grid-template-columns: 40px 1fr 40px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.formulario-cabecera h2 {
-  margin: 0;
-  text-align: center;
-  font-size: 20px;
-}
-
-.formulario-volver {
-  border: none;
-  background: transparent;
-  font-size: 30px;
-  line-height: 1;
-  cursor: pointer;
-  text-align: left;
-  padding: 0;
-}
-
-.formulario-campos {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.campo-formulario {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
-}
-
-.campo-formulario label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #333;
-}
-
-.campo-formulario input,
-.campo-formulario textarea,
-.campo-formulario select {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 11px 12px;
-  font: inherit;
-  background: #fafafa;
-  outline: none;
-}
-
-.campo-formulario textarea {
-  resize: vertical;
-  min-height: 70px;
-}
-
-.campo-formulario input:focus,
-.campo-formulario textarea:focus,
-.campo-formulario select:focus {
-  border-color: var(--appDecorationColor);
+  border: 1px solid #e7ebe7;
+  border-radius: 16px;
   background: #fff;
+  box-shadow: var(--shadowCard);
 }
 
-.campos-formulario-fila {
-  display: flex;
-  gap: 10px;
+.receta-imagen { width: 112px; height: 88px; object-fit: cover; flex-shrink: 0; }
+.receta-info { flex: 1; min-width: 0; padding: 0 14px; display: flex; flex-direction: column; gap: 5px; }
+.receta-nombre { font-size: 14px; font-weight: 700; }
+.receta-fecha { font-size: 12px; font-weight: 700; color: var(--appDecorationStrong); }
+.receta-no-añadida { font-size: 12px; color: #a2aaa4; }
+
+.screen-content { flex: 1; padding: 24px 18px; background: var(--appBackground); }
+.screen-content h2 { margin: 0; font-size: 22px; letter-spacing: -.03em; }
+
+@media (min-width: 461px) {
+  body { align-items: center; padding: 18px 0; }
+  .app-container { height: calc(100vh - 36px); max-height: 900px; border: 1px solid rgba(207,215,208,.9); border-radius: 28px; }
 }
 
-.campos-formulario-fila > .campo-formulario {
-  min-width: 0;
-}
-
-.boton-formulario-guardar {
-  border: none;
-  border-radius: 12px;
-  padding: 13px;
-  background: var(--appDecorationColor);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 4px;
-}
-
-.boton-formulario-guardar:hover {
-  filter: brightness(.95);
-}
-
-.evento-acciones {
-  position: absolute;
-  top: 50%;
-  right: 8px;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 6px;
-  padding: 0;
-  z-index: 2;
-}
-
-.evento-acciones button {
-  border: 1px solid #e0e0e0;
-  background: white;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  font-size: 13px;
-  cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.evento-acciones button:hover {
-  background: #f2f2f2;
-}
-
-.tarjeta-evento[onclick] {
-  cursor: pointer;
-}
-
-.hora-contenido.boton-anadir-comida {
-  padding-left: 14px;
-  border-left: 1px solid var(--appCalendarBorder);
-  position: relative;
-  padding-right: .5em;
-}
-
-.recetas-buscar {
-  box-sizing: border-box;
-  max-width: 170px;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 8px 4px;
+@media (max-width: 430px) {
+  .app-container { width: 100%; box-shadow: none; }
+  .semana-scroll { padding-right: 0; }
+  .campos-formulario-fila { gap: 8px; }
 }
