@@ -3,12 +3,14 @@
   flex: 1;
   min-height: 0;
   width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 18px;
+  padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   background: linear-gradient(180deg, #f7faf7 0%, #eef5ef 100%);
+  -webkit-overflow-scrolling: touch;
 }
 
 .login-decoracion {
@@ -39,13 +41,14 @@
   z-index: 1;
   width: 100%;
   max-width: 390px;
+  margin: auto;
 }
 
 .login-marca {
   display: flex;
   align-items: center;
   gap: 11px;
-  margin-bottom: 34px;
+  margin-bottom: 30px;
 }
 
 .login-logo {
@@ -78,9 +81,7 @@
   letter-spacing: -.04em;
 }
 
-.login-copy {
-  margin-bottom: 22px;
-}
+.login-copy { margin-bottom: 20px; }
 
 .login-eyebrow {
   display: block;
@@ -118,7 +119,7 @@
 }
 
 .login-tabs button {
-  height: 38px;
+  height: 40px;
   border: 0;
   border-radius: 10px;
   background: transparent;
@@ -150,7 +151,7 @@
 }
 
 .login-input-wrap {
-  min-height: 48px;
+  min-height: 50px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -169,6 +170,7 @@
   box-shadow: 0 0 0 3px rgba(99,200,108,.1);
 }
 
+/* iOS hace zoom automático al enfocar inputs menores de 16px. */
 .login-input-wrap input {
   min-width: 0;
   width: 100%;
@@ -176,17 +178,16 @@
   outline: 0;
   background: transparent;
   color: var(--colorTextBlack);
-  font-size: 13px;
+  font-size: 16px;
+  line-height: 1.25;
   font-weight: 600;
 }
 
-.login-input-wrap input::placeholder {
-  color: #a2aaa4;
-}
+.login-input-wrap input::placeholder { color: #a2aaa4; }
 
 .login-password-toggle {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 0;
   border-radius: 9px;
@@ -208,7 +209,7 @@
 }
 
 .login-submit {
-  min-height: 49px;
+  min-height: 50px;
   margin-top: 2px;
   border: 0;
   border-radius: 13px;
@@ -220,10 +221,7 @@
   box-shadow: 0 8px 20px rgba(73, 173, 84, .2);
 }
 
-.login-submit:disabled {
-  opacity: .65;
-  cursor: wait;
-}
+.login-submit:disabled { opacity: .65; cursor: wait; }
 
 .login-nota {
   margin: 16px auto 0;
@@ -234,8 +232,23 @@
   line-height: 1.45;
 }
 
-@media (max-width: 360px) {
-  .login-app { padding-left: 14px; padding-right: 14px; }
-  .login-marca { margin-bottom: 24px; }
+@media (max-width: 380px) {
+  .login-app {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+  .login-marca { margin-bottom: 22px; }
   .login-copy h2 { font-size: 27px; }
+}
+
+@media (max-height: 700px) {
+  .login-app { align-items: flex-start; }
+  .login-panel { margin-top: 4px; margin-bottom: 4px; }
+  .login-marca { margin-bottom: 16px; }
+  .login-copy { margin-bottom: 14px; }
+  .login-copy h2 { font-size: 25px; }
+  .login-copy p { line-height: 1.35; }
+  .login-tabs { margin-bottom: 12px; }
+  .login-form { gap: 9px; }
+  .login-nota { margin-top: 10px; }
 }
