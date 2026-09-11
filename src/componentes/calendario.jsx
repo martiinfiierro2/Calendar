@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { recetasData } from './recetas';
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
+
+const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 const TIPOS_COMIDA = [
   { valor: 'desayuno', nombre: 'Desayuno', icono: '☕' },
@@ -13,6 +15,35 @@ const TIPOS_COMIDA = [
   { valor: 'merienda', nombre: 'Merienda', icono: '🍌' },
   { valor: 'cena', nombre: 'Cena', icono: '🐟' }
 ];
+
+function Icono({ nombre, size = 20, strokeWidth = 1.8 }) {
+  const comunes = {
+    width: size,
+    height: size,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    'aria-hidden': true
+  };
+
+  const iconos = {
+    plus: <><path d="M12 5v14" /><path d="M5 12h14" /></>,
+    left: <path d="m15 18-6-6 6-6" />,
+    right: <path d="m9 18 6-6-6-6" />,
+    back: <path d="m15 18-6-6 6-6" />,
+    edit: <><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" /></>,
+    trash: <><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="m19 6-1 14H6L5 6" /><path d="M10 11v5" /><path d="M14 11v5" /></>,
+    book: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5Z" /><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5Z" /></>,
+    bolt: <path d="m13 2-8 12h7l-1 8 8-12h-7Z" />,
+    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M3 10h18" /></>,
+    week: <><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18" /><path d="M8 9v12" /><path d="M13 9v12" /><path d="M18 9v12" /></>,
+  };
+
+  return <svg {...comunes}>{iconos[nombre]}</svg>;
+}
 
 const fechaClave = (fecha) => {
   const año = fecha.getFullYear();
@@ -24,6 +55,23 @@ const fechaClave = (fecha) => {
 const fechaDesdeClave = (clave) => {
   const [año, mes, dia] = clave.split('-').map(Number);
   return new Date(año, mes - 1, dia);
+};
+
+const inicioSemana = (fecha) => {
+  const inicio = new Date(fecha);
+  const dia = (inicio.getDay() + 6) % 7;
+  inicio.setDate(inicio.getDate() - dia);
+  inicio.setHours(0, 0, 0, 0);
+  return inicio;
+};
+
+const diasDeSemana = (fecha) => {
+  const inicio = inicioSemana(fecha);
+  return Array.from({ length: 7 }, (_, i) => {
+    const dia = new Date(inicio);
+    dia.setDate(inicio.getDate() + i);
+    return dia;
+  });
 };
 
 const obtenerComidasDemo = () => {
@@ -50,6 +98,29 @@ const obtenerComidasIniciales = () => {
   return obtenerComidasDemo();
 };
 
+function BotonIcono({ icono, etiqueta, onClick, className = '', size = 20 }) {
+  return (
+    <button type="button" className={`boton-icono ${className}`} onClick={onClick} aria-label={etiqueta} title={etiqueta}>
+      <Icono nombre={icono} size={size} />
+    </button>
+  );
+}
+
+function SelectorVistaDetalle({ vista, alCambiarVista }) {
+  return (
+    <div className="selector-vista" role="group" aria-label="Cambiar vista del calendario">
+      <button className={vista === 'dia' ? 'activo' : ''} onClick={() => alCambiarVista('dia')}>
+        <Icono nombre="calendar" size={16} />
+        Día
+      </button>
+      <button className={vista === 'semana' ? 'activo' : ''} onClick={() => alCambiarVista('semana')}>
+        <Icono nombre="week" size={16} />
+        Semana
+      </button>
+    </div>
+  );
+}
+
 export default function Calendario() {
   const hoy = new Date();
   const [fecha, setFecha] = useState(new Date());
@@ -62,11 +133,20 @@ export default function Calendario() {
   const [comidas, setComidas] = useState(obtenerComidasIniciales);
   const [comidaEditando, setComidaEditando] = useState(null);
 
-  const horasDelDia = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`);
+  const horasDelDia = useMemo(
+    () => Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`),
+    []
+  );
 
   useEffect(() => {
     localStorage.setItem('calendar_comidas', JSON.stringify(comidas));
   }, [comidas]);
+
+  const sincronizarFecha = (nuevaFecha) => {
+    setFecha(nuevaFecha);
+    setAñoVisible(nuevaFecha.getFullYear());
+    setMesVisible(nuevaFecha.getMonth());
+  };
 
   const irAAnyo = (anyo) => {
     setAñoVisible(anyo);
@@ -80,16 +160,25 @@ export default function Calendario() {
   };
 
   const irADia = (nuevaFecha) => {
-    setFecha(nuevaFecha);
-    setAñoVisible(nuevaFecha.getFullYear());
-    setMesVisible(nuevaFecha.getMonth());
+    sincronizarFecha(nuevaFecha);
     setVista('dia');
+  };
+
+  const irASemana = (nuevaFecha = fecha) => {
+    sincronizarFecha(nuevaFecha);
+    setVista('semana');
   };
 
   const cambiarDia = (cantidad) => {
     const nuevaFecha = new Date(fecha);
     nuevaFecha.setDate(nuevaFecha.getDate() + cantidad);
     irADia(nuevaFecha);
+  };
+
+  const cambiarSemana = (cantidad) => {
+    const nuevaFecha = new Date(fecha);
+    nuevaFecha.setDate(nuevaFecha.getDate() + (cantidad * 7));
+    irASemana(nuevaFecha);
   };
 
   const cambiarMes = (cantidad) => {
@@ -99,7 +188,13 @@ export default function Calendario() {
 
   const cambiarAnyo = (cantidad) => irAAnyo(añoVisible + cantidad);
 
-  const abrirMenuAnadir = (hora = '14:00') => {
+  const cambiarVistaDetalle = (nuevaVista) => {
+    if (nuevaVista === 'semana') irASemana(fecha);
+    else irADia(fecha);
+  };
+
+  const abrirMenuAnadir = (hora = '14:00', fechaObjetivo = fecha) => {
+    sincronizarFecha(fechaObjetivo);
     setHoraSeleccionada(hora);
     setMostrarMenuAnadir(true);
   };
@@ -133,6 +228,7 @@ export default function Calendario() {
   };
 
   const editarComida = (comida) => {
+    setFecha(fechaDesdeClave(comida.fecha));
     setComidaEditando(comida);
     setFormulario({ tipo: comida.modo, hora: comida.hora, comida });
   };
@@ -189,6 +285,21 @@ export default function Calendario() {
           alAnadirComida={abrirMenuAnadir}
           alEditar={editarComida}
           alEliminar={eliminarComida}
+          alCambiarVista={cambiarVistaDetalle}
+        />
+      )}
+
+      {vista === 'semana' && (
+        <VistaSemana
+          fecha={fecha}
+          comidas={comidas}
+          alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())}
+          alCambiarSemana={cambiarSemana}
+          alCambiarVista={cambiarVistaDetalle}
+          alSeleccionarDia={irADia}
+          alAnadir={abrirMenuAnadir}
+          alEditar={editarComida}
+          alEliminar={eliminarComida}
         />
       )}
 
@@ -198,14 +309,14 @@ export default function Calendario() {
           <div className="menu-anadir">
             <div className="menu-anadir-indicador" />
             <button className="menu-anadir-opcion" onClick={() => abrirFormulario('receta')}>
-              📖 Receta
+              <span className="menu-anadir-icono"><Icono nombre="book" size={19} /></span>
+              <span><strong>Receta</strong><small>Elegir una receta guardada</small></span>
             </button>
             <button className="menu-anadir-opcion" onClick={() => abrirFormulario('rapida')}>
-              ⚡ Comida rápida
+              <span className="menu-anadir-icono"><Icono nombre="bolt" size={19} /></span>
+              <span><strong>Comida rápida</strong><small>Crear una entrada manual</small></span>
             </button>
-            <button className="menu-anadir-cancelar" onClick={cerrarMenuAnadir}>
-              Cancelar
-            </button>
+            <button className="menu-anadir-cancelar" onClick={cerrarMenuAnadir}>Cancelar</button>
           </div>
         </>
       )}
@@ -266,9 +377,8 @@ function SelectorReceta({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar
       <div className="menu-anadir-overlay" onClick={alCerrar} />
       <div className="menu-anadir formulario-comida">
         <div className="menu-anadir-indicador" />
-
         <div className="formulario-cabecera">
-          <button type="button" className="formulario-volver" onClick={alCerrar}>‹</button>
+          <BotonIcono icono="back" etiqueta="Volver" onClick={alCerrar} />
           <h2>{comidaInicial ? 'Editar receta' : 'Añadir receta'}</h2>
           <div />
         </div>
@@ -284,33 +394,23 @@ function SelectorReceta({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', padding: '6px 2px 14px', scrollbarWidth: 'none' }}>
+        <div className="selector-recetas">
           {recetasFiltradas.map(receta => (
             <button
               key={receta.id}
               type="button"
+              className={`selector-receta-card ${recetaSeleccionada?.id === receta.id ? 'seleccionada' : ''}`}
               onClick={() => setRecetaSeleccionada(receta)}
-              style={{
-                minWidth: '145px',
-                maxWidth: '145px',
-                padding: '0',
-                border: recetaSeleccionada?.id === receta.id ? '2px solid var(--appDecorationColor)' : '1px solid #ddd',
-                borderRadius: '12px',
-                background: '#fff',
-                overflow: 'hidden',
-                cursor: 'pointer',
-                textAlign: 'left'
-              }}
             >
-              <img src={receta.imagen} alt={receta.nombre} style={{ width: '100%', height: '85px', objectFit: 'cover', display: 'block' }} />
-              <span style={{ display: 'block', padding: '8px', fontSize: '13px', fontWeight: 600 }}>{receta.nombre}</span>
+              <img src={receta.imagen} alt={receta.nombre} />
+              <span>{receta.nombre}</span>
             </button>
           ))}
         </div>
 
         {recetaSeleccionada && (
-          <div style={{ marginBottom: '12px', fontSize: '14px', fontWeight: 600 }}>
-            Receta seleccionada: {recetaSeleccionada.nombre}
+          <div className="receta-seleccionada">
+            Seleccionada: <strong>{recetaSeleccionada.nombre}</strong>
           </div>
         )}
 
@@ -364,34 +464,27 @@ function FormularioComidaRapida({ fecha, horaInicial, comidaInicial, alCerrar, a
       <div className="menu-anadir formulario-comida">
         <div className="menu-anadir-indicador" />
         <div className="formulario-cabecera">
-          <button type="button" className="formulario-volver" onClick={alCerrar}>‹</button>
+          <BotonIcono icono="back" etiqueta="Volver" onClick={alCerrar} />
           <h2>{comidaInicial ? 'Editar comida rápida' : 'Comida rápida'}</h2>
           <div />
         </div>
 
         <form className="formulario-campos" onSubmit={enviar}>
           <div className="campo-formulario">
-            <label htmlFor="nombre-rapida">Nombre de la receta</label>
-            <input
-              id="nombre-rapida"
-              type="text"
-              placeholder="Ej.: Tostada de tomate y queso"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-            />
+            <label htmlFor="nombre-rapida">Nombre</label>
+            <input id="nombre-rapida" type="text" placeholder="Ej.: Tostada de tomate y queso" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
           </div>
 
           <div className="campo-formulario">
             <label htmlFor="ingredientes-rapida">Ingredientes</label>
-            <input
-              id="ingredientes-rapida"
-              type="text"
-              placeholder="Ej.: pan, tomate, queso..."
-              value={ingredientes}
-              onChange={(e) => setIngredientes(e.target.value)}
-              required
-            />
+            <input id="ingredientes-rapida" type="text" placeholder="Ej.: pan, tomate, queso..." value={ingredientes} onChange={(e) => setIngredientes(e.target.value)} required />
+          </div>
+
+          <div className="campo-formulario">
+            <label htmlFor="tipo-rapida">Tipo de comida</label>
+            <select id="tipo-rapida" value={tipoComida} onChange={(e) => setTipoComida(e.target.value)}>
+              {TIPOS_COMIDA.map(tipo => <option key={tipo.valor} value={tipo.valor}>{tipo.nombre}</option>)}
+            </select>
           </div>
 
           <div className="campos-formulario-fila">
@@ -414,19 +507,26 @@ function FormularioComidaRapida({ fecha, horaInicial, comidaInicial, alCerrar, a
   );
 }
 
+function CabeceraCalendario({ etiqueta, alVolver, alAnadir }) {
+  return (
+    <div className="cabecera-calendario">
+      {alVolver ? <button className="boton-contexto" onClick={alVolver}>{etiqueta}</button> : <span />}
+      <BotonIcono icono="plus" etiqueta="Añadir comida" onClick={alAnadir} className="boton-anadir-principal" />
+    </div>
+  );
+}
+
 function VistaAnyo({ año, comidas, alSeleccionarMes, alCambiarAnyo, alAnadir }) {
   const hoy = new Date();
   return (
     <div className="vista-anyo">
-      <div className="cabecera-calendario">
-        <h2></h2>
-        <div className="cabecera-dia"><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div>
-      </div>
+      <CabeceraCalendario alAnadir={alAnadir} />
       <div className="navegacion-dia">
-        <button className="flecha-dia" onClick={() => alCambiarAnyo(-1)} aria-label="Año anterior">‹</button>
+        <BotonIcono icono="left" etiqueta="Año anterior" onClick={() => alCambiarAnyo(-1)} />
         <div className="mes-nombre-grande">{año}</div>
-        <button className="flecha-dia" onClick={() => alCambiarAnyo(1)} aria-label="Año siguiente">›</button>
+        <BotonIcono icono="right" etiqueta="Año siguiente" onClick={() => alCambiarAnyo(1)} />
       </div>
+
       <div className="anyo-grid">
         {MESES.map((nombreMes, i) => {
           const primerDia = new Date(año, i, 1);
@@ -439,16 +539,17 @@ function VistaAnyo({ año, comidas, alSeleccionarMes, alCambiarAnyo, alAnadir })
             const f = fechaDesdeClave(comida.fecha);
             return f.getFullYear() === año && f.getMonth() === i;
           });
+
           return (
-            <div key={i} className="anyo-mes-card" onClick={() => alSeleccionarMes(i)}>
-              <div className="anyo-mes-nombre">{nombreMes}{tieneComidas && <span className="mes-punto" />}</div>
-              <div className="anyo-mini-grid">
+            <button key={i} className="anyo-mes-card" onClick={() => alSeleccionarMes(i)}>
+              <span className="anyo-mes-nombre">{nombreMes}{tieneComidas && <span className="mes-punto" />}</span>
+              <span className="anyo-mini-grid">
                 {celdas.map((d, j) => {
                   const esHoy = d === hoy.getDate() && i === hoy.getMonth() && año === hoy.getFullYear();
                   return <span key={j} className={`anyo-mini-celda ${esHoy ? 'hoy-mini' : ''}`}>{d ?? ''}</span>;
                 })}
-              </div>
-            </div>
+              </span>
+            </button>
           );
         })}
       </div>
@@ -458,58 +559,67 @@ function VistaAnyo({ año, comidas, alSeleccionarMes, alCambiarAnyo, alAnadir })
 
 function VistaMes({ año, mes, comidas, alSeleccionarDia, alVolverAlAnyo, alCambiarMes, alAnadir }) {
   const hoy = new Date();
-  const diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
   const primerDia = new Date(año, mes, 1);
   const ultimoDia = new Date(año, mes + 1, 0);
   const offsetInicio = (primerDia.getDay() + 6) % 7;
   const celdas = [];
+
   for (let i = 0; i < offsetInicio; i++) celdas.push(null);
   for (let d = 1; d <= ultimoDia.getDate(); d++) celdas.push(d);
+
   const esHoy = (d) => d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
   const tieneComida = (dia) => comidas.some(comida => comida.fecha === `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`);
+
   return (
     <div className="vista-mes">
-      <div className="cabecera-calendario">
-        <button className="botonAnyo" onClick={alVolverAlAnyo}>{año}</button>
-        <div className="cabecera-dia"><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div>
-      </div>
+      <CabeceraCalendario etiqueta={año} alVolver={alVolverAlAnyo} alAnadir={alAnadir} />
+
       <div className="navegacion-dia">
-        <button className="flecha-dia" onClick={() => alCambiarMes(-1)} aria-label="Mes anterior">‹</button>
+        <BotonIcono icono="left" etiqueta="Mes anterior" onClick={() => alCambiarMes(-1)} />
         <div className="mes-nombre-grande">{MESES[mes]}</div>
-        <button className="flecha-dia" onClick={() => alCambiarMes(1)} aria-label="Mes siguiente">›</button>
+        <BotonIcono icono="right" etiqueta="Mes siguiente" onClick={() => alCambiarMes(1)} />
       </div>
-      <div className="mes-semana-cabecera">{diasSemana.map(d => <span className="dia-cabecera" key={d}>{d}</span>)}</div>
+
+      <div className="mes-semana-cabecera">{DIAS_SEMANA.map(d => <span className="dia-cabecera" key={d}>{d.slice(0, 1)}</span>)}</div>
       <div className="mes-grid">
         {celdas.map((d, i) => (
-          <div key={i} className="mes-celda" onClick={() => d && alSeleccionarDia(new Date(año, mes, d))}>
-            {d && <><span className={`mes-numero ${esHoy(d) ? 'hoy-numero' : ''}`}>{d}</span>{tieneComida(d) && <span className="mes-punto" />}</>}
-          </div>
+          <button key={i} className="mes-celda" disabled={!d} onClick={() => d && alSeleccionarDia(new Date(año, mes, d))}>
+            {d && (
+              <>
+                <span className={`mes-numero ${esHoy(d) ? 'hoy-numero' : ''}`}>{d}</span>
+                {tieneComida(d) && <span className="mes-punto" />}
+              </>
+            )}
+          </button>
         ))}
       </div>
     </div>
   );
 }
 
-function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidas, alAnadir, alAnadirComida, alEditar, alEliminar }) {
+function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidas, alAnadir, alAnadirComida, alEditar, alEliminar, alCambiarVista }) {
   const ref6h = useRef(null);
   const [mostrarAcciones, setMostrarAcciones] = useState(null);
+
   useEffect(() => {
     if (ref6h.current) ref6h.current.scrollIntoView({ block: 'start' });
   }, [fecha]);
+
   const obtenerComida = (hora) => comidas.find(comida => comida.hora === hora);
+
   return (
     <div className="pantalla-completa-dia">
-      <div className="cabecera-calendario">
-        <button className="botonMes" onClick={alVolverAlMes}>{MESES[fecha.getMonth()]}</button>
-        <div className="cabecera-dia"><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div>
-      </div>
+      <CabeceraCalendario etiqueta={MESES[fecha.getMonth()]} alVolver={alVolverAlMes} alAnadir={() => alAnadir('14:00', fecha)} />
+      <SelectorVistaDetalle vista="dia" alCambiarVista={alCambiarVista} />
+
       <div className="tarjeta-fecha-grande">
         <div className="navegacion-dia">
-          <button className="flecha-dia" onClick={() => alCambiarDia(-1)} aria-label="Día anterior">‹</button>
-          <span className="fecha">{fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
-          <button className="flecha-dia" onClick={() => alCambiarDia(1)} aria-label="Día siguiente">›</button>
+          <BotonIcono icono="left" etiqueta="Día anterior" onClick={() => alCambiarDia(-1)} />
+          <span className="fecha">{fecha.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'long' })}</span>
+          <BotonIcono icono="right" etiqueta="Día siguiente" onClick={() => alCambiarDia(1)} />
         </div>
       </div>
+
       <div className="contenido-dia-completo">
         <div className="bloque-horas">
           <div className="timeline-horas">
@@ -520,29 +630,98 @@ function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidas, al
                   <div className="hora-eje">{hora}</div>
                   {comida ? (
                     <div className="hora-contenido">
-                      <div className={`tarjeta-evento ${comida.tipo}`} onClick={() => setMostrarAcciones(mostrarAcciones === comida.id ? null : comida.id)}>
+                      <button className={`tarjeta-evento ${comida.tipo}`} onClick={() => setMostrarAcciones(mostrarAcciones === comida.id ? null : comida.id)}>
                         <span className="evento-info">
-                          {comida.icono}{' '}
-                          <b>{TIPOS_COMIDA.find(t => t.valor === comida.tipo)?.nombre || 'Comida'}:</b>{' '}
-                          {comida.nombre}
+                          <span>{comida.icono}</span>
+                          <span><b>{TIPOS_COMIDA.find(t => t.valor === comida.tipo)?.nombre || 'Comida'}</b><small>{comida.nombre}</small></span>
                         </span>
-                      </div>
+                      </button>
                       {mostrarAcciones === comida.id && (
                         <div className="evento-acciones">
-                          <button onClick={(e) => { e.stopPropagation(); setMostrarAcciones(null); alEditar(comida); }} aria-label="Editar comida" title="Editar">✏️</button>
-                          <button onClick={(e) => { e.stopPropagation(); setMostrarAcciones(null); alEliminar(comida.id); }} aria-label="Eliminar comida" title="Eliminar">🗑️</button>
+                          <BotonIcono icono="edit" etiqueta="Editar comida" size={16} onClick={() => { setMostrarAcciones(null); alEditar(comida); }} />
+                          <BotonIcono icono="trash" etiqueta="Eliminar comida" size={16} onClick={() => { setMostrarAcciones(null); alEliminar(comida.id); }} />
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="hora-contenido boton-anadir-comida" onClick={() => alAnadirComida(hora)} role="button" tabIndex="0" onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && alAnadirComida(hora)} aria-label={`Añadir comida a las ${hora}`}>
-                      + Añadir comida
-                    </div>
+                    <button className="hora-contenido boton-anadir-comida" onClick={() => alAnadirComida(hora, fecha)}>
+                      <Icono nombre="plus" size={15} />
+                      <span>Añadir</span>
+                    </button>
                   )}
                 </div>
               );
             })}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VistaSemana({ fecha, comidas, alVolverAlMes, alCambiarSemana, alCambiarVista, alSeleccionarDia, alAnadir, alEditar, alEliminar }) {
+  const dias = diasDeSemana(fecha);
+  const hoy = fechaClave(new Date());
+  const inicio = dias[0];
+  const fin = dias[6];
+
+  const tituloSemana = inicio.getMonth() === fin.getMonth()
+    ? `${inicio.getDate()} – ${fin.getDate()} ${MESES[inicio.getMonth()].toLowerCase()}`
+    : `${inicio.getDate()} ${MESES[inicio.getMonth()].slice(0, 3).toLowerCase()} – ${fin.getDate()} ${MESES[fin.getMonth()].slice(0, 3).toLowerCase()}`;
+
+  return (
+    <div className="vista-semana">
+      <CabeceraCalendario etiqueta={MESES[fecha.getMonth()]} alVolver={alVolverAlMes} alAnadir={() => alAnadir('14:00', fecha)} />
+      <SelectorVistaDetalle vista="semana" alCambiarVista={alCambiarVista} />
+
+      <div className="navegacion-semana">
+        <BotonIcono icono="left" etiqueta="Semana anterior" onClick={() => alCambiarSemana(-1)} />
+        <div>
+          <strong>{tituloSemana}</strong>
+          <small>{inicio.getFullYear()}</small>
+        </div>
+        <BotonIcono icono="right" etiqueta="Semana siguiente" onClick={() => alCambiarSemana(1)} />
+      </div>
+
+      <div className="semana-scroll">
+        <div className="semana-grid">
+          {dias.map((dia, indice) => {
+            const clave = fechaClave(dia);
+            const comidasDia = comidas
+              .filter(comida => comida.fecha === clave)
+              .sort((a, b) => a.hora.localeCompare(b.hora));
+
+            return (
+              <section className={`semana-dia ${clave === hoy ? 'semana-dia-hoy' : ''}`} key={clave}>
+                <button className="semana-dia-cabecera" onClick={() => alSeleccionarDia(dia)}>
+                  <span>{DIAS_SEMANA[indice]}</span>
+                  <strong>{dia.getDate()}</strong>
+                </button>
+
+                <div className="semana-dia-eventos">
+                  {comidasDia.length === 0 && <span className="semana-vacio">Sin comidas</span>}
+                  {comidasDia.map(comida => (
+                    <div className={`semana-evento ${comida.tipo}`} key={comida.id}>
+                      <div className="semana-evento-hora">{comida.hora}</div>
+                      <div className="semana-evento-contenido">
+                        <span className="semana-evento-icono">{comida.icono}</span>
+                        <span className="semana-evento-nombre">{comida.nombre}</span>
+                      </div>
+                      <div className="semana-evento-acciones">
+                        <BotonIcono icono="edit" etiqueta="Editar comida" size={14} onClick={() => alEditar(comida)} />
+                        <BotonIcono icono="trash" etiqueta="Eliminar comida" size={14} onClick={() => alEliminar(comida.id)} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button className="semana-anadir" onClick={() => alAnadir('14:00', dia)}>
+                  <Icono nombre="plus" size={15} />
+                  Añadir
+                </button>
+              </section>
+            );
+          })}
         </div>
       </div>
     </div>
