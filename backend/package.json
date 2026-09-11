@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "db:sync": "node scripts/syncDatabase.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -15,7 +16,8 @@
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
-    "mysql2": "^3.14.5",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7"
   },
   "devDependencies": {
