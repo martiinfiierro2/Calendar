@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PERFIL_INICIAL } from '../../config/appConfig';
 import { logoutUser } from '../../services/authService';
+import { syncAutomaticShopping } from '../../services/shoppingService';
 import { clearUserData, readStorage, writeStorage } from '../../services/storageService';
 import Icon from '../../shared/Icon';
 import '../../componentes/perfil.css';
@@ -19,9 +20,10 @@ export default function ProfilePage({ onLogout }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(profile);
 
-  // Las preferencias se guardan en cuanto cambia el perfil.
+  // Guarda preferencias y aplica la compra automática al activarla.
   useEffect(() => {
     writeStorage('calendar_perfil', profile);
+    if (profile.comprasAutomaticas) syncAutomaticShopping();
   }, [profile]);
 
   const saveProfile = event => {
