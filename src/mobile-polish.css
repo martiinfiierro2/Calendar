@@ -1,0 +1,55 @@
+/* Ajustes finales para iOS y consistencia entre vistas. */
+
+/* iOS hace zoom al enfocar controles con texto menor de 16px. */
+@media (max-width: 600px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Día y semana comparten exactamente la misma cabecera. */
+.pantalla-completa-dia .cabecera-calendario,
+.vista-semana .cabecera-calendario {
+  min-height: 72px;
+  padding-top: 18px;
+  padding-bottom: 10px;
+  padding-left: var(--header-padding);
+  padding-right: var(--header-padding);
+}
+
+/* El selector tampoco cambia de tamaño al alternar entre Día y Semana. */
+.pantalla-completa-dia .selector-vista,
+.vista-semana .selector-vista {
+  width: auto;
+  max-width: calc(100% - (var(--header-padding) * 2));
+  margin: 0 var(--header-padding) 12px;
+  padding: 4px;
+  gap: 3px;
+  border-radius: 14px;
+}
+
+.pantalla-completa-dia .selector-vista button,
+.vista-semana .selector-vista button {
+  min-width: 0;
+  padding: 8px 14px;
+  font-size: 13px;
+  gap: 7px;
+  border-radius: 10px;
+}
+
+/* En pantallas bajas se compactan las dos vistas por igual, sin saltos. */
+@media (max-height: 700px) {
+  .pantalla-completa-dia .cabecera-calendario,
+  .vista-semana .cabecera-calendario {
+    min-height: 58px;
+    padding-top: 10px;
+    padding-bottom: 6px;
+  }
+
+  .pantalla-completa-dia .selector-vista,
+  .vista-semana .selector-vista {
+    margin-bottom: 7px;
+  }
+}
