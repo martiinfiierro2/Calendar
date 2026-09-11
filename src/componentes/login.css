@@ -1,0 +1,241 @@
+.login-app {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px;
+  background: linear-gradient(180deg, #f7faf7 0%, #eef5ef 100%);
+}
+
+.login-decoracion {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.login-decoracion-uno {
+  width: 220px;
+  height: 220px;
+  top: -90px;
+  right: -70px;
+  background: rgba(99, 200, 108, .16);
+}
+
+.login-decoracion-dos {
+  width: 170px;
+  height: 170px;
+  bottom: -70px;
+  left: -80px;
+  background: rgba(73, 173, 84, .09);
+}
+
+.login-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 390px;
+}
+
+.login-marca {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 34px;
+}
+
+.login-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  background: var(--appDecorationStrong);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+  box-shadow: 0 8px 22px rgba(73, 173, 84, .25);
+}
+
+.login-marca span {
+  display: block;
+  margin-bottom: 1px;
+  color: #7c887f;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.login-marca h1 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.login-copy {
+  margin-bottom: 22px;
+}
+
+.login-eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--appDecorationStrong);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.login-copy h2 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  line-height: 1.03;
+  letter-spacing: -.045em;
+}
+
+.login-copy p {
+  max-width: 330px;
+  margin: 0;
+  color: #748078;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.login-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #e7ede8;
+}
+
+.login-tabs button {
+  height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #7c877f;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.login-tabs button.activo {
+  background: #fff;
+  color: var(--colorTextBlack);
+  box-shadow: 0 2px 7px rgba(25, 42, 29, .08);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #4d5850;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.login-input-wrap {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid #dbe3dc;
+  border-radius: 13px;
+  background: rgba(255,255,255,.92);
+  color: #8b958d;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.login-input-wrap:focus-within {
+  border-color: var(--appDecorationStrong);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(99,200,108,.1);
+}
+
+.login-input-wrap input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--colorTextBlack);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-input-wrap input::placeholder {
+  color: #a2aaa4;
+}
+
+.login-password-toggle {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: #879188;
+  cursor: pointer;
+}
+
+.login-error {
+  padding: 10px 11px;
+  border: 1px solid #f1cfd2;
+  border-radius: 11px;
+  background: #fff2f3;
+  color: #a74149;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.login-submit {
+  min-height: 49px;
+  margin-top: 2px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--appDecorationStrong);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(73, 173, 84, .2);
+}
+
+.login-submit:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+.login-nota {
+  margin: 16px auto 0;
+  max-width: 300px;
+  color: #98a199;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+@media (max-width: 360px) {
+  .login-app { padding-left: 14px; padding-right: 14px; }
+  .login-marca { margin-bottom: 24px; }
+  .login-copy h2 { font-size: 27px; }
+}
