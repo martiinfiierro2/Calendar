@@ -336,6 +336,7 @@ function SelectorReceta({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar
 }
 
 function FormularioComidaRapida({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar }) {
+  const [nombre, setNombre] = useState(comidaInicial?.nombre || '');
   const [ingredientes, setIngredientes] = useState(comidaInicial?.ingredientes?.join(', ') || '');
   const [tipoComida, setTipoComida] = useState(comidaInicial?.tipo || 'comida');
   const [fechaFormulario, setFechaFormulario] = useState(comidaInicial?.fecha || fechaClave(fecha));
@@ -343,11 +344,11 @@ function FormularioComidaRapida({ fecha, horaInicial, comidaInicial, alCerrar, a
 
   const enviar = (e) => {
     e.preventDefault();
-    if (!ingredientes.trim() || !fechaFormulario || !hora) return;
+    if (!nombre.trim() || !ingredientes.trim() || !fechaFormulario || !hora) return;
 
     const tipoInfo = TIPOS_COMIDA.find(item => item.valor === tipoComida) || TIPOS_COMIDA[2];
     alGuardar({
-      nombre: ingredientes.trim(),
+      nombre: nombre.trim(),
       tipo: tipoComida,
       icono: tipoInfo.icono,
       ingredientes: ingredientes.split(',').map(ingrediente => ingrediente.trim()).filter(Boolean),
@@ -369,6 +370,18 @@ function FormularioComidaRapida({ fecha, horaInicial, comidaInicial, alCerrar, a
         </div>
 
         <form className="formulario-campos" onSubmit={enviar}>
+          <div className="campo-formulario">
+            <label htmlFor="nombre-rapida">Nombre de la receta</label>
+            <input
+              id="nombre-rapida"
+              type="text"
+              placeholder="Ej.: Tostada de tomate y queso"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+            />
+          </div>
+
           <div className="campo-formulario">
             <label htmlFor="ingredientes-rapida">Ingredientes</label>
             <input
