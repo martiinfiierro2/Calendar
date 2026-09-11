@@ -35,12 +35,84 @@ const fechaDesdeClave = (clave) => {
   return new Date(año, mes - 1, dia);
 };
 
+const obtenerComidasDemo = () => {
+  const fecha = fechaClave(new Date());
+
+  return [
+    {
+      id: 'demo-desayuno',
+      fecha,
+      hora: '08:00',
+      nombre: 'Tostadas con aguacate y café',
+      tipo: 'desayuno',
+      icono: '☕',
+      modo: 'receta',
+      descripcion: 'Tostadas con aguacate acompañadas de café.',
+      ingredientes: 'Pan, aguacate, café',
+      tiempo: '10',
+      raciones: '1'
+    },
+    {
+      id: 'demo-almuerzo',
+      fecha,
+      hora: '11:00',
+      nombre: 'Bocadillo de pavo y nueces',
+      tipo: 'almuerzo',
+      icono: '🥪',
+      modo: 'receta',
+      descripcion: 'Bocadillo de pavo con nueces.',
+      ingredientes: 'Pan, pavo, nueces',
+      tiempo: '5',
+      raciones: '1'
+    },
+    {
+      id: 'demo-comida',
+      fecha,
+      hora: '14:00',
+      nombre: 'Pechuga de pollo con arroz',
+      tipo: 'comida',
+      icono: '🍽️',
+      modo: 'receta',
+      descripcion: 'Pechuga de pollo acompañada de arroz.',
+      ingredientes: 'Pechuga de pollo, arroz',
+      tiempo: '30',
+      raciones: '1'
+    },
+    {
+      id: 'demo-merienda',
+      fecha,
+      hora: '17:00',
+      nombre: 'Plátano y batido de proteínas',
+      tipo: 'merienda',
+      icono: '🍌',
+      modo: 'receta',
+      descripcion: 'Plátano acompañado de un batido de proteínas.',
+      ingredientes: 'Plátano, leche, proteína en polvo',
+      tiempo: '5',
+      raciones: '1'
+    },
+    {
+      id: 'demo-cena',
+      fecha,
+      hora: '21:00',
+      nombre: 'Salmón a la plancha con ensalada',
+      tipo: 'cena',
+      icono: '🐟',
+      modo: 'receta',
+      descripcion: 'Salmón a la plancha acompañado de ensalada.',
+      ingredientes: 'Salmón, lechuga, tomate',
+      tiempo: '25',
+      raciones: '1'
+    }
+  ];
+};
+
 const obtenerComidasIniciales = () => {
   try {
     const guardadas = JSON.parse(localStorage.getItem('calendar_comidas'));
     if (Array.isArray(guardadas)) return guardadas;
   } catch {}
-  return [];
+  return obtenerComidasDemo();
 };
 
 export default function Calendario() {
@@ -54,39 +126,6 @@ export default function Calendario() {
   const [formulario, setFormulario] = useState(null);
   const [comidas, setComidas] = useState(obtenerComidasIniciales);
   const [comidaEditando, setComidaEditando] = useState(null);
-
-  const comidasFijas = {
-    "08:00": {
-      tipo: "desayuno",
-      icono: "☕",
-      titulo: "Desayuno",
-      detalle: "Tostadas con aguacate y café"
-    },
-    "11:00": {
-      tipo: "almuerzo",
-      icono: "🥪",
-      titulo: "Almuerzo",
-      detalle: "Bocadillo de pavo y nueces"
-    },
-    "14:00": {
-      tipo: "comida",
-      icono: "🍽️",
-      titulo: "Comida",
-      detalle: "Pechuga de pollo con arroz"
-    },
-    "17:00": {
-      tipo: "merienda",
-      icono: "🍌",
-      titulo: "Merienda",
-      detalle: "Plátano y batido de proteínas"
-    },
-    "21:00": {
-      tipo: "cena",
-      icono: "🐟",
-      titulo: "Cena",
-      detalle: "Salmón a la plancha con ensalada"
-    }
-  };
 
   const horasDelDia = [];
   for (let i = 0; i <= 23; i++) {
@@ -201,7 +240,6 @@ export default function Calendario() {
         <VistaMes
           año={añoVisible}
           mes={mesVisible}
-          comidasFijas={comidasFijas}
           comidas={comidas}
           alSeleccionarDia={irADia}
           alVolverAlAnyo={() => irAAnyo(añoVisible)}
@@ -216,7 +254,6 @@ export default function Calendario() {
           alVolverAlMes={() => irAMes(fecha.getFullYear(), fecha.getMonth())}
           alCambiarDia={cambiarDia}
           horasDelDia={horasDelDia}
-          comidasFijas={comidasFijas}
           comidas={comidasDelDia}
           alAnadir={abrirMenuAnadir}
           alAnadirComida={abrirMenuAnadir}
@@ -540,7 +577,6 @@ function VistaAnyo({ año, comidas, alSeleccionarMes, alCambiarAnyo, alAnadir })
 function VistaMes({
   año,
   mes,
-  comidasFijas,
   comidas,
   alSeleccionarDia,
   alVolverAlAnyo,
@@ -568,12 +604,6 @@ function VistaMes({
       comida =>
         comida.fecha ===
         `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
-    ) ||
-    (
-      año === hoy.getFullYear() &&
-      mes === hoy.getMonth() &&
-      dia === hoy.getDate() &&
-      Object.keys(comidasFijas).length > 0
     );
 
   return (
@@ -640,7 +670,6 @@ function TablaDia({
   alVolverAlMes,
   alCambiarDia,
   horasDelDia,
-  comidasFijas,
   comidas,
   alAnadir,
   alAnadirComida,
@@ -657,7 +686,6 @@ function TablaDia({
   }, [fecha]);
 
   const obtenerComida = (hora) => comidas.find(comida => comida.hora === hora);
-  const obtenerComidaFija = (hora) => comidasFijas[hora];
 
   return (
     <div className="pantalla-completa-dia">
@@ -699,9 +727,7 @@ function TablaDia({
         <div className="bloque-horas">
           <div className="timeline-horas">
             {horasDelDia.map((hora) => {
-              const comidaFija = obtenerComidaFija(hora);
               const comida = obtenerComida(hora);
-              const contenido = comida || comidaFija;
 
               return (
                 <div
@@ -711,54 +737,38 @@ function TablaDia({
                 >
                   <div className="hora-eje">{hora}</div>
 
-                  {contenido ? (
+                  {comida ? (
                     <div className="hora-contenido">
                       <div
-                        className={`tarjeta-evento ${contenido.tipo}`}
+                        className={`tarjeta-evento ${comida.tipo}`}
                         onClick={() =>
                           setMostrarAcciones(
-                            mostrarAcciones === (comida?.id || `fija-${hora}`)
-                              ? null
-                              : (comida?.id || `fija-${hora}`)
+                            mostrarAcciones === comida.id ? null : comida.id
                           )
                         }
                       >
                         <span className="evento-info">
-                          {contenido.icono}{' '}
+                          {comida.icono}{' '}
                           <b>
-                            {TIPOS_COMIDA.find(t => t.valor === contenido.tipo)?.nombre ||
-                              contenido.titulo ||
+                            {TIPOS_COMIDA.find(t => t.valor === comida.tipo)?.nombre ||
                               'Comida'}:
                           </b>{' '}
-                          {contenido.nombre || contenido.detalle}
+                          {comida.nombre}
                         </span>
                       </div>
 
-                      {mostrarAcciones === (comida?.id || `fija-${hora}`) && (
+                      {mostrarAcciones === comida.id && (
                         <div className="evento-acciones">
-                          {comida ? (
-                            <button
-                              onClick={() => alEditar(comida)}
-                              aria-label="Editar comida"
-                              title="Editar"
-                            >
-                              ✏️
-                            </button>
-                          ) : (
-                            <button
-                              aria-label="Editar comida por defecto"
-                              title="Editar"
-                            >
-                              ✏️
-                            </button>
-                          )}
                           <button
-                            onClick={() => comida && alEliminar(comida.id)}
-                            aria-label={
-                              comida
-                                ? 'Eliminar comida'
-                                : 'Eliminar comida por defecto'
-                            }
+                            onClick={() => alEditar(comida)}
+                            aria-label="Editar comida"
+                            title="Editar"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => alEliminar(comida.id)}
+                            aria-label="Eliminar comida"
                             title="Eliminar"
                           >
                             🗑️
