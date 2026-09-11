@@ -213,13 +213,15 @@ export default function Calendario() {
     if (window.confirm('¿Quieres eliminar esta comida?')) {
       setComidas(actuales => actuales.filter(comida => comida.id !== id));
       setComidaEditando(null);
+      setFormulario(null);
     }
   };
 
   const cancelarFormulario = () => {
+    const estabaEditando = Boolean(comidaEditando);
     setFormulario(null);
     setComidaEditando(null);
-    setMostrarMenuAnadir(true);
+    setMostrarMenuAnadir(!estabaEditando);
   };
 
   const comidasDelDia = comidas.filter(comida => comida.fecha === fechaClave(fecha));
@@ -359,7 +361,7 @@ function FormularioComida({
           >
             ‹
           </button>
-          <h2>{esReceta ? 'Añadir receta' : 'Comida rápida'}</h2>
+          <h2>{comidaInicial ? (esReceta ? 'Editar receta' : 'Editar comida rápida') : (esReceta ? 'Añadir receta' : 'Comida rápida')}</h2>
           <div />
         </div>
 
@@ -485,7 +487,7 @@ function FormularioComida({
           </div>
 
           <button className="boton-formulario-guardar" type="submit">
-            Guardar
+            {comidaInicial ? 'Guardar cambios' : 'Guardar'}
           </button>
         </form>
       </div>
@@ -760,14 +762,22 @@ function TablaDia({
                       {mostrarAcciones === comida.id && (
                         <div className="evento-acciones">
                           <button
-                            onClick={() => alEditar(comida)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMostrarAcciones(null);
+                              alEditar(comida);
+                            }}
                             aria-label="Editar comida"
                             title="Editar"
                           >
                             ✏️
                           </button>
                           <button
-                            onClick={() => alEliminar(comida.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMostrarAcciones(null);
+                              alEliminar(comida.id);
+                            }}
                             aria-label="Eliminar comida"
                             title="Eliminar"
                           >
