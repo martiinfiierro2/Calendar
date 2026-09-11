@@ -1,3 +1,4 @@
+import pg from 'pg';
 import { Sequelize } from 'sequelize';
 
 // En producción usamos DATABASE_URL; en local también se puede usar una URL de PostgreSQL.
@@ -11,6 +12,7 @@ const useSsl = process.env.DB_SSL === 'true' || process.env.NODE_ENV === 'produc
 
 const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',
+  dialectModule: pg,
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   dialectOptions: useSsl
     ? {
