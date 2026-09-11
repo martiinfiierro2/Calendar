@@ -9,6 +9,41 @@
   }
 }
 
+/* El buscador de recetas mantiene siempre el ancho del layout en iPhone. */
+.recetas-search-wrap {
+  width: calc(100% - 28px);
+  max-width: calc(100% - 28px);
+  min-width: 0;
+  box-sizing: border-box;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+
+.recetas-search-wrap input,
+.recetas-search-wrap input:focus,
+.recetas-search-wrap input:active {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  font-size: 16px !important;
+  line-height: 1.25;
+  -webkit-appearance: none;
+  appearance: none;
+  transform: none;
+  zoom: 1;
+}
+
+/* Evita que el viewport cambie el ancho visual al aparecer el teclado de iOS. */
+.recetas-app,
+.recetas-pantalla,
+.recetas-header,
+.recetas-lista {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* Día y semana comparten exactamente la misma cabecera. */
 .pantalla-completa-dia .cabecera-calendario,
 .vista-semana .cabecera-calendario {
