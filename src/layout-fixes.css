@@ -1,8 +1,35 @@
-/*
- * La vista Mes es la referencia visual de ancho para toda la aplicación.
- * Todas las pantallas usan exactamente sus mismos límites laterales.
- */
-.app-container,
+/* Mobile-first: una única geometría para toda la aplicación. */
+:root {
+  --mobile-shell-width: 460px;
+  --page-padding: 14px;
+  --header-padding: 18px;
+  --content-gap: 8px;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+}
+
+.app-container {
+  width: 100%;
+  max-width: var(--mobile-shell-width);
+  min-width: 0;
+  height: 100dvh;
+  max-height: none;
+  margin: 0 auto;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
 .main-container,
 .main-container > *,
 .contenedor-calendario,
@@ -11,57 +38,75 @@
 .vista-anyo,
 .vista-semana,
 .recetas-pantalla,
-.screen-content,
-.footer {
-  width: 100%;
-  min-width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.main-container > *,
-.contenedor-calendario,
-.pantalla-completa-dia,
-.vista-mes,
-.vista-anyo,
-.vista-semana,
-.recetas-pantalla,
 .screen-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   height: 100%;
   min-height: 0;
+  box-sizing: border-box;
   overflow-x: hidden;
 }
 
-.cabecera-calendario,
-.selector-vista,
-.tarjeta-fecha-grande,
-.contenido-dia-completo,
-.bloque-horas,
-.timeline-horas,
-.mes-semana-cabecera,
-.mes-grid,
-.anyo-grid,
-.navegacion-dia,
-.navegacion-semana,
-.semana-scroll,
-.semana-grid,
-.recetas-cabecera,
-.recetas-lista {
+.footer {
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 
-/* Año: mismo ancho visual que Mes. */
+/* Todas las cabeceras parten del mismo borde visual. */
+.cabecera-calendario,
+.vista-anyo .cabecera-calendario,
+.vista-semana .cabecera-calendario,
+.recetas-cabecera {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding-left: var(--header-padding);
+  padding-right: var(--header-padding);
+  box-sizing: border-box;
+}
+
+/* Mes es la referencia: 14px de margen para el contenido principal. */
+.mes-semana-cabecera,
+.mes-grid,
+.timeline-horas,
+.anyo-grid,
+.semana-scroll,
+.recetas-lista {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding-left: var(--page-padding);
+  padding-right: var(--page-padding);
+  box-sizing: border-box;
+}
+
+.navegacion-dia,
+.navegacion-semana {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding-left: var(--page-padding);
+  padding-right: var(--page-padding);
+  box-sizing: border-box;
+}
+
+.selector-vista {
+  max-width: calc(100% - (var(--header-padding) * 2));
+  box-sizing: border-box;
+}
+
+/* AÑO: 12 meses completos, usando todo el mismo ancho útil que Mes. */
 .vista-anyo .cabecera-calendario {
   min-height: 62px;
-  padding: 12px 18px 6px;
+  padding-top: 12px;
+  padding-bottom: 6px;
 }
 
 .vista-anyo .navegacion-dia {
-  width: 100%;
   min-height: 40px;
-  padding-left: 14px;
-  padding-right: 14px;
 }
 
 .vista-anyo .mes-nombre-grande {
@@ -69,20 +114,21 @@
 }
 
 .anyo-grid {
-  width: 100%;
-  min-width: 0;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
   align-content: stretch;
   gap: 6px;
-  padding: 7px 14px 14px;
+  padding-top: 7px;
+  padding-bottom: 14px;
 }
 
 .anyo-mes-card {
   width: 100%;
-  min-width: 0;
   max-width: 100%;
+  min-width: 0;
   height: 100%;
   min-height: 0;
   padding: 5px 5px 4px;
@@ -111,15 +157,17 @@
   line-height: 1;
 }
 
-/* Semana: siete columnas dentro del mismo ancho que Mes. */
+/* SEMANA: los siete días siempre caben dentro del mismo ancho útil. */
 .vista-semana .cabecera-calendario {
   min-height: 60px;
-  padding: 11px 18px 5px;
+  padding-top: 11px;
+  padding-bottom: 5px;
 }
 
 .vista-semana .selector-vista {
   width: auto;
-  max-width: calc(100% - 36px);
+  margin-left: var(--header-padding);
+  margin-right: var(--header-padding);
   margin-bottom: 7px;
   padding: 3px;
 }
@@ -131,9 +179,8 @@
 }
 
 .navegacion-semana {
-  width: 100%;
-  min-width: 0;
-  padding: 0 14px 7px;
+  padding-top: 0;
+  padding-bottom: 7px;
 }
 
 .navegacion-semana > div {
@@ -145,32 +192,36 @@
 .navegacion-semana small { font-size: 9px; }
 
 .semana-scroll {
-  width: 100%;
-  min-width: 0;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
-  padding: 0 14px 14px;
+  padding-top: 0;
+  padding-bottom: 14px;
 }
 
 .semana-grid {
   width: 100%;
-  min-width: 0;
   max-width: 100%;
+  min-width: 0;
   height: 100%;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 3px;
 }
 
-.semana-dia {
+.semana-dia,
+.semana-dia-cabecera,
+.semana-dia-eventos,
+.semana-evento {
   width: 100%;
-  min-width: 0;
   max-width: 100%;
+  min-width: 0;
+}
+
+.semana-dia {
   border-radius: 9px;
 }
 
 .semana-dia-cabecera {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
   padding: 5px 1px 4px;
   gap: 1px;
 }
@@ -189,8 +240,6 @@
 }
 
 .semana-dia-eventos {
-  width: 100%;
-  min-width: 0;
   overflow: hidden;
   padding: 4px 2px;
   gap: 3px;
@@ -202,9 +251,6 @@
 }
 
 .semana-evento {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
   border-left-width: 2px;
   border-radius: 6px;
   padding: 3px 2px;
@@ -272,38 +318,16 @@
   flex-shrink: 0;
 }
 
-.recetas-cabecera,
-.recetas-lista,
-.screen-content {
-  width: 100%;
-  min-width: 0;
-}
-
+/* Adaptación progresiva sin cambiar la geometría entre vistas. */
 @media (max-width: 380px) {
-  .cabecera-calendario,
-  .vista-anyo .cabecera-calendario,
-  .vista-semana .cabecera-calendario {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .vista-anyo .navegacion-dia,
-  .anyo-grid,
-  .navegacion-semana,
-  .semana-scroll {
-    padding-left: 14px;
-    padding-right: 14px;
+  :root {
+    --page-padding: 12px;
+    --header-padding: 14px;
   }
 
   .boton-contexto {
-    padding: 8px 10px;
+    padding: 8px 9px;
     font-size: 12px;
-  }
-
-  .vista-semana .selector-vista {
-    margin-left: 18px;
-    margin-right: 18px;
-    max-width: calc(100% - 36px);
   }
 
   .semana-grid { gap: 2px; }
@@ -313,5 +337,29 @@
     width: 16px;
     height: 16px;
     min-width: 16px;
+  }
+}
+
+@media (max-width: 340px) {
+  :root {
+    --page-padding: 10px;
+    --header-padding: 12px;
+  }
+
+  .anyo-grid { gap: 4px; }
+  .semana-grid { gap: 1px; }
+}
+
+/* En escritorio solo se centra el marco móvil; no cambia el diseño interno. */
+@media (min-width: 461px) {
+  body {
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .app-container {
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
   }
 }
