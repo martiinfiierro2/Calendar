@@ -4,6 +4,10 @@
   --page-padding: 14px;
   --header-padding: 18px;
   --content-gap: 8px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
 }
 
 html,
@@ -15,19 +19,45 @@ body,
   margin: 0;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  background: var(--appBackground);
+}
+
 body {
   overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
 }
 
 .app-container {
   width: 100%;
   max-width: var(--mobile-shell-width);
   min-width: 0;
+  height: 100vh;
+  height: 100svh;
   height: 100dvh;
   max-height: none;
   margin: 0 auto;
   border-radius: 0;
   box-sizing: border-box;
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 .main-container,
@@ -48,11 +78,16 @@ body {
   overflow-x: hidden;
 }
 
+.main-container {
+  padding-top: var(--safe-top);
+}
+
 .footer {
   width: 100%;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  padding-bottom: var(--safe-bottom);
 }
 
 /* Todas las cabeceras parten del mismo borde visual. */
@@ -418,6 +453,81 @@ body {
   .semana-grid { gap: 1px; }
 }
 
+/* Pantallas bajas: prioriza contenido útil sin provocar scroll horizontal. */
+@media (max-height: 700px) {
+  .cabecera-calendario {
+    min-height: 58px;
+    padding-top: 10px;
+    padding-bottom: 6px;
+  }
+
+  .selector-vista {
+    margin-bottom: 7px;
+  }
+
+  .mes-nombre-grande {
+    font-size: 19px;
+  }
+
+  .anyo-grid {
+    padding-top: 4px;
+    padding-bottom: 8px;
+    gap: 4px;
+  }
+}
+
+/* iPhone SE y móviles muy estrechos: compacta sin romper las siete columnas. */
+@media (max-width: 360px) {
+  .mes-semana-cabecera,
+  .mes-grid,
+  .timeline-horas,
+  .anyo-grid,
+  .semana-scroll,
+  .recetas-lista {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .mes-numero {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+
+  .fecha {
+    min-width: 0;
+    font-size: 18px;
+  }
+
+  .hora-fila {
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+}
+
+/* Landscape móvil: permite aprovechar la altura reducida sin cortar formularios. */
+@media (orientation: landscape) and (max-height: 520px) {
+  .app-container {
+    max-width: 100%;
+  }
+
+  .main-container > * {
+    overflow-y: auto;
+  }
+
+  .vista-mes,
+  .vista-semana,
+  .vista-anyo,
+  .pantalla-completa-dia {
+    min-height: 100%;
+  }
+
+  .anyo-grid {
+    overflow-y: auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(120px, 1fr));
+  }
+}
+
 /* En escritorio solo se centra el marco móvil; no cambia el diseño interno. */
 @media (min-width: 461px) {
   body {
@@ -426,6 +536,8 @@ body {
   }
 
   .app-container {
+    height: 100vh;
+    height: 100svh;
     height: 100dvh;
     max-height: none;
     border-radius: 0;
