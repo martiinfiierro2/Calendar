@@ -134,7 +134,7 @@ export default function RecipesPage() {
       {searchOpen && (
         <div className="recetas-search-wrap">
           <Icon name="search" size={17} />
-          <input autoFocus type="search" placeholder="Nombre o ingrediente..." value={query} onChange={event => setQuery(event.target.value)} />
+          <input type="search" placeholder="Nombre o ingrediente..." value={query} onChange={event => setQuery(event.target.value)} />
           {query && <button onClick={() => setQuery('')} aria-label="Limpiar"><Icon name="close" size={16} /></button>}
         </div>
       )}
