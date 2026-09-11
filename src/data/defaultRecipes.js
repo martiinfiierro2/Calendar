@@ -1,0 +1,107 @@
+// Recetas iniciales para que una cuenta nueva no empiece vacía.
+export const DEFAULT_RECIPES = [
+  {
+    id: 1,
+    nombre: 'Lasaña bolognesa',
+    categoria: 'Pasta',
+    tiempo: 55,
+    raciones: 4,
+    dificultad: 'Media',
+    favorito: true,
+    imagen: 'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=700&q=80',
+    ingredientes: ['12 placas de lasaña', '500 g de carne picada', 'Tomate triturado', 'Bechamel', 'Queso rallado'],
+    pasos: ['Preparar la salsa de carne y tomate.', 'Montar capas de pasta, salsa y bechamel.', 'Cubrir con queso y hornear hasta gratinar.'],
+    planificada: { fecha: '5 junio', hora: '14:00' }
+  },
+  {
+    id: 2,
+    nombre: 'Pollo al curry',
+    categoria: 'Carne',
+    tiempo: 35,
+    raciones: 3,
+    dificultad: 'Fácil',
+    favorito: false,
+    imagen: 'https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=700&q=80',
+    ingredientes: ['500 g de pollo', 'Leche de coco', 'Curry', 'Cebolla', 'Arroz basmati'],
+    pasos: ['Dorar el pollo.', 'Pochar la cebolla y añadir el curry.', 'Añadir leche de coco y cocinar 15 minutos.', 'Servir con arroz.'],
+    planificada: { fecha: '6 junio', hora: '14:00' }
+  },
+  {
+    id: 3,
+    nombre: 'Gazpacho andaluz',
+    categoria: 'Vegetal',
+    tiempo: 15,
+    raciones: 4,
+    dificultad: 'Fácil',
+    favorito: true,
+    imagen: 'https://images.unsplash.com/photo-1603105037880-880cd4edfb0d?auto=format&fit=crop&w=700&q=80',
+    ingredientes: ['Tomate maduro', 'Pepino', 'Pimiento verde', 'Aceite de oliva', 'Vinagre'],
+    pasos: ['Trocear las verduras.', 'Triturar con aceite, vinagre y sal.', 'Enfriar antes de servir.'],
+    planificada: null
+  },
+  {
+    id: 4,
+    nombre: 'Paella valenciana',
+    categoria: 'Arroz',
+    tiempo: 60,
+    raciones: 4,
+    dificultad: 'Media',
+    favorito: false,
+    imagen: 'https://images.unsplash.com/photo-1534080564583-6be75777b70a?auto=format&fit=crop&w=700&q=80',
+    ingredientes: ['Arroz', 'Pollo', 'Conejo', 'Judía verde', 'Garrofón', 'Azafrán'],
+    pasos: ['Sofreír la carne y las verduras.', 'Añadir agua y cocinar el caldo.', 'Incorporar el arroz y cocinar sin remover.'],
+    planificada: { fecha: '7 junio', hora: '14:00' }
+  },
+  {
+    id: 5,
+    nombre: 'Tortilla de patatas',
+    categoria: 'Huevos',
+    tiempo: 35,
+    raciones: 4,
+    dificultad: 'Fácil',
+    favorito: true,
+    imagen: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=700&q=80',
+    ingredientes: ['5 huevos', '600 g de patatas', 'Cebolla', 'Aceite de oliva', 'Sal'],
+    pasos: ['Pochar las patatas y la cebolla.', 'Mezclar con los huevos batidos.', 'Cuajar por ambos lados.'],
+    planificada: null
+  },
+  {
+    id: 6,
+    nombre: 'Salmón a la plancha',
+    categoria: 'Pescado',
+    tiempo: 20,
+    raciones: 2,
+    dificultad: 'Fácil',
+    favorito: false,
+    imagen: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=700&q=80',
+    ingredientes: ['2 lomos de salmón', 'Limón', 'Aceite de oliva', 'Pimienta', 'Sal'],
+    pasos: ['Secar y salpimentar el salmón.', 'Cocinar a la plancha por ambos lados.', 'Terminar con limón.'],
+    planificada: { fecha: '8 junio', hora: '21:00' }
+  },
+  {
+    id: 7,
+    nombre: 'Croquetas de jamón',
+    categoria: 'Entrante',
+    tiempo: 50,
+    raciones: 4,
+    dificultad: 'Media',
+    favorito: false,
+    imagen: 'https://images.unsplash.com/photo-1625944525533-473f1a3d54e7?auto=format&fit=crop&w=700&q=80',
+    ingredientes: ['Jamón serrano', 'Leche', 'Harina', 'Mantequilla', 'Huevo', 'Pan rallado'],
+    pasos: ['Preparar una bechamel espesa con el jamón.', 'Enfriar la masa.', 'Formar, empanar y freír.'],
+    planificada: null
+  },
+  {
+    id: 8,
+    nombre: 'Lentejas estofadas',
+    categoria: 'Legumbres',
+    tiempo: 50,
+    raciones: 4,
+    dificultad: 'Fácil',
+    favorito: false,
+    imagen: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80',
+    ingredientes: ['Lentejas', 'Zanahoria', 'Cebolla', 'Pimiento', 'Pimentón'],
+    pasos: ['Sofreír las verduras.', 'Añadir lentejas y agua.', 'Cocinar a fuego suave hasta que estén tiernas.'],
+    planificada: { fecha: '9 junio', hora: '14:00' }
+  }
+];
