@@ -1,6 +1,7 @@
+import { PERFIL_INICIAL } from '../config/appConfig';
 import { categoriaIngrediente, normalizarIngrediente } from '../utils/ingredientUtils';
 import { getRecipes } from './recipeService';
-import { readStorage } from './storageService';
+import { readStorage, writeStorage } from './storageService';
 
 // Construye productos desde las recetas que están planificadas en el calendario.
 export function buildShoppingItemsFromCalendar(existingItems = []) {
@@ -32,4 +33,16 @@ export function buildShoppingItemsFromCalendar(existingItems = []) {
     });
 
   return newItems;
+}
+
+// Si el perfil lo tiene activado, añade automáticamente los ingredientes nuevos.
+export function syncAutomaticShopping() {
+  const profile = readStorage('calendar_perfil', PERFIL_INICIAL) || PERFIL_INICIAL;
+  if (!profile.comprasAutomaticas) return;
+
+  const currentItems = readStorage('calendar_compra', []);
+  const newItems = buildShoppingItemsFromCalendar(currentItems);
+  if (!newItems.length) return;
+
+  writeStorage('calendar_compra', [...newItems, ...currentItems]);
 }
