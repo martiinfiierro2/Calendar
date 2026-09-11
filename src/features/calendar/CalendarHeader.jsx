@@ -1,4 +1,3 @@
-import React from 'react';
 import IconButton from '../../shared/IconButton';
 
 // Cabecera común de las vistas de año, mes, semana y día.
