@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import LoginPage from '../features/auth/LoginPage';
 import CalendarPage from '../features/calendar/CalendarPage';
 import ProfilePage from '../features/profile/ProfilePage';
 import RecipesPage from '../features/recipes/RecipesPage';
 import ShoppingPage from '../features/shopping/ShoppingPage';
-import { getSession, hasSession } from '../services/authService';
+import { getSession, refreshSession } from '../services/authService';
 import Footer from '../shared/Footer';
 
 // Centraliza la protección de rutas para no repetir la misma comprobación.
@@ -16,12 +16,33 @@ function ProtectedRoute({ authenticated, children }) {
 export default function AppRouter() {
   const location = useLocation();
   const [session, setSession] = useState(getSession);
-  const authenticated = Boolean(session?.email) || hasSession();
+  const [checkingSession, setCheckingSession] = useState(Boolean(getSession()?.token));
+  const authenticated = Boolean(session?.token);
   const onLoginScreen = location.pathname === '/login';
+
+  useEffect(() => {
+    if (!session?.token) return;
+
+    let active = true;
+
+    refreshSession().then(nextSession => {
+      if (!active) return;
+      setSession(nextSession);
+      setCheckingSession(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const protectedPage = page => (
     <ProtectedRoute authenticated={authenticated}>{page}</ProtectedRoute>
   );
+
+  if (checkingSession) {
+    return <div className="app-container" />;
+  }
 
   return (
     <div className="app-container">
