@@ -1,5 +1,3 @@
-import React from 'react';
-
 // Todos los iconos de la app viven aquí para no repetir SVG en cada pantalla.
 const ICONS = {
   plus: <><path d="M12 5v14" /><path d="M5 12h14" /></>,
