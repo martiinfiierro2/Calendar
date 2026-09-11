@@ -120,6 +120,7 @@ export default function Calendario() {
       nombre: datos.nombre,
       tipo: datos.tipo,
       icono: datos.icono,
+      ingredientes: datos.ingredientes,
       modo: datos.modo
     };
 
@@ -283,15 +284,7 @@ function SelectorReceta({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar
           />
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '10px',
-            overflowX: 'auto',
-            padding: '6px 2px 14px',
-            scrollbarWidth: 'none'
-          }}
-        >
+        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', padding: '6px 2px 14px', scrollbarWidth: 'none' }}>
           {recetasFiltradas.map(receta => (
             <button
               key={receta.id}
@@ -309,14 +302,8 @@ function SelectorReceta({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar
                 textAlign: 'left'
               }}
             >
-              <img
-                src={receta.imagen}
-                alt={receta.nombre}
-                style={{ width: '100%', height: '85px', objectFit: 'cover', display: 'block' }}
-              />
-              <span style={{ display: 'block', padding: '8px', fontSize: '13px', fontWeight: 600 }}>
-                {receta.nombre}
-              </span>
+              <img src={receta.imagen} alt={receta.nombre} style={{ width: '100%', height: '85px', objectFit: 'cover', display: 'block' }} />
+              <span style={{ display: 'block', padding: '8px', fontSize: '13px', fontWeight: 600 }}>{receta.nombre}</span>
             </button>
           ))}
         </div>
@@ -331,23 +318,11 @@ function SelectorReceta({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar
           <div className="campos-formulario-fila">
             <div className="campo-formulario">
               <label htmlFor="fecha-receta">Fecha</label>
-              <input
-                id="fecha-receta"
-                type="date"
-                value={fechaFormulario}
-                onChange={(e) => setFechaFormulario(e.target.value)}
-                required
-              />
+              <input id="fecha-receta" type="date" value={fechaFormulario} onChange={(e) => setFechaFormulario(e.target.value)} required />
             </div>
             <div className="campo-formulario">
               <label htmlFor="hora-receta">Hora</label>
-              <input
-                id="hora-receta"
-                type="time"
-                value={hora}
-                onChange={(e) => setHora(e.target.value)}
-                required
-              />
+              <input id="hora-receta" type="time" value={hora} onChange={(e) => setHora(e.target.value)} required />
             </div>
           </div>
 
@@ -361,20 +336,21 @@ function SelectorReceta({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar
 }
 
 function FormularioComidaRapida({ fecha, horaInicial, comidaInicial, alCerrar, alGuardar }) {
-  const [nombre, setNombre] = useState(comidaInicial?.nombre || '');
+  const [ingredientes, setIngredientes] = useState(comidaInicial?.ingredientes?.join(', ') || '');
   const [tipoComida, setTipoComida] = useState(comidaInicial?.tipo || 'comida');
   const [fechaFormulario, setFechaFormulario] = useState(comidaInicial?.fecha || fechaClave(fecha));
   const [hora, setHora] = useState(comidaInicial?.hora || horaInicial || '14:00');
 
   const enviar = (e) => {
     e.preventDefault();
-    if (!nombre.trim() || !fechaFormulario || !hora) return;
+    if (!ingredientes.trim() || !fechaFormulario || !hora) return;
 
     const tipoInfo = TIPOS_COMIDA.find(item => item.valor === tipoComida) || TIPOS_COMIDA[2];
     alGuardar({
-      nombre: nombre.trim(),
+      nombre: ingredientes.trim(),
       tipo: tipoComida,
       icono: tipoInfo.icono,
+      ingredientes: ingredientes.split(',').map(ingrediente => ingrediente.trim()).filter(Boolean),
       fecha: fechaFormulario,
       hora,
       modo: 'rapida'
@@ -394,24 +370,15 @@ function FormularioComidaRapida({ fecha, horaInicial, comidaInicial, alCerrar, a
 
         <form className="formulario-campos" onSubmit={enviar}>
           <div className="campo-formulario">
-            <label htmlFor="nombre-rapida">Comida</label>
+            <label htmlFor="ingredientes-rapida">Ingredientes</label>
             <input
-              id="nombre-rapida"
+              id="ingredientes-rapida"
               type="text"
-              placeholder="¿Qué vas a comer?"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
+              placeholder="Ej.: pan, tomate, queso..."
+              value={ingredientes}
+              onChange={(e) => setIngredientes(e.target.value)}
               required
             />
-          </div>
-
-          <div className="campo-formulario">
-            <label htmlFor="tipo-comida-rapida">Tipo de comida</label>
-            <select id="tipo-comida-rapida" value={tipoComida} onChange={(e) => setTipoComida(e.target.value)}>
-              {TIPOS_COMIDA.map(tipo => (
-                <option key={tipo.valor} value={tipo.valor}>{tipo.nombre}</option>
-              ))}
-            </select>
           </div>
 
           <div className="campos-formulario-fila">
@@ -436,20 +403,17 @@ function FormularioComidaRapida({ fecha, horaInicial, comidaInicial, alCerrar, a
 
 function VistaAnyo({ año, comidas, alSeleccionarMes, alCambiarAnyo, alAnadir }) {
   const hoy = new Date();
-
   return (
     <div className="vista-anyo">
       <div className="cabecera-calendario">
         <h2></h2>
         <div className="cabecera-dia"><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div>
       </div>
-
       <div className="navegacion-dia">
         <button className="flecha-dia" onClick={() => alCambiarAnyo(-1)} aria-label="Año anterior">‹</button>
         <div className="mes-nombre-grande">{año}</div>
         <button className="flecha-dia" onClick={() => alCambiarAnyo(1)} aria-label="Año siguiente">›</button>
       </div>
-
       <div className="anyo-grid">
         {MESES.map((nombreMes, i) => {
           const primerDia = new Date(año, i, 1);
@@ -458,17 +422,13 @@ function VistaAnyo({ año, comidas, alSeleccionarMes, alCambiarAnyo, alAnadir })
           const celdas = [];
           for (let x = 0; x < offset; x++) celdas.push(null);
           for (let d = 1; d <= totalDias; d++) celdas.push(d);
-
           const tieneComidas = comidas.some(comida => {
             const f = fechaDesdeClave(comida.fecha);
             return f.getFullYear() === año && f.getMonth() === i;
           });
-
           return (
             <div key={i} className="anyo-mes-card" onClick={() => alSeleccionarMes(i)}>
-              <div className="anyo-mes-nombre">
-                {nombreMes}{tieneComidas && <span className="mes-punto" />}
-              </div>
+              <div className="anyo-mes-nombre">{nombreMes}{tieneComidas && <span className="mes-punto" />}</div>
               <div className="anyo-mini-grid">
                 {celdas.map((d, j) => {
                   const esHoy = d === hoy.getDate() && i === hoy.getMonth() && año === hoy.getFullYear();
@@ -492,23 +452,19 @@ function VistaMes({ año, mes, comidas, alSeleccionarDia, alVolverAlAnyo, alCamb
   const celdas = [];
   for (let i = 0; i < offsetInicio; i++) celdas.push(null);
   for (let d = 1; d <= ultimoDia.getDate(); d++) celdas.push(d);
-
   const esHoy = (d) => d === hoy.getDate() && mes === hoy.getMonth() && año === hoy.getFullYear();
   const tieneComida = (dia) => comidas.some(comida => comida.fecha === `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`);
-
   return (
     <div className="vista-mes">
       <div className="cabecera-calendario">
         <button className="botonAnyo" onClick={alVolverAlAnyo}>{año}</button>
         <div className="cabecera-dia"><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div>
       </div>
-
       <div className="navegacion-dia">
         <button className="flecha-dia" onClick={() => alCambiarMes(-1)} aria-label="Mes anterior">‹</button>
         <div className="mes-nombre-grande">{MESES[mes]}</div>
         <button className="flecha-dia" onClick={() => alCambiarMes(1)} aria-label="Mes siguiente">›</button>
       </div>
-
       <div className="mes-semana-cabecera">{diasSemana.map(d => <span className="dia-cabecera" key={d}>{d}</span>)}</div>
       <div className="mes-grid">
         {celdas.map((d, i) => (
@@ -527,16 +483,13 @@ function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidas, al
   useEffect(() => {
     if (ref6h.current) ref6h.current.scrollIntoView({ block: 'start' });
   }, [fecha]);
-
   const obtenerComida = (hora) => comidas.find(comida => comida.hora === hora);
-
   return (
     <div className="pantalla-completa-dia">
       <div className="cabecera-calendario">
         <button className="botonMes" onClick={alVolverAlMes}>{MESES[fecha.getMonth()]}</button>
         <div className="cabecera-dia"><button className="btnSinEstilo" onClick={alAnadir}>➕</button></div>
       </div>
-
       <div className="tarjeta-fecha-grande">
         <div className="navegacion-dia">
           <button className="flecha-dia" onClick={() => alCambiarDia(-1)} aria-label="Día anterior">‹</button>
@@ -544,7 +497,6 @@ function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidas, al
           <button className="flecha-dia" onClick={() => alCambiarDia(1)} aria-label="Día siguiente">›</button>
         </div>
       </div>
-
       <div className="contenido-dia-completo">
         <div className="bloque-horas">
           <div className="timeline-horas">
@@ -555,17 +507,13 @@ function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidas, al
                   <div className="hora-eje">{hora}</div>
                   {comida ? (
                     <div className="hora-contenido">
-                      <div
-                        className={`tarjeta-evento ${comida.tipo}`}
-                        onClick={() => setMostrarAcciones(mostrarAcciones === comida.id ? null : comida.id)}
-                      >
+                      <div className={`tarjeta-evento ${comida.tipo}`} onClick={() => setMostrarAcciones(mostrarAcciones === comida.id ? null : comida.id)}>
                         <span className="evento-info">
                           {comida.icono}{' '}
                           <b>{TIPOS_COMIDA.find(t => t.valor === comida.tipo)?.nombre || 'Comida'}:</b>{' '}
                           {comida.nombre}
                         </span>
                       </div>
-
                       {mostrarAcciones === comida.id && (
                         <div className="evento-acciones">
                           <button onClick={(e) => { e.stopPropagation(); setMostrarAcciones(null); alEditar(comida); }} aria-label="Editar comida" title="Editar">✏️</button>
@@ -574,14 +522,7 @@ function TablaDia({ fecha, alVolverAlMes, alCambiarDia, horasDelDia, comidas, al
                       )}
                     </div>
                   ) : (
-                    <div
-                      className="hora-contenido boton-anadir-comida"
-                      onClick={() => alAnadirComida(hora)}
-                      role="button"
-                      tabIndex="0"
-                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && alAnadirComida(hora)}
-                      aria-label={`Añadir comida a las ${hora}`}
-                    >
+                    <div className="hora-contenido boton-anadir-comida" onClick={() => alAnadirComida(hora)} role="button" tabIndex="0" onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && alAnadirComida(hora)} aria-label={`Añadir comida a las ${hora}`}>
                       + Añadir comida
                     </div>
                   )}
