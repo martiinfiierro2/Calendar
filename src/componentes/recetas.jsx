@@ -163,7 +163,7 @@ export default function Recetas() {
   const [categoria, setCategoria] = useState('Todas');
   const [detalle, setDetalle] = useState(null);
   const [editando, setEditando] = useState(null);
-  const [formulario, setFormulario] = useState(formularioVacio);
+  const [formulario, setFormulario] = useState(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recetas));
@@ -179,8 +179,9 @@ export default function Recetas() {
   }, [recetas, query, categoria]);
 
   const abrirNueva = () => {
+    setDetalle(null);
     setEditando(null);
-    setFormulario(formularioVacio);
+    setFormulario({ ...formularioVacio });
   };
 
   const abrirEditar = (receta) => {
@@ -200,7 +201,7 @@ export default function Recetas() {
 
   const guardar = (e) => {
     e.preventDefault();
-    if (!formulario.nombre.trim()) return;
+    if (!formulario?.nombre.trim()) return;
     const datos = {
       id: editando?.id || Date.now(),
       nombre: formulario.nombre.trim(),
@@ -228,6 +229,12 @@ export default function Recetas() {
   const alternarFavorito = (id) => {
     setRecetas(actuales => actuales.map(r => r.id === id ? { ...r, favorito: !r.favorito } : r));
     setDetalle(actual => actual?.id === id ? { ...actual, favorito: !actual.favorito } : actual);
+  };
+
+  const abrirDetalle = (receta) => {
+    setFormulario(null);
+    setEditando(null);
+    setDetalle(receta);
   };
 
   return (
@@ -271,9 +278,22 @@ export default function Recetas() {
             <button onClick={abrirNueva}><Icono nombre="plus" size={17} /> Crear receta</button>
           </div>
         ) : recetasFiltradas.map(receta => (
-          <article key={receta.id} className="receta-card receta-card-nueva" onClick={() => setDetalle(receta)}>
+          <article
+            key={receta.id}
+            className="receta-card receta-card-nueva"
+            onClick={() => abrirDetalle(receta)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                abrirDetalle(receta);
+              }
+            }}
+            aria-label={`Ver receta ${receta.nombre}`}
+          >
             <div className="receta-imagen-wrap">
-              <img src={receta.imagen} alt="" className="receta-imagen" />
+              <img src={receta.imagen} alt={receta.nombre} className="receta-imagen" />
               <button className={`receta-favorito ${receta.favorito ? 'activo' : ''}`} onClick={e => { e.stopPropagation(); alternarFavorito(receta.id); }} aria-label="Favorito">
                 <Icono nombre="heart" size={17} />
               </button>
@@ -299,7 +319,7 @@ export default function Recetas() {
           <button className="recetas-modal-backdrop" onClick={() => setDetalle(null)} aria-label="Cerrar" />
           <section className="receta-detalle-sheet">
             <div className="receta-detalle-imagen">
-              <img src={detalle.imagen} alt="" />
+              <img src={detalle.imagen} alt={detalle.nombre} />
               <button className="recetas-floating-btn izquierda" onClick={() => setDetalle(null)} aria-label="Volver"><Icono nombre="back" /></button>
               <button className={`recetas-floating-btn derecha ${detalle.favorito ? 'favorito' : ''}`} onClick={() => alternarFavorito(detalle.id)} aria-label="Favorito"><Icono nombre="heart" /></button>
             </div>
