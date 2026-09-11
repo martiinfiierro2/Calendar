@@ -1,25 +1,53 @@
 # Calendar API
 
-Backend de la aplicación Calendar con Node.js, Express, Sequelize y MySQL.
+Backend de Calendar con Node.js, Express, Sequelize y PostgreSQL.
 
-## Puesta en marcha
+## Desarrollo local
 
-1. Crea una base de datos MySQL llamada `calendar_app`.
-2. Copia `.env.example` como `.env` y ajusta usuario, contraseña y `JWT_SECRET`.
-3. Instala dependencias:
+1. Crea una base PostgreSQL llamada `calendar_app`.
+2. Copia `.env.example` como `.env`.
+3. Ajusta `DATABASE_URL` y `JWT_SECRET`.
+4. Instala dependencias:
 
 ```bash
 cd backend
 npm install
 ```
 
-4. Arranca en desarrollo:
+5. Crea las tablas:
+
+```bash
+npm run db:sync
+```
+
+6. Arranca la API:
 
 ```bash
 npm run dev
 ```
 
-La API queda disponible por defecto en `http://localhost:8080`.
+Por defecto queda disponible en `http://localhost:8080`.
+
+## PostgreSQL en Vercel
+
+La configuración usa `DATABASE_URL`, así que funciona con proveedores PostgreSQL gestionados como Neon, Supabase, Prisma Postgres o Aurora PostgreSQL.
+
+Para un despliegue sencillo se puede usar Neon desde Vercel Marketplace. Al conectar la base al proyecto, añade la URL de conexión como `DATABASE_URL`.
+
+Variables de entorno necesarias en Vercel:
+
+```text
+NODE_ENV=production
+DATABASE_URL=postgresql://...
+DB_SSL=true
+JWT_SECRET=una-clave-larga-y-segura
+JWT_EXPIRES_IN=7d
+FRONTEND_URL=https://tu-frontend.vercel.app
+```
+
+Este backend puede desplegarse como un segundo proyecto Vercel usando `backend` como Root Directory. `api/index.js` es la entrada serverless y `vercel.json` redirige las peticiones a Express.
+
+Antes del primer uso ejecuta `npm run db:sync` desde local apuntando a la base de producción. Más adelante conviene sustituir `sequelize.sync()` por migraciones versionadas.
 
 ## Endpoints
 
@@ -58,7 +86,7 @@ La API queda disponible por defecto en `http://localhost:8080`.
 
 ## Autenticación
 
-Las rutas privadas esperan el token JWT en la cabecera:
+Las rutas privadas esperan el JWT en la cabecera:
 
 ```text
 Authorization: Bearer <token>
@@ -67,16 +95,18 @@ Authorization: Bearer <token>
 ## Estructura
 
 ```text
-src/
-├── config/       # Base de datos
-├── controllers/  # Lógica de cada recurso
-├── data/         # Datos iniciales
-├── middleware/   # Auth, errores y validación
-├── models/       # Tablas y relaciones Sequelize
-├── routes/       # Endpoints HTTP
-├── utils/        # Utilidades pequeñas
-├── app.js        # Configuración de Express
-└── server.js     # Arranque de la API
+backend/
+├── api/           # Entrada serverless para Vercel
+├── scripts/       # Utilidades de mantenimiento
+├── src/
+│   ├── config/       # PostgreSQL y Sequelize
+│   ├── controllers/  # Lógica de negocio
+│   ├── data/         # Datos iniciales
+│   ├── middleware/   # Auth, errores y validación
+│   ├── models/       # Tablas y relaciones
+│   ├── routes/       # Endpoints HTTP
+│   ├── utils/        # Utilidades
+│   ├── app.js        # Express
+│   └── server.js     # Servidor local
+└── vercel.json
 ```
-
-En desarrollo se usa `sequelize.sync()` para crear las tablas que falten. Para producción conviene sustituirlo por migraciones versionadas.
