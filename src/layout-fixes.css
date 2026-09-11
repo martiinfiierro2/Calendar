@@ -78,8 +78,14 @@ textarea {
   overflow-x: hidden;
 }
 
+/* Respeta notch/Dynamic Island y añade un pequeño margen visual extra. */
 .main-container {
-  padding-top: var(--safe-top);
+  padding-top: calc(var(--safe-top) + 10px);
+}
+
+/* El login ya gestiona su propia zona segura. */
+.main-container:has(.login-app) {
+  padding-top: 0;
 }
 
 .footer {
