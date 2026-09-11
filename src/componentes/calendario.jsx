@@ -121,6 +121,15 @@ export default function Calendario() {
     irADia(nuevaFecha);
   };
 
+  const cambiarMes = (cantidad) => {
+    const nuevaFecha = new Date(añoVisible, mesVisible + cantidad, 1);
+    irAMes(nuevaFecha.getFullYear(), nuevaFecha.getMonth());
+  };
+
+  const cambiarAnyo = (cantidad) => {
+    irAAnyo(añoVisible + cantidad);
+  };
+
   const abrirMenuAnadir = (hora = '14:00') => {
     setHoraSeleccionada(hora);
     setMostrarMenuAnadir(true);
@@ -183,6 +192,7 @@ export default function Calendario() {
           año={añoVisible}
           comidas={comidas}
           alSeleccionarMes={(mes) => irAMes(añoVisible, mes)}
+          alCambiarAnyo={cambiarAnyo}
           alAnadir={() => abrirMenuAnadir()}
         />
       )}
@@ -195,6 +205,7 @@ export default function Calendario() {
           comidas={comidas}
           alSeleccionarDia={irADia}
           alVolverAlAnyo={() => irAAnyo(añoVisible)}
+          alCambiarMes={cambiarMes}
           alAnadir={() => abrirMenuAnadir()}
         />
       )}
@@ -445,7 +456,7 @@ function FormularioComida({
   );
 }
 
-function VistaAnyo({ año, comidas, alSeleccionarMes, alAnadir }) {
+function VistaAnyo({ año, comidas, alSeleccionarMes, alCambiarAnyo, alAnadir }) {
   const hoy = new Date();
 
   return (
@@ -458,7 +469,23 @@ function VistaAnyo({ año, comidas, alSeleccionarMes, alAnadir }) {
         </div>
       </div>
 
-      <div className="mes-nombre-grande">{año}</div>
+      <div className="navegacion-dia">
+        <button
+          className="flecha-dia"
+          onClick={() => alCambiarAnyo(-1)}
+          aria-label="Año anterior"
+        >
+          ‹
+        </button>
+        <div className="mes-nombre-grande">{año}</div>
+        <button
+          className="flecha-dia"
+          onClick={() => alCambiarAnyo(1)}
+          aria-label="Año siguiente"
+        >
+          ›
+        </button>
+      </div>
 
       <div className="anyo-grid">
         {MESES.map((nombreMes, i) => {
@@ -518,6 +545,7 @@ function VistaMes({
   comidas,
   alSeleccionarDia,
   alVolverAlAnyo,
+  alCambiarMes,
   alAnadir
 }) {
   const hoy = new Date();
@@ -561,7 +589,23 @@ function VistaMes({
         </div>
       </div>
 
-      <div className="mes-nombre-grande">{MESES[mes]}</div>
+      <div className="navegacion-dia">
+        <button
+          className="flecha-dia"
+          onClick={() => alCambiarMes(-1)}
+          aria-label="Mes anterior"
+        >
+          ‹
+        </button>
+        <div className="mes-nombre-grande">{MESES[mes]}</div>
+        <button
+          className="flecha-dia"
+          onClick={() => alCambiarMes(1)}
+          aria-label="Mes siguiente"
+        >
+          ›
+        </button>
+      </div>
 
       <div className="mes-semana-cabecera">
         {diasSemana.map(d => (
