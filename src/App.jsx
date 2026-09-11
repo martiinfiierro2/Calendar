@@ -4,6 +4,7 @@ import Footer from './componentes/footer';
 import Calendario from './componentes/calendario';
 import Recetas from './componentes/recetas';
 import './index.css';
+import './layout-fixes.css';
 
 // Pantallas provisionales
 const RecetasScreen = () => <div className="screen-content"><h2>🍳 Mis Recetas</h2></div>;
