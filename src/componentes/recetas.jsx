@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const recetasData = [
+export const recetasData = [
   {
     id: 1,
     nombre: "Lasaña bolognesa",
@@ -61,27 +61,24 @@ export default function Recetas() {
 
   return (
     <div className="recetas-pantalla">
-
-      {/* CABECERA */}
       <div className="recetas-cabecera">
-          {busquedaAbierta ? (
-            <input className="recetas-buscar"
-              autoFocus
-              placeholder="Buscar receta..."
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onBlur={() => { if (!query) setBusquedaAbierta(false); }}
-            />
-          ) : (
-            <h1 className="recetas-titulo">RECETAS</h1>
-          )}
+        {busquedaAbierta ? (
+          <input className="recetas-buscar"
+            autoFocus
+            placeholder="Buscar receta..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onBlur={() => { if (!query) setBusquedaAbierta(false); }}
+          />
+        ) : (
+          <h1 className="recetas-titulo">RECETAS</h1>
+        )}
         <div className="botones-recetas">
           <button className="btnSinEstilo" onClick={() => setBusquedaAbierta(true)}>🔍</button>
           <button className="btnSinEstilo">➕</button>
         </div>
       </div>
 
-      {/* LISTA */}
       <div className="recetas-lista">
         {recetasFiltradas.map(receta => (
           <div key={receta.id} className="receta-card">
