@@ -117,10 +117,37 @@ export default function RecipesPage() {
   return (
     <div className="recetas-pantalla recetas-app">
       <header className="recetas-cabecera recetas-header">
-        <div>
-          <span className="recetas-eyebrow">Mi cocina</span>
-          <h1 className="recetas-titulo">Recetas</h1>
-        </div>
+        {searchOpen ? (
+          <div
+            className="recetas-search-wrap"
+            style={{
+              margin: 0,
+              width: 'min(100%, 250px)',
+              maxWidth: '250px',
+              minHeight: '40px',
+              flexShrink: 1
+            }}
+          >
+            <Icon name="search" size={17} />
+            <input
+              type="search"
+              placeholder="Nombre o ingrediente..."
+              value={query}
+              onChange={event => setQuery(event.target.value)}
+            />
+            {query && (
+              <button onClick={() => setQuery('')} aria-label="Limpiar">
+                <Icon name="close" size={16} />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div>
+            <span className="recetas-eyebrow">Mi cocina</span>
+            <h1 className="recetas-titulo">Recetas</h1>
+          </div>
+        )}
+
         <div className="recetas-header-actions">
           <button className={`recetas-icon-btn ${searchOpen ? 'activo' : ''}`} onClick={() => setSearchOpen(value => !value)} aria-label="Buscar">
             <Icon name="search" />
@@ -130,14 +157,6 @@ export default function RecipesPage() {
           </button>
         </div>
       </header>
-
-      {searchOpen && (
-        <div className="recetas-search-wrap">
-          <Icon name="search" size={17} />
-          <input type="search" placeholder="Nombre o ingrediente..." value={query} onChange={event => setQuery(event.target.value)} />
-          {query && <button onClick={() => setQuery('')} aria-label="Limpiar"><Icon name="close" size={16} /></button>}
-        </div>
-      )}
 
       <div className="recetas-filtros" role="tablist" aria-label="Categorías">
         {CATEGORIAS_RECETA.map(item => (
