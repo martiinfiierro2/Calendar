@@ -295,6 +295,10 @@ body {
   text-transform: capitalize;
 }
 
+.navegacion-dia .mes-nombre-grande {
+  padding: 4px 0;
+}
+
 .mes-semana-cabecera {
   flex-shrink: 0;
   display: grid;
