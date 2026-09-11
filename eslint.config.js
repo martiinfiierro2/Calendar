@@ -5,9 +5,9 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'backend/node_modules']),
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['src/**/*.{js,jsx}', 'vite.config.js'],
     extends: [
       js.configs.recommended,
       reactHooks.configs.flat.recommended,
@@ -20,6 +20,13 @@ export default defineConfig([
     rules: {
       // Con el runtime JSX moderno React no necesita usarse de forma explícita.
       'no-unused-vars': ['error', { varsIgnorePattern: '^React$' }],
+    },
+  },
+  {
+    files: ['backend/**/*.js'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ])
