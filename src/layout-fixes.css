@@ -1,6 +1,6 @@
 /*
- * El ancho de la vista Mes es la referencia para toda la aplicación.
- * Ninguna pantalla puede ensancharse o encogerse por su contenido.
+ * La vista Mes es la referencia visual de ancho para toda la aplicación.
+ * Todas las pantallas usan exactamente sus mismos límites laterales.
  */
 .app-container,
 .main-container,
@@ -32,7 +32,6 @@
   overflow-x: hidden;
 }
 
-/* Todo el contenido interno debe respetar el ancho del calendario mensual. */
 .cabecera-calendario,
 .selector-vista,
 .tarjeta-fecha-grande,
@@ -52,15 +51,17 @@
   box-sizing: border-box;
 }
 
-/* Vista anual: los 12 meses caben siempre en el área disponible (3 x 4). */
+/* Año: mismo ancho visual que Mes. */
 .vista-anyo .cabecera-calendario {
   min-height: 62px;
-  padding-top: 12px;
-  padding-bottom: 6px;
+  padding: 12px 18px 6px;
 }
 
 .vista-anyo .navegacion-dia {
+  width: 100%;
   min-height: 40px;
+  padding-left: 14px;
+  padding-right: 14px;
 }
 
 .vista-anyo .mes-nombre-grande {
@@ -75,7 +76,7 @@
   grid-template-rows: repeat(4, minmax(0, 1fr));
   align-content: stretch;
   gap: 6px;
-  padding: 7px 10px 10px;
+  padding: 7px 14px 14px;
 }
 
 .anyo-mes-card {
@@ -110,11 +111,10 @@
   line-height: 1;
 }
 
-/* Vista semanal: siete columnas dentro del mismo ancho que la vista Mes. */
+/* Semana: siete columnas dentro del mismo ancho que Mes. */
 .vista-semana .cabecera-calendario {
   min-height: 60px;
-  padding-top: 11px;
-  padding-bottom: 5px;
+  padding: 11px 18px 5px;
 }
 
 .vista-semana .selector-vista {
@@ -133,7 +133,7 @@
 .navegacion-semana {
   width: 100%;
   min-width: 0;
-  padding: 0 8px 7px;
+  padding: 0 14px 7px;
 }
 
 .navegacion-semana > div {
@@ -141,19 +141,14 @@
   width: min(170px, 55%);
 }
 
-.navegacion-semana strong {
-  font-size: 14px;
-}
-
-.navegacion-semana small {
-  font-size: 9px;
-}
+.navegacion-semana strong { font-size: 14px; }
+.navegacion-semana small { font-size: 9px; }
 
 .semana-scroll {
   width: 100%;
   min-width: 0;
   overflow: hidden;
-  padding: 0 7px 9px;
+  padding: 0 14px 14px;
 }
 
 .semana-grid {
@@ -277,7 +272,6 @@
   flex-shrink: 0;
 }
 
-/* Recetas y pantallas auxiliares siguen exactamente el ancho del calendario. */
 .recetas-cabecera,
 .recetas-lista,
 .screen-content {
@@ -285,11 +279,20 @@
   min-width: 0;
 }
 
-/* En móviles muy estrechos se mantiene el mismo criterio: encajar, nunca ensanchar. */
 @media (max-width: 380px) {
-  .cabecera-calendario {
-    padding-left: 10px;
-    padding-right: 10px;
+  .cabecera-calendario,
+  .vista-anyo .cabecera-calendario,
+  .vista-semana .cabecera-calendario {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .vista-anyo .navegacion-dia,
+  .anyo-grid,
+  .navegacion-semana,
+  .semana-scroll {
+    padding-left: 14px;
+    padding-right: 14px;
   }
 
   .boton-contexto {
@@ -298,28 +301,17 @@
   }
 
   .vista-semana .selector-vista {
-    margin-left: 10px;
-    margin-right: 10px;
-    max-width: calc(100% - 20px);
+    margin-left: 18px;
+    margin-right: 18px;
+    max-width: calc(100% - 36px);
   }
 
-  .semana-grid {
-    gap: 2px;
-  }
-
-  .semana-evento-icono {
-    display: none;
-  }
+  .semana-grid { gap: 2px; }
+  .semana-evento-icono { display: none; }
 
   .semana-evento-acciones .boton-icono {
     width: 16px;
     height: 16px;
     min-width: 16px;
-  }
-
-  .anyo-grid {
-    gap: 4px;
-    padding-left: 7px;
-    padding-right: 7px;
   }
 }
