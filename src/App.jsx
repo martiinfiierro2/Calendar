@@ -18,7 +18,12 @@ const RECETAS_INICIALES = recetasData.map(receta => ({ ...receta, ingredientes: 
 function sincronizarRecetasSesion() {
   try {
     const guardadasRaw = localStorage.getItem('calendar_recetas');
-    const guardadas = guardadasRaw === null ? RECETAS_INICIALES : JSON.parse(guardadasRaw);
+    if (guardadasRaw === null) {
+      localStorage.setItem('calendar_recetas', JSON.stringify(RECETAS_INICIALES));
+      recetasData.splice(0, recetasData.length, ...RECETAS_INICIALES.map(receta => ({ ...receta })));
+      return;
+    }
+    const guardadas = JSON.parse(guardadasRaw);
     if (!Array.isArray(guardadas)) return;
     recetasData.splice(0, recetasData.length, ...guardadas.map(receta => ({ ...receta })));
   } catch {
