@@ -318,6 +318,19 @@ body {
   flex-shrink: 0;
 }
 
+/* Recetas: una lista corta no debe estirar las tarjetas para rellenar la pantalla. */
+.recetas-pantalla .recetas-grid-lista {
+  align-content: start;
+  align-items: start;
+  grid-auto-rows: max-content;
+}
+
+.recetas-pantalla .receta-card-nueva {
+  height: 112px;
+  min-height: 112px;
+  max-height: 112px;
+}
+
 /* Recetas: las categorías conservan exactamente la misma geometría en todos sus estados. */
 .recetas-pantalla .recetas-filtros {
   align-items: center;
