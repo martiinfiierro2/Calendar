@@ -464,7 +464,6 @@ function VistaAnyo({ año, comidas, alSeleccionarMes, alCambiarAnyo, alAnadir })
       <div className="cabecera-calendario">
         <h2></h2>
         <div className="cabecera-dia">
-          <button className="btnSinEstilo">🍳</button>
           <button className="btnSinEstilo" onClick={alAnadir}>➕</button>
         </div>
       </div>
@@ -584,7 +583,6 @@ function VistaMes({
           {año}
         </button>
         <div className="cabecera-dia">
-          <button className="btnSinEstilo">🍳</button>
           <button className="btnSinEstilo" onClick={alAnadir}>➕</button>
         </div>
       </div>
