@@ -1,4 +1,4 @@
-import '../src/config/loadEnv.js';
+import 'dotenv/config';
 import app from '../src/app.js';
 
 // Vercel ejecuta Express como una función serverless.
