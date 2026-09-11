@@ -33,6 +33,7 @@ export default function RecipesPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(null);
 
+  // El servicio se encarga de guardar las recetas del usuario activo.
   useEffect(() => {
     saveRecipes(recipes);
   }, [recipes]);
@@ -101,7 +102,7 @@ export default function RecipesPage() {
   };
 
   const deleteRecipe = recipe => {
-    if (!window.confirm(`¿Eliminar "${recipe.nombre}"?`)) return;
+    if (!window.confirm(`¿Eliminar \"${recipe.nombre}\"?`)) return;
     setRecipes(current => current.filter(item => item.id !== recipe.id));
     setDetail(null);
   };
@@ -116,42 +117,26 @@ export default function RecipesPage() {
   return (
     <div className="recetas-pantalla recetas-app">
       <header className="recetas-cabecera recetas-header">
-        <div style={{ position: 'relative', width: 'min(100%, 250px)', height: '40px', minWidth: 0, flex: '1 1 250px' }}>
-          <div
-            aria-hidden={searchOpen}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              opacity: searchOpen ? 0 : 1,
-              visibility: searchOpen ? 'hidden' : 'visible',
-              pointerEvents: searchOpen ? 'none' : 'auto'
-            }}
-          >
-            <span className="recetas-eyebrow">Mi cocina</span>
-            <h1 className="recetas-titulo">Recetas</h1>
-          </div>
-
+        {searchOpen ? (
           <div
             className="recetas-search-wrap"
             style={{
-              position: 'absolute',
-              inset: 0,
               margin: 0,
-              width: '100%',
-              maxWidth: '100%',
+              width: 'min(100%, 250px)',
+              maxWidth: '250px',
               minHeight: '40px',
-              opacity: searchOpen ? 1 : 0,
-              visibility: searchOpen ? 'visible' : 'hidden',
-              pointerEvents: searchOpen ? 'auto' : 'none'
+              flexShrink: 1
             }}
           >
             <Icon name="search" size={17} />
             <input
-              type="search"
-              tabIndex={searchOpen ? 0 : -1}
+              type="text"
+              inputMode="search"
+              enterKeyHint="search"
               placeholder="Nombre o ingrediente..."
               value={query}
               onChange={event => setQuery(event.target.value)}
+              style={{ fontSize: '16px', lineHeight: 1.25 }}
             />
             {query && (
               <button onClick={() => setQuery('')} aria-label="Limpiar">
@@ -159,7 +144,12 @@ export default function RecipesPage() {
               </button>
             )}
           </div>
-        </div>
+        ) : (
+          <div>
+            <span className="recetas-eyebrow">Mi cocina</span>
+            <h1 className="recetas-titulo">Recetas</h1>
+          </div>
+        )}
 
         <div className="recetas-header-actions">
           <button className={`recetas-icon-btn ${searchOpen ? 'activo' : ''}`} onClick={() => setSearchOpen(value => !value)} aria-label="Buscar">
