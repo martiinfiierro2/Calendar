@@ -33,7 +33,6 @@ export default function RecipesPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(null);
 
-  // El servicio se encarga de guardar las recetas del usuario activo.
   useEffect(() => {
     saveRecipes(recipes);
   }, [recipes]);
@@ -117,20 +116,39 @@ export default function RecipesPage() {
   return (
     <div className="recetas-pantalla recetas-app">
       <header className="recetas-cabecera recetas-header">
-        {searchOpen ? (
+        <div style={{ position: 'relative', width: 'min(100%, 250px)', height: '40px', minWidth: 0, flex: '1 1 250px' }}>
+          <div
+            aria-hidden={searchOpen}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              opacity: searchOpen ? 0 : 1,
+              visibility: searchOpen ? 'hidden' : 'visible',
+              pointerEvents: searchOpen ? 'none' : 'auto'
+            }}
+          >
+            <span className="recetas-eyebrow">Mi cocina</span>
+            <h1 className="recetas-titulo">Recetas</h1>
+          </div>
+
           <div
             className="recetas-search-wrap"
             style={{
+              position: 'absolute',
+              inset: 0,
               margin: 0,
-              width: 'min(100%, 250px)',
-              maxWidth: '250px',
+              width: '100%',
+              maxWidth: '100%',
               minHeight: '40px',
-              flexShrink: 1
+              opacity: searchOpen ? 1 : 0,
+              visibility: searchOpen ? 'visible' : 'hidden',
+              pointerEvents: searchOpen ? 'auto' : 'none'
             }}
           >
             <Icon name="search" size={17} />
             <input
               type="search"
+              tabIndex={searchOpen ? 0 : -1}
               placeholder="Nombre o ingrediente..."
               value={query}
               onChange={event => setQuery(event.target.value)}
@@ -141,12 +159,7 @@ export default function RecipesPage() {
               </button>
             )}
           </div>
-        ) : (
-          <div>
-            <span className="recetas-eyebrow">Mi cocina</span>
-            <h1 className="recetas-titulo">Recetas</h1>
-          </div>
-        )}
+        </div>
 
         <div className="recetas-header-actions">
           <button className={`recetas-icon-btn ${searchOpen ? 'activo' : ''}`} onClick={() => setSearchOpen(value => !value)} aria-label="Buscar">
