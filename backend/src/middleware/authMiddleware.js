@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { User } from '../models/index.js';
+import { Usuario } from '../models/index.js';
 
 // Comprueba el token y añade el usuario a la petición.
 export async function requireAuth(req, res, next) {
@@ -9,10 +9,10 @@ export async function requireAuth(req, res, next) {
     if (!token) return res.status(401).json({ message: 'Token requerido.' });
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findByPk(payload.id, { attributes: ['id', 'nombre', 'email'] });
-    if (!user) return res.status(401).json({ message: 'Sesión no válida.' });
+    const usuario = await Usuario.findByPk(payload.id, { attributes: ['id', 'nombre', 'email'] });
+    if (!usuario) return res.status(401).json({ message: 'Sesión no válida.' });
 
-    req.user = user;
+    req.user = usuario;
     next();
   } catch {
     return res.status(401).json({ message: 'Token inválido o caducado.' });
