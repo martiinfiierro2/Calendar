@@ -1,24 +1,24 @@
 import sequelize from '../config/database.js';
-import User from './User.js';
-import Recipe from './Recipe.js';
-import Meal from './Meal.js';
-import ShoppingItem from './ShoppingItem.js';
-import Profile from './Profile.js';
+import Usuario from './User.js';
+import Receta from './Recipe.js';
+import Comida from './Meal.js';
+import ProductoCompra from './ShoppingItem.js';
+import Perfil from './Profile.js';
 
 // Relaciones principales de la aplicación.
-User.hasMany(Recipe, { foreignKey: 'userId', onDelete: 'CASCADE' });
-Recipe.belongsTo(User, { foreignKey: 'userId' });
+Usuario.hasMany(Receta, { foreignKey: 'usuarioId', onDelete: 'CASCADE' });
+Receta.belongsTo(Usuario, { foreignKey: 'usuarioId' });
 
-User.hasMany(Meal, { foreignKey: 'userId', onDelete: 'CASCADE' });
-Meal.belongsTo(User, { foreignKey: 'userId' });
+Usuario.hasMany(Comida, { foreignKey: 'usuarioId', onDelete: 'CASCADE' });
+Comida.belongsTo(Usuario, { foreignKey: 'usuarioId' });
 
-Recipe.hasMany(Meal, { foreignKey: 'recipeId', onDelete: 'SET NULL' });
-Meal.belongsTo(Recipe, { foreignKey: 'recipeId' });
+Receta.hasMany(Comida, { foreignKey: 'recetaId', onDelete: 'SET NULL' });
+Comida.belongsTo(Receta, { foreignKey: 'recetaId' });
 
-User.hasMany(ShoppingItem, { foreignKey: 'userId', onDelete: 'CASCADE' });
-ShoppingItem.belongsTo(User, { foreignKey: 'userId' });
+Usuario.hasMany(ProductoCompra, { foreignKey: 'usuarioId', onDelete: 'CASCADE' });
+ProductoCompra.belongsTo(Usuario, { foreignKey: 'usuarioId' });
 
-User.hasOne(Profile, { foreignKey: 'userId', onDelete: 'CASCADE' });
-Profile.belongsTo(User, { foreignKey: 'userId' });
+Usuario.hasOne(Perfil, { foreignKey: 'usuarioId', onDelete: 'CASCADE' });
+Perfil.belongsTo(Usuario, { foreignKey: 'usuarioId' });
 
-export { sequelize, User, Recipe, Meal, ShoppingItem, Profile };
+export { sequelize, Usuario, Receta, Comida, ProductoCompra, Perfil };
