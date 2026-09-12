@@ -1,24 +1,27 @@
-import { Profile, User } from '../models/index.js';
+import { Perfil, Usuario } from '../models/index.js';
 
 export async function getProfile(req, res, next) {
   try {
-    const profile = await Profile.findOne({ where: { userId: req.user.id } });
-    res.json({ nombre: req.user.nombre, email: req.user.email, ...profile?.toJSON() });
+    const perfil = await Perfil.findOne({ where: { usuarioId: req.user.id } });
+    res.json({ nombre: req.user.nombre, email: req.user.email, ...perfil?.toJSON() });
   } catch (error) { next(error); }
 }
 
 export async function updateProfile(req, res, next) {
   try {
-    const { nombre, email, ...preferences } = req.body;
-    const user = await User.findByPk(req.user.id);
+    const { nombre, email, ...preferencias } = req.body;
+    const usuario = await Usuario.findByPk(req.user.id);
 
-    if (nombre !== undefined) user.nombre = nombre.trim() || user.nombre;
-    if (email !== undefined) user.email = email.trim().toLowerCase();
-    await user.save();
+    if (nombre !== undefined) usuario.nombre = nombre.trim() || usuario.nombre;
+    if (email !== undefined) usuario.email = email.trim().toLowerCase();
+    await usuario.save();
 
-    const [profile] = await Profile.findOrCreate({ where: { userId: req.user.id }, defaults: { userId: req.user.id } });
-    await profile.update(preferences);
+    const [perfil] = await Perfil.findOrCreate({
+      where: { usuarioId: req.user.id },
+      defaults: { usuarioId: req.user.id }
+    });
+    await perfil.update(preferencias);
 
-    res.json({ nombre: user.nombre, email: user.email, ...profile.toJSON() });
+    res.json({ nombre: usuario.nombre, email: usuario.email, ...perfil.toJSON() });
   } catch (error) { next(error); }
 }
