@@ -3,7 +3,8 @@ import { apiRequest } from './apiClient';
 const SESSION_KEY = 'calendar_session';
 
 function saveSession(data) {
-  const session = { ...data.user, token: data.token };
+  const usuario = data.usuario || data.user;
+  const session = { ...usuario, token: data.token };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   return session;
 }
@@ -21,7 +22,7 @@ export function hasSession() {
 }
 
 export async function registerUser({ nombre, email, password }) {
-  const data = await apiRequest('/auth/register', {
+  const data = await apiRequest('/autenticacion/registro', {
     method: 'POST',
     body: JSON.stringify({ nombre: nombre.trim(), email: email.trim(), password })
   });
@@ -30,7 +31,7 @@ export async function registerUser({ nombre, email, password }) {
 }
 
 export async function loginUser({ email, password }) {
-  const data = await apiRequest('/auth/login', {
+  const data = await apiRequest('/autenticacion/acceso', {
     method: 'POST',
     body: JSON.stringify({ email: email.trim(), password })
   });
@@ -43,8 +44,8 @@ export async function refreshSession() {
   if (!session?.token) return null;
 
   try {
-    const data = await apiRequest('/auth/me');
-    return saveSession({ user: data.user, token: session.token });
+    const data = await apiRequest('/autenticacion/yo');
+    return saveSession({ usuario: data.usuario || data.user, token: session.token });
   } catch {
     logoutUser();
     return null;
