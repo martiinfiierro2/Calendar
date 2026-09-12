@@ -1,9 +1,9 @@
 import { DEFAULT_RECIPES } from '../data/defaultRecipes';
+import { apiRequest } from './apiClient';
 import { readStorage, writeStorage } from './storageService';
 
 const RECIPES_KEY = 'calendar_recetas';
 
-// Completa campos antiguos por si una receta se guardó con una versión anterior.
 export function normalizeRecipe(recipe) {
   return {
     categoria: 'Otros',
@@ -11,6 +11,7 @@ export function normalizeRecipe(recipe) {
     raciones: 2,
     dificultad: 'Fácil',
     favorito: false,
+    imagen: '',
     ingredientes: [],
     pasos: [],
     planificada: null,
@@ -26,16 +27,51 @@ export function getDefaultRecipes() {
   }));
 }
 
-// Devuelve las recetas del usuario. Si todavía no tiene, crea las iniciales una vez.
+// Se mantiene como caché síncrona para el calendario mientras termina su migración a la API.
 export function getRecipes() {
   const stored = readStorage(RECIPES_KEY, null);
   if (Array.isArray(stored)) return stored.map(normalizeRecipe);
-
-  const defaults = getDefaultRecipes();
-  writeStorage(RECIPES_KEY, defaults);
-  return defaults;
+  return getDefaultRecipes().map(normalizeRecipe);
 }
 
+function cacheRecipes(recipes) {
+  const normalized = recipes.map(normalizeRecipe);
+  writeStorage(RECIPES_KEY, normalized);
+  return normalized;
+}
+
+export async function fetchRecipes() {
+  const recipes = await apiRequest('/recipes');
+  return cacheRecipes(Array.isArray(recipes) ? recipes : []);
+}
+
+export async function createRecipe(data) {
+  const recipe = normalizeRecipe(await apiRequest('/recipes', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  }));
+
+  const current = getRecipes().filter(item => String(item.id) !== String(recipe.id));
+  cacheRecipes([recipe, ...current]);
+  return recipe;
+}
+
+export async function updateRecipe(id, data) {
+  const recipe = normalizeRecipe(await apiRequest(`/recipes/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }));
+
+  cacheRecipes(getRecipes().map(item => String(item.id) === String(id) ? recipe : item));
+  return recipe;
+}
+
+export async function deleteRecipe(id) {
+  await apiRequest(`/recipes/${id}`, { method: 'DELETE' });
+  cacheRecipes(getRecipes().filter(item => String(item.id) !== String(id)));
+}
+
+// Compatibilidad temporal con código que todavía guarda la caché local.
 export function saveRecipes(recipes) {
-  writeStorage(RECIPES_KEY, recipes.map(normalizeRecipe));
+  cacheRecipes(recipes);
 }
