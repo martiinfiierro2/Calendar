@@ -7,6 +7,11 @@ function usuarioPublico(usuario) {
   return { id: usuario.id, nombre: usuario.nombre, email: usuario.email };
 }
 
+function respuestaSesion(usuario, token) {
+  const publico = usuarioPublico(usuario);
+  return { usuario: publico, user: publico, token };
+}
+
 export async function registrar(req, res, next) {
   try {
     const nombre = req.body.nombre.trim();
@@ -20,7 +25,7 @@ export async function registrar(req, res, next) {
     await Perfil.create({ usuarioId: usuario.id });
     await Receta.bulkCreate(defaultRecipes.map(receta => ({ ...receta, usuarioId: usuario.id })));
 
-    res.status(201).json({ usuario: usuarioPublico(usuario), token: createToken(usuario.id) });
+    res.status(201).json(respuestaSesion(usuario, createToken(usuario.id)));
   } catch (error) {
     next(error);
   }
@@ -33,12 +38,13 @@ export async function acceder(req, res, next) {
     const valida = usuario && await bcrypt.compare(req.body.password, usuario.hashContrasena);
     if (!valida) return res.status(401).json({ message: 'Email o contraseña incorrectos.' });
 
-    res.json({ usuario: usuarioPublico(usuario), token: createToken(usuario.id) });
+    res.json(respuestaSesion(usuario, createToken(usuario.id)));
   } catch (error) {
     next(error);
   }
 }
 
 export function yo(req, res) {
-  res.json({ usuario: req.user });
+  const usuario = usuarioPublico(req.user);
+  res.json({ usuario, user: usuario });
 }
