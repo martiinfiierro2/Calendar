@@ -16,6 +16,7 @@ const rules = [
 
 router.get('/', listShopping);
 router.post('/', rules, createShoppingItem);
+router.post('/desde-calendario', generateFromCalendar);
 router.post('/from-calendar', generateFromCalendar);
 router.put('/:id', rules, updateShoppingItem);
 router.delete('/:id', deleteShoppingItem);
