@@ -42,12 +42,12 @@ function cacheRecipes(recipes) {
 }
 
 export async function fetchRecipes() {
-  const recipes = await apiRequest('/recipes');
+  const recipes = await apiRequest('/recetas');
   return cacheRecipes(Array.isArray(recipes) ? recipes : []);
 }
 
 export async function createRecipe(data) {
-  const recipe = normalizeRecipe(await apiRequest('/recipes', {
+  const recipe = normalizeRecipe(await apiRequest('/recetas', {
     method: 'POST',
     body: JSON.stringify(data)
   }));
@@ -58,7 +58,7 @@ export async function createRecipe(data) {
 }
 
 export async function updateRecipe(id, data) {
-  const recipe = normalizeRecipe(await apiRequest(`/recipes/${id}`, {
+  const recipe = normalizeRecipe(await apiRequest(`/recetas/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data)
   }));
@@ -68,7 +68,7 @@ export async function updateRecipe(id, data) {
 }
 
 export async function deleteRecipe(id) {
-  await apiRequest(`/recipes/${id}`, { method: 'DELETE' });
+  await apiRequest(`/recetas/${id}`, { method: 'DELETE' });
   cacheRecipes(getRecipes().filter(item => String(item.id) !== String(id)));
 }
 
