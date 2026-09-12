@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { Perfil, Receta, Usuario } from '../models/index.js';
-import { defaultRecipes } from '../data/defaultRecipes.js';
+import { Perfil, Usuario } from '../models/index.js';
 import { createToken } from '../utils/token.js';
 
 function usuarioPublico(usuario) {
@@ -23,7 +22,6 @@ export async function registrar(req, res, next) {
     const usuario = await Usuario.create({ nombre, email, hashContrasena });
 
     await Perfil.create({ usuarioId: usuario.id });
-    await Receta.bulkCreate(defaultRecipes.map(receta => ({ ...receta, usuarioId: usuario.id })));
 
     res.status(201).json(respuestaSesion(usuario, createToken(usuario.id)));
   } catch (error) {
