@@ -1,44 +1,44 @@
 import bcrypt from 'bcryptjs';
-import { Profile, Recipe, User } from '../models/index.js';
+import { Perfil, Receta, Usuario } from '../models/index.js';
 import { defaultRecipes } from '../data/defaultRecipes.js';
 import { createToken } from '../utils/token.js';
 
-function publicUser(user) {
-  return { id: user.id, nombre: user.nombre, email: user.email };
+function usuarioPublico(usuario) {
+  return { id: usuario.id, nombre: usuario.nombre, email: usuario.email };
 }
 
-export async function register(req, res, next) {
+export async function registrar(req, res, next) {
   try {
     const nombre = req.body.nombre.trim();
     const email = req.body.email.trim().toLowerCase();
-    const exists = await User.findOne({ where: { email } });
-    if (exists) return res.status(409).json({ message: 'Ya existe una cuenta con ese email.' });
+    const existe = await Usuario.findOne({ where: { email } });
+    if (existe) return res.status(409).json({ message: 'Ya existe una cuenta con ese email.' });
 
-    const passwordHash = await bcrypt.hash(req.body.password, 12);
-    const user = await User.create({ nombre, email, passwordHash });
+    const hashContrasena = await bcrypt.hash(req.body.password, 12);
+    const usuario = await Usuario.create({ nombre, email, hashContrasena });
 
-    await Profile.create({ userId: user.id });
-    await Recipe.bulkCreate(defaultRecipes.map(recipe => ({ ...recipe, userId: user.id })));
+    await Perfil.create({ usuarioId: usuario.id });
+    await Receta.bulkCreate(defaultRecipes.map(receta => ({ ...receta, usuarioId: usuario.id })));
 
-    res.status(201).json({ user: publicUser(user), token: createToken(user.id) });
+    res.status(201).json({ usuario: usuarioPublico(usuario), token: createToken(usuario.id) });
   } catch (error) {
     next(error);
   }
 }
 
-export async function login(req, res, next) {
+export async function acceder(req, res, next) {
   try {
     const email = req.body.email.trim().toLowerCase();
-    const user = await User.findOne({ where: { email } });
-    const valid = user && await bcrypt.compare(req.body.password, user.passwordHash);
-    if (!valid) return res.status(401).json({ message: 'Email o contraseña incorrectos.' });
+    const usuario = await Usuario.findOne({ where: { email } });
+    const valida = usuario && await bcrypt.compare(req.body.password, usuario.hashContrasena);
+    if (!valida) return res.status(401).json({ message: 'Email o contraseña incorrectos.' });
 
-    res.json({ user: publicUser(user), token: createToken(user.id) });
+    res.json({ usuario: usuarioPublico(usuario), token: createToken(usuario.id) });
   } catch (error) {
     next(error);
   }
 }
 
-export function me(req, res) {
-  res.json({ user: req.user });
+export function yo(req, res) {
+  res.json({ usuario: req.user });
 }
