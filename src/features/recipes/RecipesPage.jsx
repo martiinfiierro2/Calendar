@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CATEGORIAS_RECETA, PERFIL_INICIAL } from '../../config/appConfig';
-import { getRecipes, saveRecipes } from '../../services/recipeService';
+import { createRecipe, deleteRecipe as deleteRecipeApi, fetchRecipes, updateRecipe } from '../../services/recipeService';
 import { readStorage } from '../../services/storageService';
 import Icon from '../../shared/Icon';
 import RecipeCard from './RecipeCard';
@@ -25,18 +25,35 @@ function createEmptyForm() {
 }
 
 export default function RecipesPage() {
-  const [recipes, setRecipes] = useState(getRecipes);
+  const [recipes, setRecipes] = useState([]);
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [category, setCategory] = useState('Todas');
   const [detail, setDetail] = useState(null);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
-  // El servicio se encarga de guardar las recetas del usuario activo.
   useEffect(() => {
-    saveRecipes(recipes);
-  }, [recipes]);
+    let active = true;
+
+    fetchRecipes()
+      .then(data => {
+        if (active) setRecipes(data);
+      })
+      .catch(err => {
+        if (active) setError(err.message || 'No se pudieron cargar las recetas.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredRecipes = useMemo(() => {
     const text = query.trim().toLowerCase();
@@ -72,16 +89,16 @@ export default function RecipesPage() {
   };
 
   const closeForm = () => {
+    if (saving) return;
     setForm(null);
     setEditing(null);
   };
 
-  const submitForm = event => {
+  const submitForm = async event => {
     event.preventDefault();
-    if (!form?.nombre.trim()) return;
+    if (!form?.nombre.trim() || saving) return;
 
-    const recipe = {
-      id: editing?.id || Date.now(),
+    const data = {
       nombre: form.nombre.trim(),
       categoria: form.categoria,
       tiempo: Math.max(1, Number(form.tiempo) || 1),
@@ -90,28 +107,70 @@ export default function RecipesPage() {
       favorito: editing?.favorito || false,
       imagen: form.imagen.trim() || FALLBACK_IMAGE,
       ingredientes: form.ingredientes.split('\n').map(value => value.trim()).filter(Boolean),
-      pasos: form.pasos.split('\n').map(value => value.trim()).filter(Boolean),
-      planificada: editing?.planificada || null
+      pasos: form.pasos.split('\n').map(value => value.trim()).filter(Boolean)
     };
 
-    setRecipes(current => editing
-      ? current.map(item => item.id === editing.id ? recipe : item)
-      : [recipe, ...current]
-    );
-    closeForm();
+    try {
+      setSaving(true);
+      setError('');
+      const saved = editing
+        ? await updateRecipe(editing.id, data)
+        : await createRecipe(data);
+
+      setRecipes(current => editing
+        ? current.map(item => item.id === editing.id ? saved : item)
+        : [saved, ...current]
+      );
+      setForm(null);
+      setEditing(null);
+    } catch (err) {
+      setError(err.message || 'No se pudo guardar la receta.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const deleteRecipe = recipe => {
+  const deleteRecipe = async recipe => {
     if (!window.confirm(`¿Eliminar \"${recipe.nombre}\"?`)) return;
-    setRecipes(current => current.filter(item => item.id !== recipe.id));
-    setDetail(null);
+
+    try {
+      setError('');
+      await deleteRecipeApi(recipe.id);
+      setRecipes(current => current.filter(item => item.id !== recipe.id));
+      setDetail(null);
+    } catch (err) {
+      setError(err.message || 'No se pudo eliminar la receta.');
+    }
   };
 
-  const toggleFavorite = id => {
-    setRecipes(current => current.map(recipe => (
-      recipe.id === id ? { ...recipe, favorito: !recipe.favorito } : recipe
-    )));
-    setDetail(current => current?.id === id ? { ...current, favorito: !current.favorito } : current);
+  const toggleFavorite = async id => {
+    const recipe = recipes.find(item => item.id === id);
+    if (!recipe) return;
+
+    const next = { ...recipe, favorito: !recipe.favorito };
+    setRecipes(current => current.map(item => item.id === id ? next : item));
+    setDetail(current => current?.id === id ? next : current);
+
+    try {
+      setError('');
+      const saved = await updateRecipe(id, {
+        nombre: next.nombre,
+        categoria: next.categoria,
+        tiempo: next.tiempo,
+        raciones: next.raciones,
+        dificultad: next.dificultad,
+        favorito: next.favorito,
+        imagen: next.imagen,
+        ingredientes: next.ingredientes,
+        pasos: next.pasos
+      });
+      setRecipes(current => current.map(item => item.id === id ? saved : item));
+      setDetail(current => current?.id === id ? saved : current);
+    } catch (err) {
+      setRecipes(current => current.map(item => item.id === id ? recipe : item));
+      setDetail(current => current?.id === id ? recipe : current);
+      setError(err.message || 'No se pudo actualizar la receta.');
+    }
   };
 
   return (
@@ -175,7 +234,11 @@ export default function RecipesPage() {
       </div>
 
       <div className="recetas-lista recetas-grid-lista">
-        {filteredRecipes.length === 0 ? (
+        {loading ? (
+          <div className="recetas-vacio"><p>Cargando recetas...</p></div>
+        ) : error && recipes.length === 0 ? (
+          <div className="recetas-vacio"><strong>No se pudieron cargar</strong><p>{error}</p></div>
+        ) : filteredRecipes.length === 0 ? (
           <div className="recetas-vacio">
             <span className="recetas-vacio-icono"><Icon name="chef" size={28} /></span>
             <strong>No hay recetas aquí</strong>
