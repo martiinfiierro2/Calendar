@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-const Meal = sequelize.define('Meal', {
+const Comida = sequelize.define('Comida', {
   id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
   fecha: { type: DataTypes.DATEONLY, allowNull: false },
   hora: { type: DataTypes.TIME, allowNull: false },
@@ -9,10 +9,14 @@ const Meal = sequelize.define('Meal', {
   tipo: { type: DataTypes.STRING(30), allowNull: false, defaultValue: 'comida' },
   icono: { type: DataTypes.STRING(16), allowNull: true },
   modo: { type: DataTypes.ENUM('receta', 'rapida'), allowNull: false },
-  ingredientes: { type: DataTypes.JSON, allowNull: true }
+  ingredientes: { type: DataTypes.JSON, allowNull: true },
+  usuarioId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
+  recetaId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true }
 }, {
-  tableName: 'meals',
-  timestamps: true
+  tableName: 'comidas',
+  timestamps: true,
+  createdAt: 'creadoEn',
+  updatedAt: 'actualizadoEn'
 });
 
-export default Meal;
+export default Comida;
