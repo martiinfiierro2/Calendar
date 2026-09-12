@@ -1,12 +1,36 @@
 import { PERFIL_INICIAL } from '../config/appConfig';
 import { categoriaIngrediente, normalizarIngrediente } from '../utils/ingredientUtils';
-import { getRecipes } from './recipeService';
-import { readStorage, writeStorage } from './storageService';
+import { fetchRecipes } from './recipeService';
+import { apiRequest } from './apiClient';
+import { readStorage } from './storageService';
 
-// Construye productos desde las recetas que están planificadas en el calendario.
-export function buildShoppingItemsFromCalendar(existingItems = []) {
+export async function fetchShoppingItems() {
+  const items = await apiRequest('/shopping');
+  return Array.isArray(items) ? items : [];
+}
+
+export async function createShoppingItem(data) {
+  return apiRequest('/shopping', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function updateShoppingItem(id, data) {
+  return apiRequest(`/shopping/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function deleteShoppingItem(id) {
+  await apiRequest(`/shopping/${id}`, { method: 'DELETE' });
+}
+
+// Mientras el calendario siga en localStorage, genera aquí sus ingredientes y los guarda en la API.
+export async function buildShoppingItemsFromCalendar(existingItems = []) {
   const meals = readStorage('calendar_comidas', []);
-  const recipes = getRecipes();
+  const recipes = await fetchRecipes();
   const seen = new Set(existingItems.map(item => normalizarIngrediente(item.nombre)));
   const newItems = [];
 
@@ -22,7 +46,6 @@ export function buildShoppingItemsFromCalendar(existingItems = []) {
 
         seen.add(key);
         newItems.push({
-          id: `${Date.now()}-${newItems.length}`,
           nombre: name,
           cantidad: '1',
           categoria: categoriaIngrediente(name),
@@ -35,14 +58,21 @@ export function buildShoppingItemsFromCalendar(existingItems = []) {
   return newItems;
 }
 
-// Si el perfil lo tiene activado, añade automáticamente los ingredientes nuevos.
-export function syncAutomaticShopping() {
+export async function createItemsFromCalendar(existingItems = []) {
+  const pending = await buildShoppingItemsFromCalendar(existingItems);
+  if (!pending.length) return [];
+  return Promise.all(pending.map(item => createShoppingItem(item)));
+}
+
+// Si el perfil lo tiene activado, sincroniza los ingredientes sin bloquear el calendario.
+export async function syncAutomaticShopping() {
   const profile = readStorage('calendar_perfil', PERFIL_INICIAL) || PERFIL_INICIAL;
-  if (!profile.comprasAutomaticas) return;
+  if (!profile.comprasAutomaticas) return [];
 
-  const currentItems = readStorage('calendar_compra', []);
-  const newItems = buildShoppingItemsFromCalendar(currentItems);
-  if (!newItems.length) return;
-
-  writeStorage('calendar_compra', [...newItems, ...currentItems]);
+  try {
+    const currentItems = await fetchShoppingItems();
+    return await createItemsFromCalendar(currentItems);
+  } catch {
+    return [];
+  }
 }
