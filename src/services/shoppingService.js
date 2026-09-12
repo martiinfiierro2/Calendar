@@ -5,26 +5,26 @@ import { apiRequest } from './apiClient';
 import { readStorage } from './storageService';
 
 export async function fetchShoppingItems() {
-  const items = await apiRequest('/shopping');
+  const items = await apiRequest('/compra');
   return Array.isArray(items) ? items : [];
 }
 
 export async function createShoppingItem(data) {
-  return apiRequest('/shopping', {
+  return apiRequest('/compra', {
     method: 'POST',
     body: JSON.stringify(data)
   });
 }
 
 export async function updateShoppingItem(id, data) {
-  return apiRequest(`/shopping/${id}`, {
+  return apiRequest(`/compra/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data)
   });
 }
 
 export async function deleteShoppingItem(id) {
-  await apiRequest(`/shopping/${id}`, { method: 'DELETE' });
+  await apiRequest(`/compra/${id}`, { method: 'DELETE' });
 }
 
 // Mientras el calendario siga en localStorage, genera aquí sus ingredientes y los guarda en la API.
