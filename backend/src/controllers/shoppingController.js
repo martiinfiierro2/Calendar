@@ -44,7 +44,7 @@ export async function deleteShoppingItem(req, res, next) {
 export async function generateFromCalendar(req, res, next) {
   try {
     const [comidas, recetas, existentes] = await Promise.all([
-      Comida.findAll({ where: { usuarioId: req.user.id, modo: 'receta' } }),
+      Comida.findAll({ where: { usuarioId: req.user.id } }),
       Receta.findAll({ where: { usuarioId: req.user.id } }),
       ProductoCompra.findAll({ where: { usuarioId: req.user.id } })
     ]);
@@ -54,13 +54,27 @@ export async function generateFromCalendar(req, res, next) {
     const filas = [];
 
     comidas.forEach(comida => {
-      const receta = mapaRecetas.get(String(comida.recetaId));
-      (receta?.ingredientes || []).forEach(ingrediente => {
+      const receta = comida.modo === 'receta'
+        ? mapaRecetas.get(String(comida.recetaId))
+        : null;
+
+      const ingredientes = comida.modo === 'receta'
+        ? (receta?.ingredientes || [])
+        : (Array.isArray(comida.ingredientes) ? comida.ingredientes : []);
+
+      ingredientes.forEach(ingrediente => {
         const nombre = String(ingrediente).trim();
         const clave = nombre.toLowerCase();
         if (!nombre || vistos.has(clave)) return;
         vistos.add(clave);
-        filas.push({ nombre, cantidad: '1', categoria: categoriaIngrediente(nombre), comprado: false, automatico: true, usuarioId: req.user.id });
+        filas.push({
+          nombre,
+          cantidad: '1',
+          categoria: categoriaIngrediente(nombre),
+          comprado: false,
+          automatico: true,
+          usuarioId: req.user.id
+        });
       });
     });
 
