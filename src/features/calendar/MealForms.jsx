@@ -1,22 +1,45 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
-import { getRecipes } from '../../services/recipeService';
+import { fetchRecipes } from '../../services/recipeService';
 import { fechaClave } from '../../utils/dateUtils';
 import IconButton from '../../shared/IconButton';
 
 // Formulario para añadir una receta guardada al calendario.
 export function RecipeMealForm({ date, initialHour, initialMeal, onClose, onSave }) {
-  const recipes = useMemo(() => getRecipes(), []);
+  const [recipes, setRecipes] = useState([]);
   const [search, setSearch] = useState('');
-  const [selectedRecipe, setSelectedRecipe] = useState(
-    recipes.find(recipe => String(recipe.id) === String(initialMeal?.recetaId)) || null
-  );
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [loadingRecipes, setLoadingRecipes] = useState(true);
+  const [recipeError, setRecipeError] = useState('');
   const [formDate, setFormDate] = useState(initialMeal?.fecha || fechaClave(date));
   const [hour, setHour] = useState(initialMeal?.hora || initialHour || '14:00');
 
-  const filteredRecipes = recipes.filter(recipe => (
+  useEffect(() => {
+    let active = true;
+
+    fetchRecipes()
+      .then(data => {
+        if (!active) return;
+        setRecipes(data);
+        if (initialMeal?.recetaId) {
+          setSelectedRecipe(data.find(recipe => String(recipe.id) === String(initialMeal.recetaId)) || null);
+        }
+      })
+      .catch(error => {
+        if (active) setRecipeError(error.message || 'No se pudieron cargar las recetas.');
+      })
+      .finally(() => {
+        if (active) setLoadingRecipes(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [initialMeal?.recetaId]);
+
+  const filteredRecipes = useMemo(() => recipes.filter(recipe => (
     recipe.nombre.toLowerCase().includes(search.toLowerCase())
-  ));
+  )), [recipes, search]);
 
   const submit = event => {
     event.preventDefault();
@@ -49,7 +72,9 @@ export function RecipeMealForm({ date, initialHour, initialMeal, onClose, onSave
           <label htmlFor="buscar-receta-calendario">Buscar receta</label>
           <input
             id="buscar-receta-calendario"
-            type="search"
+            type="text"
+            inputMode="search"
+            enterKeyHint="search"
             placeholder="Escribe el nombre de una receta..."
             value={search}
             onChange={event => setSearch(event.target.value)}
@@ -57,7 +82,13 @@ export function RecipeMealForm({ date, initialHour, initialMeal, onClose, onSave
         </div>
 
         <div className="selector-recetas">
-          {filteredRecipes.map(recipe => (
+          {loadingRecipes ? (
+            <p>Cargando recetas...</p>
+          ) : recipeError ? (
+            <p>{recipeError}</p>
+          ) : filteredRecipes.length === 0 ? (
+            <p>No hay recetas disponibles.</p>
+          ) : filteredRecipes.map(recipe => (
             <button
               key={recipe.id}
               type="button"
