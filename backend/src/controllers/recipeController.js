@@ -1,32 +1,32 @@
-import { Recipe } from '../models/index.js';
+import { Receta } from '../models/index.js';
 
 export async function listRecipes(req, res, next) {
   try {
-    const recipes = await Recipe.findAll({ where: { userId: req.user.id }, order: [['createdAt', 'DESC']] });
-    res.json(recipes);
+    const recetas = await Receta.findAll({ where: { usuarioId: req.user.id }, order: [['creadoEn', 'DESC']] });
+    res.json(recetas);
   } catch (error) { next(error); }
 }
 
 export async function createRecipe(req, res, next) {
   try {
-    const recipe = await Recipe.create({ ...req.body, userId: req.user.id });
-    res.status(201).json(recipe);
+    const receta = await Receta.create({ ...req.body, usuarioId: req.user.id });
+    res.status(201).json(receta);
   } catch (error) { next(error); }
 }
 
 export async function updateRecipe(req, res, next) {
   try {
-    const recipe = await Recipe.findOne({ where: { id: req.params.id, userId: req.user.id } });
-    if (!recipe) return res.status(404).json({ message: 'Receta no encontrada.' });
-    await recipe.update(req.body);
-    res.json(recipe);
+    const receta = await Receta.findOne({ where: { id: req.params.id, usuarioId: req.user.id } });
+    if (!receta) return res.status(404).json({ message: 'Receta no encontrada.' });
+    await receta.update(req.body);
+    res.json(receta);
   } catch (error) { next(error); }
 }
 
 export async function deleteRecipe(req, res, next) {
   try {
-    const deleted = await Recipe.destroy({ where: { id: req.params.id, userId: req.user.id } });
-    if (!deleted) return res.status(404).json({ message: 'Receta no encontrada.' });
+    const eliminadas = await Receta.destroy({ where: { id: req.params.id, usuarioId: req.user.id } });
+    if (!eliminadas) return res.status(404).json({ message: 'Receta no encontrada.' });
     res.status(204).end();
   } catch (error) { next(error); }
 }
