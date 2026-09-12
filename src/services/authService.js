@@ -9,6 +9,15 @@ function saveSession(data) {
   return session;
 }
 
+async function authRequest(rutaNueva, rutaAntigua, options) {
+  try {
+    return await apiRequest(rutaNueva, options);
+  } catch (error) {
+    if (error.status !== 404) throw error;
+    return apiRequest(rutaAntigua, options);
+  }
+}
+
 export function getSession() {
   try {
     return JSON.parse(localStorage.getItem(SESSION_KEY));
@@ -22,20 +31,22 @@ export function hasSession() {
 }
 
 export async function registerUser({ nombre, email, password }) {
-  const data = await apiRequest('/autenticacion/registro', {
+  const options = {
     method: 'POST',
     body: JSON.stringify({ nombre: nombre.trim(), email: email.trim(), password })
-  });
+  };
 
+  const data = await authRequest('/autenticacion/registro', '/auth/register', options);
   return saveSession(data);
 }
 
 export async function loginUser({ email, password }) {
-  const data = await apiRequest('/autenticacion/acceso', {
+  const options = {
     method: 'POST',
     body: JSON.stringify({ email: email.trim(), password })
-  });
+  };
 
+  const data = await authRequest('/autenticacion/acceso', '/auth/login', options);
   return saveSession(data);
 }
 
@@ -44,7 +55,7 @@ export async function refreshSession() {
   if (!session?.token) return null;
 
   try {
-    const data = await apiRequest('/autenticacion/yo');
+    const data = await authRequest('/autenticacion/yo', '/auth/me');
     return saveSession({ usuario: data.usuario || data.user, token: session.token });
   } catch {
     logoutUser();
