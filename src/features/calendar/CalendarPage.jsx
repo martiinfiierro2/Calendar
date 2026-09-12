@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
+import { actualizarComida, crearComida, eliminarComida, obtenerComidas } from '../../services/mealService';
 import { fetchRecipes } from '../../services/recipeService';
 import { syncAutomaticShopping } from '../../services/shoppingService';
-import { readStorage, writeStorage } from '../../services/storageService';
+import { readStorage, removeStorage } from '../../services/storageService';
 import { fechaClave, fechaDesdeClave } from '../../utils/dateUtils';
 import Icon from '../../shared/Icon';
 import DayView from './views/DayView';
@@ -13,20 +14,17 @@ import { QuickMealForm, RecipeMealForm } from './MealForms';
 
 const MEALS_KEY = 'calendar_comidas';
 
-function createDemoMeals(recipes) {
-  const date = fechaClave(new Date());
-  const hours = ['08:00', '11:00', '14:00', '17:00', '21:00'];
-
-  return recipes.slice(0, 5).map((recipe, index) => ({
-    id: `demo-${recipe.id}`,
-    recetaId: recipe.id,
-    fecha: date,
-    hora: hours[index],
-    nombre: recipe.nombre,
-    tipo: TIPOS_COMIDA[Math.min(index, TIPOS_COMIDA.length - 1)].valor,
-    icono: TIPOS_COMIDA[Math.min(index, TIPOS_COMIDA.length - 1)].icono,
-    modo: 'receta'
-  }));
+function prepararComida(data) {
+  return {
+    recetaId: data.recetaId || null,
+    fecha: data.fecha,
+    hora: data.hora,
+    nombre: data.nombre,
+    tipo: data.tipo,
+    icono: data.icono,
+    ingredientes: data.ingredientes || null,
+    modo: data.modo
+  };
 }
 
 export default function CalendarPage() {
@@ -38,11 +36,10 @@ export default function CalendarPage() {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [selectedHour, setSelectedHour] = useState('14:00');
   const [form, setForm] = useState(null);
-  const [meals, setMeals] = useState(() => {
-    const stored = readStorage(MEALS_KEY, null);
-    return Array.isArray(stored) ? stored : [];
-  });
-  const [mealsReady, setMealsReady] = useState(() => Array.isArray(readStorage(MEALS_KEY, null)));
+  const [meals, setMeals] = useState([]);
+  const [loadingMeals, setLoadingMeals] = useState(true);
+  const [savingMeal, setSavingMeal] = useState(false);
+  const [error, setError] = useState('');
   const [editingMeal, setEditingMeal] = useState(null);
 
   const hours = useMemo(
@@ -50,36 +47,57 @@ export default function CalendarPage() {
     []
   );
 
-  // Las comidas de ejemplo usan los IDs reales de las recetas guardadas en la API.
+  // Recupera las comidas del servidor y migra una sola vez las que quedaban en localStorage.
   useEffect(() => {
-    if (mealsReady) return undefined;
-
     let active = true;
-    fetchRecipes()
-      .then(recipes => {
+
+    async function cargarComidas() {
+      try {
+        setError('');
+        const remotas = await obtenerComidas();
+
         if (!active) return;
-        const demo = createDemoMeals(recipes);
-        setMeals(demo);
-        writeStorage(MEALS_KEY, demo);
-      })
-      .catch(() => {
-        if (active) writeStorage(MEALS_KEY, []);
-      })
-      .finally(() => {
-        if (active) setMealsReady(true);
-      });
+        if (remotas.length) {
+          setMeals(remotas);
+          removeStorage(MEALS_KEY);
+          return;
+        }
+
+        const locales = readStorage(MEALS_KEY, null);
+        if (!Array.isArray(locales) || !locales.length) {
+          setMeals([]);
+          return;
+        }
+
+        const recetas = await fetchRecipes();
+        const migradas = await Promise.all(locales.map(comida => {
+          let recetaId = comida.recetaId || null;
+
+          if (comida.modo === 'receta') {
+            const receta = recetas.find(item => item.nombre === comida.nombre)
+              || recetas.find(item => String(item.id) === String(comida.recetaId));
+            recetaId = receta?.id || null;
+          }
+
+          return crearComida(prepararComida({ ...comida, recetaId }));
+        }));
+
+        if (!active) return;
+        setMeals(migradas);
+        removeStorage(MEALS_KEY);
+      } catch (err) {
+        if (active) setError(err.message || 'No se pudo cargar el calendario.');
+      } finally {
+        if (active) setLoadingMeals(false);
+      }
+    }
+
+    cargarComidas();
 
     return () => {
       active = false;
     };
-  }, [mealsReady]);
-
-  // Guarda el calendario y actualiza la compra si el usuario activó esa opción.
-  useEffect(() => {
-    if (!mealsReady) return;
-    writeStorage(MEALS_KEY, meals);
-    syncAutomaticShopping();
-  }, [meals, mealsReady]);
+  }, []);
 
   const syncDate = newDate => {
     setDate(newDate);
@@ -141,25 +159,29 @@ export default function CalendarPage() {
     setForm({ type, hour: selectedHour });
   };
 
-  const saveMeal = data => {
-    const meal = {
-      id: editingMeal?.id || `${Date.now()}`,
-      recetaId: data.recetaId,
-      fecha: data.fecha,
-      hora: data.hora,
-      nombre: data.nombre,
-      tipo: data.tipo,
-      icono: data.icono,
-      ingredientes: data.ingredientes,
-      modo: data.modo
-    };
+  const saveMeal = async data => {
+    if (savingMeal) return;
 
-    setMeals(current => editingMeal
-      ? current.map(item => item.id === editingMeal.id ? meal : item)
-      : [...current, meal]
-    );
-    setForm(null);
-    setEditingMeal(null);
+    try {
+      setSavingMeal(true);
+      setError('');
+      const payload = prepararComida(data);
+      const saved = editingMeal
+        ? await actualizarComida(editingMeal.id, payload)
+        : await crearComida(payload);
+
+      setMeals(current => editingMeal
+        ? current.map(item => item.id === editingMeal.id ? saved : item)
+        : [...current, saved]
+      );
+      setForm(null);
+      setEditingMeal(null);
+      syncAutomaticShopping();
+    } catch (err) {
+      setError(err.message || 'No se pudo guardar la comida.');
+    } finally {
+      setSavingMeal(false);
+    }
   };
 
   const editMeal = meal => {
@@ -168,14 +190,26 @@ export default function CalendarPage() {
     setForm({ type: meal.modo, hour: meal.hora, meal });
   };
 
-  const deleteMeal = id => {
+  const deleteMeal = async id => {
     if (!window.confirm('¿Quieres eliminar esta comida?')) return;
+
+    const previous = meals;
     setMeals(current => current.filter(meal => meal.id !== id));
     setEditingMeal(null);
     setForm(null);
+
+    try {
+      setError('');
+      await eliminarComida(id);
+      syncAutomaticShopping();
+    } catch (err) {
+      setMeals(previous);
+      setError(err.message || 'No se pudo eliminar la comida.');
+    }
   };
 
   const closeForm = () => {
+    if (savingMeal) return;
     const wasEditing = Boolean(editingMeal);
     setForm(null);
     setEditingMeal(null);
@@ -184,8 +218,20 @@ export default function CalendarPage() {
 
   const dayMeals = meals.filter(meal => meal.fecha === fechaClave(date));
 
+  if (loadingMeals) {
+    return (
+      <div className="contenedor-calendario">
+        <div style={{ padding: '24px', textAlign: 'center' }}>Cargando calendario...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="contenedor-calendario">
+      {error && (
+        <div style={{ padding: '8px 14px', fontSize: '13px', textAlign: 'center' }}>{error}</div>
+      )}
+
       {view === 'anyo' && (
         <YearView
           year={visibleYear}
