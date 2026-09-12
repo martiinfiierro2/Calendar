@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
-import { getRecipes } from '../../services/recipeService';
+import { fetchRecipes } from '../../services/recipeService';
 import { syncAutomaticShopping } from '../../services/shoppingService';
 import { readStorage, writeStorage } from '../../services/storageService';
 import { fechaClave, fechaDesdeClave } from '../../utils/dateUtils';
@@ -13,12 +13,11 @@ import { QuickMealForm, RecipeMealForm } from './MealForms';
 
 const MEALS_KEY = 'calendar_comidas';
 
-// Crea unas comidas de ejemplo la primera vez que se abre una cuenta.
-function getDemoMeals() {
+function createDemoMeals(recipes) {
   const date = fechaClave(new Date());
   const hours = ['08:00', '11:00', '14:00', '17:00', '21:00'];
 
-  return getRecipes().slice(0, 5).map((recipe, index) => ({
+  return recipes.slice(0, 5).map((recipe, index) => ({
     id: `demo-${recipe.id}`,
     recetaId: recipe.id,
     fecha: date,
@@ -30,15 +29,6 @@ function getDemoMeals() {
   }));
 }
 
-function getInitialMeals() {
-  const stored = readStorage(MEALS_KEY, null);
-  if (Array.isArray(stored)) return stored;
-
-  const demo = getDemoMeals();
-  writeStorage(MEALS_KEY, demo);
-  return demo;
-}
-
 export default function CalendarPage() {
   const today = new Date();
   const [date, setDate] = useState(new Date());
@@ -48,7 +38,11 @@ export default function CalendarPage() {
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [selectedHour, setSelectedHour] = useState('14:00');
   const [form, setForm] = useState(null);
-  const [meals, setMeals] = useState(getInitialMeals);
+  const [meals, setMeals] = useState(() => {
+    const stored = readStorage(MEALS_KEY, null);
+    return Array.isArray(stored) ? stored : [];
+  });
+  const [mealsReady, setMealsReady] = useState(() => Array.isArray(readStorage(MEALS_KEY, null)));
   const [editingMeal, setEditingMeal] = useState(null);
 
   const hours = useMemo(
@@ -56,11 +50,36 @@ export default function CalendarPage() {
     []
   );
 
+  // Las comidas de ejemplo usan los IDs reales de las recetas guardadas en la API.
+  useEffect(() => {
+    if (mealsReady) return undefined;
+
+    let active = true;
+    fetchRecipes()
+      .then(recipes => {
+        if (!active) return;
+        const demo = createDemoMeals(recipes);
+        setMeals(demo);
+        writeStorage(MEALS_KEY, demo);
+      })
+      .catch(() => {
+        if (active) writeStorage(MEALS_KEY, []);
+      })
+      .finally(() => {
+        if (active) setMealsReady(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [mealsReady]);
+
   // Guarda el calendario y actualiza la compra si el usuario activó esa opción.
   useEffect(() => {
+    if (!mealsReady) return;
     writeStorage(MEALS_KEY, meals);
     syncAutomaticShopping();
-  }, [meals]);
+  }, [meals, mealsReady]);
 
   const syncDate = newDate => {
     setDate(newDate);
