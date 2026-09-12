@@ -3,6 +3,7 @@ import { apiRequest } from './apiClient';
 import { readStorage, writeStorage } from './storageService';
 
 const RECIPES_KEY = 'calendar_recetas';
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80';
 
 export function normalizeRecipe(recipe) {
   return {
@@ -11,11 +12,11 @@ export function normalizeRecipe(recipe) {
     raciones: 2,
     dificultad: 'Fácil',
     favorito: false,
-    imagen: '',
     ingredientes: [],
     pasos: [],
     planificada: null,
-    ...recipe
+    ...recipe,
+    imagen: recipe?.imagen || FALLBACK_IMAGE
   };
 }
 
