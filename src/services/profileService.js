@@ -13,30 +13,16 @@ function normalizeProfile(profile) {
   };
 }
 
-export async function getProfiles() {
-  const profiles = await apiRequest('/perfil');
-  return Array.isArray(profiles) ? profiles.map(normalizeProfile): [];
-}
-
-export async function getProfile(id) {
-  const profile = await apiRequest(`/perfil/:${id}`);
-  return Array.isArray(profile) ? profile.map(normalizeProfile): [];
-}
-
-export async function createProfile(data) {
-  return normalizeProfile(await apiRequest('/perfil', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  }));
+export async function getProfile() {
+  const profile = await apiRequest('/perfil');
+  return normalizeProfile(profile);
 }
 
 export async function updateProfile(id, data) {
-  return normalizeProfile(await apiRequest(`/perfil/${id}`, {
+  const profile = await apiRequest(`/perfil`, {
     method: 'PUT',
     body: JSON.stringify(data)
-  }));
-}
+  });
 
-export async function deleteProfile(id) {
-  await apiRequest(`/perfil/${id}`, { method: 'DELETE' });
+  return normalizeProfile(profile);
 }
