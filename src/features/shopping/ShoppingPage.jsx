@@ -4,7 +4,7 @@ import {
   createItemsFromCalendar,
   createShoppingItem,
   deleteShoppingItem,
-  fetchShoppingItems,
+  getShoppingItems,
   updateShoppingItem
 } from '../../services/shoppingService';
 import { categoriaIngrediente } from '../../utils/ingredientUtils';
@@ -26,7 +26,7 @@ export default function ShoppingPage() {
   useEffect(() => {
     let active = true;
 
-    fetchShoppingItems()
+    getShoppingItems()
       .then(data => {
         if (active) setItems(data);
       })
@@ -144,7 +144,7 @@ export default function ShoppingPage() {
       setItems(current => current.filter(item => !item.comprado));
     } catch (err) {
       setError(err.message || 'No se pudieron limpiar los productos comprados.');
-      const fresh = await fetchShoppingItems().catch(() => null);
+      const fresh = await getShoppingItems().catch(() => null);
       if (fresh) setItems(fresh);
     }
   };
@@ -152,7 +152,7 @@ export default function ShoppingPage() {
   const generateFromCalendar = async () => {
     try {
       setError('');
-      const created = await createItemsFromCalendar(items);
+      const created = await createItemsFromCalendar();
       if (!created.length) {
         window.alert('No hay ingredientes nuevos en las recetas planificadas.');
         return;
