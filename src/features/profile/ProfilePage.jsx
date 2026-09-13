@@ -6,6 +6,8 @@ import '../../componentes/perfil.css';
 import { getProfile, updateProfile } from '../../services/profileService';
 
 export default function ProfilePage({ onLogout }) {
+  const navigate = useNavigate();
+
   const [profile, setProfile] = useState(null);
   const [draft, setDraft] = useState(null); // copia del perfil (BACK UP)
   const [loading, setLoading] = useState(true);
@@ -103,7 +105,7 @@ export default function ProfilePage({ onLogout }) {
           <div className="perfil-avatar"><Icon name="user" size={30} /></div>
           <div>
             <h2>{profile.nombre}</h2>
-            <p>{profile.email || 'Perfil local en este dispositivo'}</p>
+            <p>{profile.email || 'Sin email'}</p>
           </div>
         </section>
 
@@ -169,9 +171,9 @@ export default function ProfilePage({ onLogout }) {
                   </select>
                 </label>
               </div>
-              <button className="perfil-save">
+              <button className="perfil-save" disabled={saving}>
                 <Icon name="check" size={17} />
-                Guardar cambios
+                {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
             </form>
           </div>
