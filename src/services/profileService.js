@@ -18,7 +18,7 @@ export async function getProfile() {
   return normalizeProfile(profile);
 }
 
-export async function updateProfile(id, data) {
+export async function updateProfile(data) {
   const profile = await apiRequest(`/perfil`, {
     method: 'PUT',
     body: JSON.stringify(data)

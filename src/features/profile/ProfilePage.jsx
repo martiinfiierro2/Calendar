@@ -1,39 +1,64 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PERFIL_INICIAL } from '../../config/appConfig';
 import { logoutUser } from '../../services/authService';
-import { syncAutomaticShopping } from '../../services/shoppingService';
-import { clearUserData, readStorage, writeStorage } from '../../services/storageService';
 import Icon from '../../shared/Icon';
 import '../../componentes/perfil.css';
-
-function loadProfile() {
-  return {
-    ...PERFIL_INICIAL,
-    ...(readStorage('calendar_perfil', {}) || {})
-  };
-}
+import { getProfile, updateProfile } from '../../services/profileService';
 
 export default function ProfilePage({ onLogout }) {
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState(loadProfile);
+  const [profile, setProfile] = useState(null);
+  const [draft, setDraft] = useState(null); // copia del perfil (BACK UP)
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(profile);
 
   // Guarda preferencias y aplica la compra automática al activarla.
   useEffect(() => {
-    writeStorage('calendar_perfil', profile);
-    if (profile.comprasAutomaticas) syncAutomaticShopping();
-  }, [profile]);
+    let active = true;
 
-  const saveProfile = event => {
+    getProfile()
+      .then(data => {
+          if (active) 
+            setDraft(data);
+            setProfile(data);
+      })
+      .catch(err => {
+        if (active) setError(err.message || 'No se pudo cargar el perfil.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    
+    return () => {
+      active = false;
+    }
+  }, []);
+
+  const saveProfile = async event => {
     event.preventDefault();
-    setProfile({
+
+    const data = {
       ...draft,
-      nombre: draft.nombre.trim() || 'Mi perfil',
+      nombre: draft.nombre.trim(),
+      email: draft.email.trim(),
       raciones: Math.max(1, Number(draft.raciones) || 1)
-    });
-    setEditing(false);
+    };
+
+    try {
+      setSaving(true);
+      setError('');
+      
+      const saved = await updateProfile(data);
+
+      setProfile(saved);
+      setDraft(saved);
+      setEditing(false);
+    } catch (err) {
+      setError(err.message || 'No se pudo guardar el perfil');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const toggle = field => {
