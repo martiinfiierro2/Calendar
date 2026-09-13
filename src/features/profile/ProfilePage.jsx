@@ -19,9 +19,10 @@ export default function ProfilePage({ onLogout }) {
 
     getProfile()
       .then(data => {
-          if (active) 
+          if (active) {
             setDraft(data);
             setProfile(data);
+          }
       })
       .catch(err => {
         if (active) setError(err.message || 'No se pudo cargar el perfil.');
@@ -65,26 +66,21 @@ export default function ProfilePage({ onLogout }) {
     setProfile(current => ({ ...current, [field]: !current[field] }));
   };
 
-  const clearData = () => {
-    const confirmed = window.confirm(
-      'Se eliminarán recetas, comidas del calendario, lista de la compra y preferencias de esta cuenta. ¿Continuar?'
-    );
-    if (!confirmed) return;
-
-    clearUserData();
-    setProfile(PERFIL_INICIAL);
-    setDraft(PERFIL_INICIAL);
-    window.alert('Los datos locales de esta cuenta se han eliminado.');
-  };
-
   const logout = () => {
     logoutUser();
     onLogout?.();
     navigate('/login', { replace: true });
   };
 
-  return (
-    <div className="perfil-app">
+  if (loading) {
+    return <div>Cargando perfil...</div>;
+  }
+
+  if (error) {
+   return <div>{error}</div>;
+  }
+
+  return (<div className="perfil-app">
       <header className="perfil-header">
         <div>
           <span className="perfil-eyebrow">Cuenta</span>
@@ -138,14 +134,6 @@ export default function ProfilePage({ onLogout }) {
           <button className="perfil-logout" onClick={logout}>
             <Icon name="logout" size={18} />
             <span><strong>Cerrar sesión</strong><small>Vuelve a la pantalla de acceso</small></span>
-          </button>
-        </section>
-
-        <section className="perfil-seccion">
-          <h2>Datos de la aplicación</h2>
-          <button className="perfil-danger" onClick={clearData}>
-            <Icon name="trash" size={18} />
-            <span><strong>Borrar datos locales</strong><small>Restablece calendario, recetas, compra y perfil</small></span>
           </button>
         </section>
       </div>
