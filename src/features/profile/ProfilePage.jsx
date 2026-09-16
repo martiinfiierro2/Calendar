@@ -1,41 +1,44 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../services/authService';
+import { getUser, updateUser } from '../../services/userService';
 import Icon from '../../shared/Icon';
 import '../../componentes/perfil.css';
-import { getUser, updateUser } from '../../services/userService';
 
 export default function ProfilePage({ onLogout }) {
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
-  const [draft, setDraft] = useState(null); // copia del perfil (BACK UP)
+  const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
 
-  // Guarda preferencias y aplica la compra automática al activarla.
   useEffect(() => {
     let active = true;
 
     getUser()
       .then(data => {
-          if (active) {
-            setDraft(data);
-            setProfile(data);
-          }
+        if (active) {
+          setDraft(data);
+          setProfile(data);
+        }
       })
       .catch(err => {
-        if (active) setError(err.message || 'No se pudo cargar el perfil.');
+        if (active) {
+          setError(err.message || 'No se pudo cargar el perfil.');
+        }
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       });
-    
+
     return () => {
       active = false;
-    }
+    };
   }, []);
 
   const saveProfile = async event => {
@@ -49,21 +52,43 @@ export default function ProfilePage({ onLogout }) {
     try {
       setSaving(true);
       setError('');
-      
+
       const saved = await updateUser(data);
 
       setProfile(saved);
       setDraft(saved);
       setEditing(false);
     } catch (err) {
-      setError(err.message || 'No se pudo guardar el perfil');
+      setError(err.message || 'No se pudo guardar el perfil.');
     } finally {
       setSaving(false);
     }
   };
 
+  const toggleRecordatorios = async () => {
+    const nuevoValor = !profile.recordatorios;
+
+    try {
+      setError('');
+
+      const saved = await updateUser({
+        recordatorios: nuevoValor
+      });
+
+      setProfile(saved);
+      setDraft(saved);
+    } catch (err) {
+      setError(
+        err.message || 'No se pudieron actualizar los recordatorios.'
+      );
+    }
+  };
+
   const toggle = field => {
-    setProfile(current => ({ ...current, [field]: !current[field] }));
+    setProfile(current => ({
+      ...current,
+      [field]: !current[field]
+    }));
   };
 
   const logout = () => {
@@ -77,7 +102,7 @@ export default function ProfilePage({ onLogout }) {
   }
 
   if (error) {
-   return <div>{error}</div>;
+    return <div>{error}</div>;
   }
 
   return (
@@ -87,6 +112,7 @@ export default function ProfilePage({ onLogout }) {
           <span className="perfil-eyebrow">Cuenta</span>
           <h1>Perfil</h1>
         </div>
+
         <button
           className="perfil-icon-btn"
           onClick={() => {
@@ -101,7 +127,10 @@ export default function ProfilePage({ onLogout }) {
 
       <div className="perfil-scroll">
         <section className="perfil-card perfil-identidad">
-          <div className="perfil-avatar"><Icon name="user" size={30} /></div>
+          <div className="perfil-avatar">
+            <Icon name="user" size={30} />
+          </div>
+
           <div>
             <h2>{profile.nombre}</h2>
             <p>{profile.email || 'Sin email'}</p>
@@ -110,12 +139,17 @@ export default function ProfilePage({ onLogout }) {
 
         <section className="perfil-stats">
           <div>
-            <span><Icon name="users" size={18} /></span>
+            <span>
+              <Icon name="users" size={18} />
+            </span>
             <strong>{profile.raciones}</strong>
             <small>Raciones por defecto</small>
           </div>
+
           <div>
-            <span><Icon name="sliders" size={18} /></span>
+            <span>
+              <Icon name="sliders" size={18} />
+            </span>
             <strong>{profile.dieta}</strong>
             <small>Preferencia alimentaria</small>
           </div>
@@ -123,45 +157,117 @@ export default function ProfilePage({ onLogout }) {
 
         <section className="perfil-seccion">
           <h2>Preferencias</h2>
+
           <div className="perfil-ajustes">
-            <Setting icon="bell" title="Recordatorios de comidas" text="Avisos para comidas planificadas" active={profile.recordatorios} onChange={() => toggle('recordatorios')} />
-            <Setting icon="sliders" title="Resumen semanal" text="Mantener activa la planificación semanal" active={profile.resumenSemanal} onChange={() => toggle('resumenSemanal')} />
-            <Setting icon="users" title="Compra automática" text="Preparar la lista desde recetas planificadas" active={profile.comprasAutomaticas} onChange={() => toggle('comprasAutomaticas')} />
+            <Setting
+              icon="bell"
+              title="Recordatorios de comidas"
+              text="Avisos para comidas planificadas"
+              active={profile.recordatorios}
+              onChange={toggleRecordatorios}
+            />
+
+            <Setting
+              icon="sliders"
+              title="Resumen semanal"
+              text="Mantener activa la planificación semanal"
+              active={profile.resumenSemanal}
+              onChange={() => toggle('resumenSemanal')}
+            />
+
+            <Setting
+              icon="users"
+              title="Compra automática"
+              text="Preparar la lista desde recetas planificadas"
+              active={profile.comprasAutomaticas}
+              onChange={() => toggle('comprasAutomaticas')}
+            />
           </div>
         </section>
 
         <section className="perfil-seccion">
           <h2>Sesión</h2>
+
           <button className="perfil-logout" onClick={logout}>
             <Icon name="logout" size={18} />
-            <span><strong>Cerrar sesión</strong><small>Vuelve a la pantalla de acceso</small></span>
+
+            <span>
+              <strong>Cerrar sesión</strong>
+              <small>Vuelve a la pantalla de acceso</small>
+            </span>
           </button>
         </section>
       </div>
 
       {editing && (
         <>
-          <div className="perfil-overlay" onClick={() => setEditing(false)} />
+          <div
+            className="perfil-overlay"
+            onClick={() => setEditing(false)}
+          />
+
           <div className="perfil-sheet">
             <div className="perfil-handle" />
+
             <h2>Editar perfil</h2>
+
             <form onSubmit={saveProfile}>
               <label>
                 Nombre
-                <input value={draft.nombre} onChange={event => setDraft({ ...draft, nombre: event.target.value })} />
+                <input
+                  value={draft.nombre}
+                  onChange={event =>
+                    setDraft({
+                      ...draft,
+                      nombre: event.target.value
+                    })
+                  }
+                />
               </label>
+
               <label>
                 Email
-                <input type="email" value={draft.email} onChange={event => setDraft({ ...draft, email: event.target.value })} placeholder="opcional" />
+                <input
+                  type="email"
+                  value={draft.email}
+                  onChange={event =>
+                    setDraft({
+                      ...draft,
+                      email: event.target.value
+                    })
+                  }
+                  placeholder="opcional"
+                />
               </label>
+
               <div className="perfil-form-row">
                 <label>
                   Raciones
-                  <input type="number" min="1" max="12" value={draft.raciones} onChange={event => setDraft({ ...draft, raciones: event.target.value })} />
+                  <input
+                    type="number"
+                    min="1"
+                    max="12"
+                    value={draft.raciones}
+                    onChange={event =>
+                      setDraft({
+                        ...draft,
+                        raciones: event.target.value
+                      })
+                    }
+                  />
                 </label>
+
                 <label>
                   Dieta
-                  <select value={draft.dieta} onChange={event => setDraft({ ...draft, dieta: event.target.value })}>
+                  <select
+                    value={draft.dieta}
+                    onChange={event =>
+                      setDraft({
+                        ...draft,
+                        dieta: event.target.value
+                      })
+                    }
+                  >
                     <option>Sin preferencias</option>
                     <option>Vegetariana</option>
                     <option>Vegana</option>
@@ -170,7 +276,11 @@ export default function ProfilePage({ onLogout }) {
                   </select>
                 </label>
               </div>
-              <button className="perfil-save" disabled={saving}>
+
+              <button
+                className="perfil-save"
+                disabled={saving}
+              >
                 <Icon name="check" size={17} />
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
@@ -182,13 +292,23 @@ export default function ProfilePage({ onLogout }) {
   );
 }
 
-// Fila de preferencia con su interruptor.
 function Setting({ icon, title, text, active, onChange }) {
   return (
     <div className="perfil-ajuste">
-      <span className="perfil-ajuste-icon"><Icon name={icon} size={18} /></span>
-      <div><strong>{title}</strong><small>{text}</small></div>
-      <button className={`perfil-switch ${active ? 'activo' : ''}`} onClick={onChange} aria-pressed={active}>
+      <span className="perfil-ajuste-icon">
+        <Icon name={icon} size={18} />
+      </span>
+
+      <div>
+        <strong>{title}</strong>
+        <small>{text}</small>
+      </div>
+
+      <button
+        className={`perfil-switch ${active ? 'activo' : ''}`}
+        onClick={onChange}
+        aria-pressed={active}
+      >
         <span />
       </button>
     </div>
