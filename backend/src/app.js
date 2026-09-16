@@ -5,7 +5,7 @@ import authRoutes from './routes/authRoutes.js';
 import recipeRoutes from './routes/recipeRoutes.js';
 import mealRoutes from './routes/mealRoutes.js';
 import shoppingRoutes from './routes/shoppingRoutes.js';
-import profileRoutes from './routes/profileRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -25,7 +25,7 @@ app.use('/api/autenticacion', authRoutes);
 app.use('/api/recetas', recipeRoutes);
 app.use('/api/comidas', mealRoutes);
 app.use('/api/compra', shoppingRoutes);
-app.use('/api/perfil', profileRoutes);
+app.use('/api/perfil', userRoutes);
 
 // Alias temporales para clientes antiguos durante la migración.
 app.get('/api/health', (req, res) => {
@@ -35,7 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/recipes', recipeRoutes);
 app.use('/api/meals', mealRoutes);
 app.use('/api/shopping', shoppingRoutes);
-app.use('/api/profile', profileRoutes);
+app.use('/api/profile', userRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
