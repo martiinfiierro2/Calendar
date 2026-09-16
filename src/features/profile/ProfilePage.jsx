@@ -82,7 +82,8 @@ export default function ProfilePage({ onLogout }) {
    return <div>{error}</div>;
   }
 
-  return (<div className="perfil-app">
+  return (
+    <div className="perfil-app">
       <header className="perfil-header">
         <div>
           <span className="perfil-eyebrow">Cuenta</span>
