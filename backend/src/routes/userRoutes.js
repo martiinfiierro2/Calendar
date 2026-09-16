@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { getProfile, updateProfile } from '../controllers/profileController.js';
+import { getUser, updateUser } from '../controllers/userController.js';
 import { requireAuth } from '../middleware/authMiddleware.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = Router();
 router.use(requireAuth);
 
-router.get('/', getProfile);
+router.get('/', getUser);
 router.put('/', [
   body('email').optional().isEmail().withMessage('Email no válido.'),
   body('raciones').optional().isInt({ min: 1, max: 20 }),
@@ -15,6 +15,6 @@ router.put('/', [
   body('resumenSemanal').optional().isBoolean(),
   body('comprasAutomaticas').optional().isBoolean(),
   validateRequest
-], updateProfile);
+], updateUser);
 
 export default router;
