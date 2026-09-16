@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../services/authService';
 import Icon from '../../shared/Icon';
 import '../../componentes/perfil.css';
-import { getProfile, updateProfile } from '../../services/profileService';
+import { getUser, updateUser } from '../../services/userService';
 
 export default function ProfilePage({ onLogout }) {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function ProfilePage({ onLogout }) {
   useEffect(() => {
     let active = true;
 
-    getProfile()
+    getUser()
       .then(data => {
           if (active) {
             setDraft(data);
@@ -42,17 +42,15 @@ export default function ProfilePage({ onLogout }) {
     event.preventDefault();
 
     const data = {
-      ...draft,
       nombre: draft.nombre.trim(),
-      email: draft.email.trim(),
-      raciones: Math.max(1, Number(draft.raciones) || 1)
+      email: draft.email.trim()
     };
 
     try {
       setSaving(true);
       setError('');
       
-      const saved = await updateProfile(data);
+      const saved = await updateUser(data);
 
       setProfile(saved);
       setDraft(saved);
