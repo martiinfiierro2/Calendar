@@ -9,24 +9,24 @@ function normalizarComida(comida) {
 }
 
 export async function obtenerComidas() {
-  const comidas = await apiRequest('/comidas');
+  const comidas = await apiRequest('/meals');
   return Array.isArray(comidas) ? comidas.map(normalizarComida) : [];
 }
 
 export async function crearComida(datos) {
-  return normalizarComida(await apiRequest('/comidas', {
+  return normalizarComida(await apiRequest('/meals', {
     method: 'POST',
     body: JSON.stringify(datos)
   }));
 }
 
 export async function actualizarComida(id, datos) {
-  return normalizarComida(await apiRequest(`/comidas/${id}`, {
+  return normalizarComida(await apiRequest(`/meals/${id}`, {
     method: 'PUT',
     body: JSON.stringify(datos)
   }));
 }
 
 export async function eliminarComida(id) {
-  await apiRequest(`/comidas/${id}`, { method: 'DELETE' });
+  await apiRequest(`/meals/${id}`, { method: 'DELETE' });
 }
