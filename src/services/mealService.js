@@ -8,13 +8,8 @@ function normalizarComida(comida) {
   };
 }
 
-async function requestComidas(path = '', options) {
-  try {
-    return await apiRequest(`/comidas${path}`, options);
-  } catch (error) {
-    if (error.status !== 404) throw error;
-    return apiRequest(`/meals${path}`, options);
-  }
+function requestComidas(path = '', options) {
+  return apiRequest(`/meals${path}`, options);
 }
 
 export async function obtenerComidas() {
