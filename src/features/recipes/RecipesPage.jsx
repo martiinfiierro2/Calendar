@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CATEGORIAS_RECETA, PERFIL_INICIAL } from '../../config/appConfig';
-import { createRecipe, deleteRecipe as deleteRecipeApi, fetchRecipes, updateRecipe } from '../../services/recipeService';
-import { readStorage } from '../../services/storageService';
+import { CATEGORIAS_RECETA } from '../../config/appConfig';
+import { createRecipe, deleteRecipe as deleteRecipeApi, getRecipes, updateRecipe } from '../../services/recipeService';
 import Icon from '../../shared/Icon';
 import RecipeCard from './RecipeCard';
 import RecipeDetail from './RecipeDetail';
@@ -11,12 +10,11 @@ import '../../componentes/recetas.css';
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80';
 
 function createEmptyForm() {
-  const profile = readStorage('calendar_perfil', PERFIL_INICIAL) || PERFIL_INICIAL;
   return {
     nombre: '',
     categoria: 'Otros',
     tiempo: 30,
-    raciones: profile.raciones || 2,
+    raciones: 2,
     dificultad: 'Fácil',
     imagen: '',
     ingredientes: '',
@@ -39,7 +37,7 @@ export default function RecipesPage() {
   useEffect(() => {
     let active = true;
 
-    fetchRecipes()
+    getRecipes()
       .then(data => {
         if (active) setRecipes(data);
       })

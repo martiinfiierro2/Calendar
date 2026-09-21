@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
 import { actualizarComida, crearComida, eliminarComida, obtenerComidas } from '../../services/mealService';
-import { fetchRecipes } from '../../services/recipeService';
-import { syncAutomaticShopping } from '../../services/shoppingService';
-import { readStorage, removeStorage } from '../../services/storageService';
 import { fechaClave, fechaDesdeClave } from '../../utils/dateUtils';
 import Icon from '../../shared/Icon';
 import DayView from './views/DayView';
@@ -11,8 +8,6 @@ import MonthView from './views/MonthView';
 import WeekView from './views/WeekView';
 import YearView from './views/YearView';
 import { QuickMealForm, RecipeMealForm } from './MealForms';
-
-const MEALS_KEY = 'calendar_comidas';
 
 function prepararComida(data) {
   return {
@@ -47,52 +42,19 @@ export default function CalendarPage() {
     []
   );
 
-  // Recupera las comidas del servidor y migra una sola vez las que quedaban en localStorage.
   useEffect(() => {
     let active = true;
 
-    async function cargarComidas() {
-      try {
-        setError('');
-        const remotas = await obtenerComidas();
-
-        if (!active) return;
-        if (remotas.length) {
-          setMeals(remotas);
-          removeStorage(MEALS_KEY);
-          return;
-        }
-
-        const locales = readStorage(MEALS_KEY, null);
-        if (!Array.isArray(locales) || !locales.length) {
-          setMeals([]);
-          return;
-        }
-
-        const recetas = await fetchRecipes();
-        const migradas = await Promise.all(locales.map(comida => {
-          let recetaId = comida.recetaId || null;
-
-          if (comida.modo === 'receta') {
-            const receta = recetas.find(item => item.nombre === comida.nombre)
-              || recetas.find(item => String(item.id) === String(comida.recetaId));
-            recetaId = receta?.id || null;
-          }
-
-          return crearComida(prepararComida({ ...comida, recetaId }));
-        }));
-
-        if (!active) return;
-        setMeals(migradas);
-        removeStorage(MEALS_KEY);
-      } catch (err) {
+    obtenerComidas()
+      .then(data => {
+        if (active) setMeals(data);
+      })
+      .catch(err => {
         if (active) setError(err.message || 'No se pudo cargar el calendario.');
-      } finally {
+      })
+      .finally(() => {
         if (active) setLoadingMeals(false);
-      }
-    }
-
-    cargarComidas();
+      });
 
     return () => {
       active = false;
@@ -176,7 +138,6 @@ export default function CalendarPage() {
       );
       setForm(null);
       setEditingMeal(null);
-      syncAutomaticShopping();
     } catch (err) {
       setError(err.message || 'No se pudo guardar la comida.');
     } finally {
@@ -201,7 +162,6 @@ export default function CalendarPage() {
     try {
       setError('');
       await eliminarComida(id);
-      syncAutomaticShopping();
     } catch (err) {
       setMeals(previous);
       setError(err.message || 'No se pudo eliminar la comida.');

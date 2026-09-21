@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
-import { fetchRecipes } from '../../services/recipeService';
+import { getRecipes } from '../../services/recipeService';
 import { fechaClave } from '../../utils/dateUtils';
 import IconButton from '../../shared/IconButton';
 
@@ -17,7 +17,7 @@ export function RecipeMealForm({ date, initialHour, initialMeal, onClose, onSave
   useEffect(() => {
     let active = true;
 
-    fetchRecipes()
+    getRecipes()
       .then(data => {
         if (!active) return;
         setRecipes(data);

@@ -1,8 +1,6 @@
-import { PERFIL_INICIAL } from '../config/appConfig';
 import { apiRequest } from './apiClient';
-import { readStorage } from './storageService';
 
-export async function fetchShoppingItems() {
+export async function getShoppingItems() {
   const items = await apiRequest('/compra');
   return Array.isArray(items) ? items : [];
 }
@@ -28,16 +26,4 @@ export async function deleteShoppingItem(id) {
 export async function createItemsFromCalendar() {
   const items = await apiRequest('/compra/desde-calendario', { method: 'POST' });
   return Array.isArray(items) ? items : [];
-}
-
-// Hasta migrar el perfil, esta preferencia sigue leyéndose de la caché local.
-export async function syncAutomaticShopping() {
-  const profile = readStorage('calendar_perfil', PERFIL_INICIAL) || PERFIL_INICIAL;
-  if (!profile.comprasAutomaticas) return [];
-
-  try {
-    return await createItemsFromCalendar();
-  } catch {
-    return [];
-  }
 }
