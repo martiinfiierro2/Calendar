@@ -17,6 +17,7 @@ import FridgeView from './views/FridgeView';
 export default function ShoppingPage() {
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
+  const [view, setView] = useState('lista');
   const [quantity, setQuantity] = useState('1');
   const [category, setCategory] = useState('Otros');
   const [showForm, setShowForm] = useState(false);
