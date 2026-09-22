@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CATEGORIAS_COMPRA } from '../../config/appConfig';
+import { CATEGORIAS_COMPRA } from '../../../config/appConfig';
 import {
   createItemsFromCalendar,
   createShoppingItem,

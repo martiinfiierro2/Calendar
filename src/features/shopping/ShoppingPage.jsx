@@ -151,20 +151,6 @@ export default function ShoppingPage() {
     }
   };
 
-  const generateFromCalendar = async () => {
-    try {
-      setError('');
-      const created = await createItemsFromCalendar();
-      if (!created.length) {
-        window.alert('No hay ingredientes nuevos en las recetas planificadas.');
-        return;
-      }
-      setItems(current => [...created, ...current]);
-    } catch (err) {
-      setError(err.message || 'No se pudo generar la lista desde el calendario.');
-    }
-  };
-
   return (
     <div className="contenedor-calendario">
           {error && (
