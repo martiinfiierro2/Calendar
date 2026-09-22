@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CATEGORIAS_COMPRA } from '..../../config/appConfig';
+import { CATEGORIAS_COMPRA } from '../../../config/appConfig';
 import {
   createItemsFromCalendar,
   createShoppingItem,
   deleteShoppingItem,
   getShoppingItems,
   updateShoppingItem
-} from '../../services/shoppingService';
-import { categoriaIngrediente } from '../../utils/ingredientUtils';
-import Icon from '../../shared/Icon';
-import ShoppingItem from './ShoppingItem';
-import '../../componentes/compra.css';
+} from '../../../services/shoppingService';
+import { categoriaIngrediente } from '../../../utils/ingredientUtils';
+import Icon from '../../../shared/Icon';
+import ShoppingItem from '../ShoppingItem';
+import '../../../componentes/compra.css';
 import ToogleListFridge from './ToogleListFridge';
 
 // Vista diaria con las 24 horas y las comidas planificadas.
