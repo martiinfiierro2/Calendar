@@ -11,7 +11,7 @@ import { categoriaIngrediente } from '../../../utils/ingredientUtils';
 import Icon from '../../../shared/Icon';
 import ShoppingItem from '../ShoppingItem';
 import '../../../componentes/compra.css';
-import ToogleListFridge from './ToogleListFridge';
+import ToogleListFridge from '../ToogleListFridge';
 
 // Vista diaria con las 24 horas y las comidas planificadas.
 export default function FridgeView({}){
