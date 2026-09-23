@@ -14,10 +14,11 @@ import '../../../componentes/compra.css';
 import ToogleListFridge from '../ToogleListFridge';
 
 // Vista diaria con las 24 horas y las comidas planificadas.
-export default function FridgeView({}){
+export default function FridgeView({onChangeView}){
     return (
         <div className="compra-app">
-              <header className="compra-header">
+          <ToogleListFridge view='lista' onClick={onChangeView}/>
+              {/*<header className="compra-header">
                 <div>
                   <span className="compra-eyebrow">Organización</span>
                   <ToogleListFridge view='lista'/>
@@ -111,7 +112,7 @@ export default function FridgeView({}){
                     </form>
                 </div>
             </>
-          )}
+          )}*/}
         </div>
     )
 }

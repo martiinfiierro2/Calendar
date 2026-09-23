@@ -152,6 +152,10 @@ export default function ShoppingPage() {
     }
   };
 
+  const changeDetailView = newView => {
+    setView(newView);
+  };
+
   return (
     <div className="contenedor-calendario">
           {error && (
@@ -160,10 +164,12 @@ export default function ShoppingPage() {
     
           {view === 'lista' && (
             <ListView
+              onChangeView={changeDetailView}
             />
           )}
           {view === 'nevera' && (
             <FridgeView
+              onChangeView={changeDetailView}
             />
           )}
     </div>
