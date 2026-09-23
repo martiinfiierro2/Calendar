@@ -12,21 +12,15 @@ import Icon from '../../../shared/Icon';
 import ShoppingItem from '../ShoppingItem';
 import '../../../componentes/compra.css';
 import ToogleListFridge from '../ToogleListFridge';
+import ShoppingHeader from '../ShoppingHeader';
 
 // Vista diaria con las 24 horas y las comidas planificadas.
 export default function ListView({onChangeView}){
     return (
         <div className="compra-app">
+            <ShoppingHeader/>
             <ToogleListFridge view="lista" onChange={onChangeView}/>
-              {/*<header className="compra-header">
-                <div>
-                  <span className="compra-eyebrow">Organización</span>
-                  <ToogleListFridge view='lista'/>
-                </div>
-                <button className="compra-icon-btn compra-add" onClick={openNew} aria-label="Añadir producto">
-                  <Icon name="plus" />
-                </button>
-              </header>
+              {/*
         
               <section className="compra-summary">
                 <div><strong>{pending.length}</strong><span>Pendientes</span></div>
