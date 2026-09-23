@@ -153,6 +153,7 @@ export default function ShoppingPage() {
   };
 
   const changeDetailView = newView => {
+    console.log(newView);
     setView(newView);
   };
 
