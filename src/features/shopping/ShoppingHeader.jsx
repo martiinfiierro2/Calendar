@@ -1,4 +1,4 @@
-import IconButton from '../../shared/IconButton';
+import Icon from '../../shared/Icon';
 
 export default function ShoppingHeader({ openNew }) {
     return (

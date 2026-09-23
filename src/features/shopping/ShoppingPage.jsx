@@ -8,7 +8,6 @@ import {
   updateShoppingItem
 } from '../../services/shoppingService';
 import { categoriaIngrediente } from '../../utils/ingredientUtils';
-import Icon from '../../shared/Icon';
 import ShoppingItem from './ShoppingItem';
 import '../../componentes/compra.css';
 import ListView from './views/ListView';
