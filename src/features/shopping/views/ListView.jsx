@@ -17,7 +17,8 @@ import ToogleListFridge from '../ToogleListFridge';
 export default function ListView({}){
     return (
         <div className="compra-app">
-              <header className="compra-header">
+              Lista compra
+              {/*<header className="compra-header">
                 <div>
                   <span className="compra-eyebrow">Organización</span>
                   <ToogleListFridge view='lista'/>
@@ -111,7 +112,7 @@ export default function ListView({}){
                     </form>
                 </div>
             </>
-          )}
+          )}*/}
         </div>
     )
 }
