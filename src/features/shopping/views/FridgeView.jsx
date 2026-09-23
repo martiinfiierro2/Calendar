@@ -18,7 +18,7 @@ import ShoppingHeader from '../ShoppingHeader';
 export default function FridgeView({onChangeView, openNew}){
     return (
         <div className="compra-app">
-          <ShoppingHeader openNew={openNew}/>
+          <ShoppingHeader view="nevera" openNew={openNew}/>
           <ToogleListFridge view="nevera" onChange={onChangeView}/>
               {/*<header className="compra-header">
                 <div>
