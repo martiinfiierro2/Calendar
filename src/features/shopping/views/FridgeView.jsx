@@ -17,7 +17,7 @@ import ToogleListFridge from '../ToogleListFridge';
 export default function FridgeView({onChangeView}){
     return (
         <div className="compra-app">
-          <ToogleListFridge view='lista' onClick={onChangeView}/>
+          <ToogleListFridge view='nevera' onClick={onChangeView}/>
               {/*<header className="compra-header">
                 <div>
                   <span className="compra-eyebrow">Organización</span>
