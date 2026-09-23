@@ -13,6 +13,7 @@ import ShoppingItem from './ShoppingItem';
 import '../../componentes/compra.css';
 import ListView from './views/ListView';
 import FridgeView from './views/FridgeView';
+import ShoppingHeader from './ShoppingHeader';
 
 export default function ShoppingPage() {
   const [items, setItems] = useState([]);
@@ -166,11 +167,13 @@ export default function ShoppingPage() {
           {view === 'lista' && (
             <ListView
               onChangeView={changeDetailView}
+              openNew={openNew}
             />
           )}
           {view === 'nevera' && (
             <FridgeView
               onChangeView={changeDetailView}
+              openNew={openNew}
             />
           )}
     </div>

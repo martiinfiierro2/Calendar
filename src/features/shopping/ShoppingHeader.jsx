@@ -1,6 +1,6 @@
 import IconButton from '../../shared/IconButton';
 
-export default function ShoppingHeader({ label, onBack, onAdd }) {
+export default function ShoppingHeader({ openNew }) {
     return (
         <header className="compra-header">
             <div>
