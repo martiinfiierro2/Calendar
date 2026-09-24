@@ -30,12 +30,8 @@ export default function ListView({ onChangeView }) {
 
     getShoppingItems()
       .then(data => {
-        if (active) { 
-          const apuntados = data.filter(
-            item => item.estado === 'apuntado'
-          )
-
-          setItems(apuntados);
+        if (active) {
+          setItems(data);
         }
       })
       .catch(err => {
@@ -50,8 +46,10 @@ export default function ListView({ onChangeView }) {
     };
   }, []);
 
-  const pending = useMemo(() => items.filter(item => !item.comprado), [items]);
-  const bought = useMemo(() => items.filter(item => item.comprado), [items]);
+  const pending = useMemo(
+    () => items.filter(item => item.estado === 'apuntado'),
+    [items]
+  );
 
   const openNew = () => {
     setEditing(null);
@@ -83,7 +81,7 @@ export default function ListView({ onChangeView }) {
       nombre: name.trim(),
       cantidad: quantity.trim() || '1',
       categoria: category,
-      comprado: editing?.comprado || false,
+      estado: editing?.estado || 'apuntado',
       automatico: editing?.automatico || false
     };
 
@@ -109,15 +107,22 @@ export default function ListView({ onChangeView }) {
     }
   };
 
-  const toggleItem = async id => {
+  const markAsBought = async id => {
     const item = items.find(current => current.id === id);
-    if (!item) return;
+    if (!item || item.estado !== 'apuntado') return;
 
-    const next = { ...item, estado: item.estado === 'comprado' };
-    setItems(current => current.map(value => value.id === id ? next : value));
+    const next = {
+      ...item,
+      estado: 'comprado'
+    };
+
+    setItems(current =>
+      current.map(value => value.id === id ? next : value)
+    );
 
     try {
       setError('');
+
       const saved = await updateShoppingItem(id, {
         nombre: next.nombre,
         cantidad: next.cantidad,
@@ -125,10 +130,16 @@ export default function ListView({ onChangeView }) {
         estado: next.estado,
         automatico: next.automatico
       });
-      setItems(current => current.map(value => value.id === id ? saved : value));
+
+      setItems(current =>
+        current.map(value => value.id === id ? saved : value)
+      );
     } catch (err) {
-      setItems(current => current.map(value => value.id === id ? item : value));
-      setError(err.message || 'No se pudo actualizar el producto.');
+      setItems(current =>
+        current.map(value => value.id === id ? item : value)
+      );
+
+      setError(err.message || 'No se pudo marcar el producto como comprado.');
     }
   };
 
@@ -142,20 +153,6 @@ export default function ListView({ onChangeView }) {
     } catch (err) {
       setItems(previous);
       setError(err.message || 'No se pudo eliminar el producto.');
-    }
-  };
-
-  const clearBought = async () => {
-    if (!bought.length) return;
-
-    try {
-      setError('');
-      await Promise.all(bought.map(item => deleteShoppingItem(item.id)));
-      setItems(current => current.filter(item => !item.comprado));
-    } catch (err) {
-      setError(err.message || 'No se pudieron limpiar los productos comprados.');
-      const fresh = await getShoppingItems().catch(() => null);
-      if (fresh) setItems(fresh);
     }
   };
 
@@ -182,7 +179,6 @@ export default function ListView({ onChangeView }) {
 
       {/*<section className="compra-summary">
         <div><strong>{pending.length}</strong><span>Pendientes</span></div>
-        <div><strong>{bought.length}</strong><span>Comprados</span></div>
         <button onClick={generateFromCalendar}>
           <Icon name="wand" size={17} />
           Desde calendario
@@ -194,7 +190,7 @@ export default function ListView({ onChangeView }) {
 
         {loading ? (
           <div className="compra-empty"><p>Cargando lista...</p></div>
-        ) : items.length === 0 ? (
+        ) : pending.length === 0 ? (
           <div className="compra-empty">
             <span><Icon name="cart" size={28} /></span>
             <h2>Tu lista está vacía</h2>
@@ -213,7 +209,7 @@ export default function ListView({ onChangeView }) {
                 <ShoppingItem
                   key={item.id}
                   item={item}
-                  onToggle={toggleItem}
+                  onToggle={markAsBought}
                   onEdit={openEdit}
                   onDelete={deleteItem}
                 />
@@ -221,24 +217,6 @@ export default function ListView({ onChangeView }) {
             </section>
           );
         })}
-
-        {bought.length > 0 && (
-          <section className="compra-grupo compra-comprados">
-            <div className="compra-grupo-title">
-              <h2>Comprados</h2>
-              <button onClick={clearBought}>Limpiar</button>
-            </div>
-            {bought.map(item => (
-              <ShoppingItem
-                key={item.id}
-                item={item}
-                onToggle={toggleItem}
-                onEdit={openEdit}
-                onDelete={deleteItem}
-              />
-            ))}
-          </section>
-        )}
       </div>
 
       {showForm && (
