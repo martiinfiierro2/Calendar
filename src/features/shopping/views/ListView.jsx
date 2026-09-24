@@ -30,7 +30,13 @@ export default function ListView({ onChangeView }) {
 
     getShoppingItems()
       .then(data => {
-        if (active) setItems(data);
+        if (active) { 
+          const apuntados = data.filter(
+            item => item.estado === 'apuntado'
+          )
+
+          setItems(apuntados);
+        }
       })
       .catch(err => {
         if (active) setError(err.message || 'No se pudo cargar la lista de la compra.');
@@ -107,7 +113,7 @@ export default function ListView({ onChangeView }) {
     const item = items.find(current => current.id === id);
     if (!item) return;
 
-    const next = { ...item, comprado: !item.comprado };
+    const next = { ...item, estado: item.estado === 'comprado' };
     setItems(current => current.map(value => value.id === id ? next : value));
 
     try {
@@ -116,7 +122,7 @@ export default function ListView({ onChangeView }) {
         nombre: next.nombre,
         cantidad: next.cantidad,
         categoria: next.categoria,
-        comprado: next.comprado,
+        estado: next.estado,
         automatico: next.automatico
       });
       setItems(current => current.map(value => value.id === id ? saved : value));
@@ -174,14 +180,14 @@ export default function ListView({ onChangeView }) {
       <ShoppingHeader view="lista" openNew={openNew} />
       <ToogleListFridge view="lista" onChange={onChangeView} />
 
-      <section className="compra-summary">
+      {/*<section className="compra-summary">
         <div><strong>{pending.length}</strong><span>Pendientes</span></div>
         <div><strong>{bought.length}</strong><span>Comprados</span></div>
         <button onClick={generateFromCalendar}>
           <Icon name="wand" size={17} />
           Desde calendario
         </button>
-      </section>
+      </section>*/}
 
       <div className="compra-lista">
         {error && <div className="compra-empty"><p>{error}</p></div>}

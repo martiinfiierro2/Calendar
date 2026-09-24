@@ -4,13 +4,13 @@ import Icon from '../../shared/Icon';
 // Fila reutilizable de un producto de la lista de la compra.
 export default function ShoppingItem({ item, onToggle, onEdit, onDelete }) {
   return (
-    <div className={`compra-item ${item.comprado ? 'hecho' : ''}`}>
+    <div className={`compra-item ${item.estado === 'comprado' ? 'hecho' : ''}`}>
       <button
         className="compra-check"
         onClick={() => onToggle(item.id)}
-        aria-label={item.comprado ? 'Marcar pendiente' : 'Marcar comprado'}
+        aria-label={item.estado === 'comprado' ? 'Marcar pendiente' : 'Marcar comprado'}
       >
-        {item.comprado && <Icon name="check" size={15} />}
+        {item.estado === 'comprado' && <Icon name="check" size={15} />}
       </button>
 
       <div className="compra-item-info">
