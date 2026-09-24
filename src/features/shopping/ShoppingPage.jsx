@@ -167,6 +167,16 @@ export default function ShoppingPage() {
             <ListView
               onChangeView={changeDetailView}
               openNew={openNew}
+              pending={pending}
+              bought={bought}
+              error={error}
+              loading={loading}
+              items={items}
+              toggleItem={toggleItem}
+              openEdit={openEdit}
+              deleteItem={deleteItem}
+              clearBought={clearBought}
+              showFOrm={show}
             />
           )}
           {view === 'nevera' && (

@@ -15,17 +15,15 @@ import ToogleListFridge from '../ToogleListFridge';
 import ShoppingHeader from '../ShoppingHeader';
 
 // Vista diaria con las 24 horas y las comidas planificadas.
-export default function ListView( {onChangeView, openNew} ){
+export default function ListView( { onChangeView, openNew } ){
     return (
         <div className="compra-app">
             <ShoppingHeader view="lista" openNew={openNew}/>
             <ToogleListFridge view="lista" onChange={onChangeView}/>
-              {/*
-        
+              
               <section className="compra-summary">
                 <div><strong>{pending.length}</strong><span>Pendientes</span></div>
                 <div><strong>{bought.length}</strong><span>Comprados</span></div>
-                <button onClick={generateFromCalendar}><Icon name="wand" size={17} />Desde calendario</button>
               </section>
         
               <div className="compra-lista">
@@ -106,7 +104,7 @@ export default function ListView( {onChangeView, openNew} ){
                     </form>
                 </div>
             </>
-          )}*/}
+          )}
         </div>
     )
 }
