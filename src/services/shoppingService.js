@@ -8,7 +8,10 @@ export async function getShoppingItems() {
 export async function createShoppingItem(data) {
   return apiRequest('/compra', {
     method: 'POST',
-    body: JSON.stringify(data)
+    body: JSON.stringify({
+      ...data,
+      estado: data.estado || 'apuntado'
+    })
   });
 }
 
