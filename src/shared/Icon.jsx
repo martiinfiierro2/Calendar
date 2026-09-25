@@ -18,6 +18,7 @@ const ICONS = {
   chef: <><path d="M6 13h12v8H6z" /><path d="M7 13a4 4 0 1 1 2-7.46A5 5 0 0 1 18 9a3 3 0 0 1 0 6" /></>,
   check: <path d="m5 12 4 4L19 6" />,
   cart: <><circle cx="9" cy="20" r="1" /><circle cx="19" cy="20" r="1" /><path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L21 8H7" /></>,
+  fridge: <><rect x="6" y="2" width="12" height="20" rx="2" /><path d="M6 10h12" /><path d="M9 6v1" /><path d="M9 14v2" /></>,
   wand: <><path d="m15 4 5 5L8 21l-5-5Z" /><path d="m14 5 5 5" /><path d="M6 3v3" /><path d="M4.5 4.5h3" /></>,
   user: <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>,
   sliders: <><path d="M4 6h10" /><path d="M18 6h2" /><circle cx="16" cy="6" r="2" /><path d="M4 12h2" /><path d="M10 12h10" /><circle cx="8" cy="12" r="2" /><path d="M4 18h7" /><path d="M15 18h5" /><circle cx="13" cy="18" r="2" /></>,
