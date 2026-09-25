@@ -5,13 +5,13 @@ import Icon from '../../shared/Icon';
 export default function FridgeItem({ item, onEdit, onDelete }) {
   return (
     <div className={`compra-item`}>
-        <button
+        {/*<button
             className="compra-check"
             onClick={() => onToggle(item.id)}
             aria-label={item.estado}
         >
             {item.estado === 'apuntadoChecked' && <Icon name="check" size={15} />}
-        </button>
+        </button>*/}
 
         <div className="compra-item-info">
             <strong>{item.nombre}</strong>
