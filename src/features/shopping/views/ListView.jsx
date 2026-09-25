@@ -14,10 +14,27 @@ import '../../../componentes/compra.css';
 import ToogleListFridge from '../ToogleListFridge';
 import ShoppingHeader from '../ShoppingHeader';
 
+const UNIDADES = ['', 'uds', 'g', 'kg', 'ml', 'L'];
+
+function separarCantidad(valor = '1') {
+  const texto = String(valor).trim();
+  const match = texto.match(/^(.+?)\s*(uds|kg|g|ml|L)$/);
+
+  if (!match) {
+    return { cantidad: texto || '1', unidad: '' };
+  }
+
+  return {
+    cantidad: match[1].trim() || '1',
+    unidad: match[2]
+  };
+}
+
 export default function ListView({ onChangeView }) {
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
+  const [unit, setUnit] = useState('');
   const [category, setCategory] = useState('Otros');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -60,14 +77,18 @@ export default function ListView({ onChangeView }) {
     setEditing(null);
     setName('');
     setQuantity('1');
+    setUnit('');
     setCategory('Otros');
     setShowForm(true);
   };
 
   const openEdit = item => {
+    const parsed = separarCantidad(item.cantidad);
+
     setEditing(item);
     setName(item.nombre);
-    setQuantity(item.cantidad || '1');
+    setQuantity(parsed.cantidad);
+    setUnit(parsed.unidad);
     setCategory(item.categoria || 'Otros');
     setShowForm(true);
   };
@@ -82,9 +103,11 @@ export default function ListView({ onChangeView }) {
     event.preventDefault();
     if (!name.trim() || saving) return;
 
+    const cantidadCompleta = `${quantity.trim() || '1'}${unit ? ` ${unit}` : ''}`;
+
     const data = {
       nombre: name.trim(),
-      cantidad: quantity.trim() || '1',
+      cantidad: cantidadCompleta,
       categoria: category,
       estado: editing?.estado || 'apuntado',
       automatico: editing?.automatico || false
@@ -117,7 +140,7 @@ export default function ListView({ onChangeView }) {
     if (!item) return;
 
     let statusChanged = '';
-    if(item.estado === 'apuntado') { 
+    if(item.estado === 'apuntado') {
       statusChanged = 'apuntadoChecked';
     }
     else if(item.estado === 'apuntadoChecked') {
@@ -298,10 +321,25 @@ export default function ListView({ onChangeView }) {
               <div className="compra-form-row">
                 <label>
                   Cantidad
-                  <input
-                    value={quantity}
-                    onChange={event => setQuantity(event.target.value)}
-                  />
+                  <div className="compra-quantity-input">
+                    <input
+                      value={quantity}
+                      onChange={event => setQuantity(event.target.value)}
+                      inputMode="decimal"
+                      placeholder="1"
+                    />
+                    <select
+                      value={unit}
+                      onChange={event => setUnit(event.target.value)}
+                      aria-label="Unidad"
+                    >
+                      {UNIDADES.map(item => (
+                        <option key={item || 'sin-unidad'} value={item}>
+                          {item || 'ud.'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </label>
 
                 <label>
