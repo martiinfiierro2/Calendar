@@ -343,3 +343,72 @@
     height: 30px;
   }
 }
+
+.fridge-row {
+  min-height: 58px;
+  padding: 10px 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  border-bottom: 1px solid #e3e7e3;
+}
+
+.fridge-row-content {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fridge-row-content strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--colorTextBlack);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fridge-row-content span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--appDecorationStrong);
+}
+
+.fridge-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fridge-row-actions button {
+  width: 34px;
+  height: 34px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+  color: #909991;
+
+  display: grid;
+  place-items: center;
+
+  cursor: pointer;
+}
+
+.fridge-row-actions button:hover {
+  background: #eef3ee;
+  color: var(--appDecorationStrong);
+}
+
+.fridge-row-actions button:last-child:hover {
+  background: #fff0f0;
+  color: #c25656;
+}

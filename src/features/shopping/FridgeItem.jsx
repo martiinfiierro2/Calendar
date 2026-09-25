@@ -1,30 +1,29 @@
 import React from 'react';
 import Icon from '../../shared/Icon';
 
-// Fila reutilizable de un producto de la lista de la compra.
 export default function FridgeItem({ item, onEdit, onDelete }) {
   return (
-    <div className={`compra-item`}>
-        {/*<button
-            className="compra-check"
-            onClick={() => onToggle(item.id)}
-            aria-label={item.estado}
+    <div className="fridge-row">
+      <div className="fridge-row-content">
+        <strong>{item.nombre}</strong>
+        <span>{item.cantidad}</span>
+      </div>
+
+      <div className="fridge-row-actions">
+        <button
+          onClick={() => onEdit(item)}
+          aria-label={`Editar ${item.nombre}`}
         >
-            {item.estado === 'apuntadoChecked' && <Icon name="check" size={15} />}
-        </button>*/}
-
-        <div className="compra-item-info">
-            <strong>{item.nombre}</strong>
-            <span>{item.cantidad}</span>
-        </div>
-
-        <button className="compra-delete" onClick={() => onEdit(item)} aria-label="Editar">
-            <Icon name="edit" size={17} />
+          <Icon name="edit" size={16} />
         </button>
-        <button className="compra-delete" onClick={() => onDelete(item.id)} aria-label="Eliminar">
-            <Icon name="trash" size={17} />
+
+        <button
+          onClick={() => onDelete(item.id)}
+          aria-label={`Eliminar ${item.nombre}`}
+        >
+          <Icon name="trash" size={16} />
         </button>
-      
+      </div>
     </div>
   );
 }
