@@ -51,6 +51,11 @@ export default function ListView({ onChangeView }) {
     [items]
   );
 
+  const checked = useMemo(
+    () => items.filter(item => item.estado === 'apuntadoChecked'),
+    [items]
+  );
+
   const openNew = () => {
     setEditing(null);
     setName('');
@@ -107,13 +112,21 @@ export default function ListView({ onChangeView }) {
     }
   };
 
-  const markAsBought = async id => {
+  const checkItem = async id => {
     const item = items.find(current => current.id === id);
-    if (!item || item.estado !== 'apuntado') return;
+    if (!item) return;
+
+    let statusChanged = '';
+    if(item.estado === 'apuntado') { 
+      statusChanged = 'apuntadoChecked';
+    }
+    else if(item.estado === 'apuntadoChecked') {
+      statusChanged = 'apuntado';
+    }
 
     const next = {
       ...item,
-      estado: 'comprado'
+      estado: statusChanged
     };
 
     setItems(current =>
@@ -172,6 +185,34 @@ export default function ListView({ onChangeView }) {
     }
   };
 
+  const clearBought = async () => {
+    if (!checked.length) return;
+
+    try {
+      setError('');
+      await Promise.all(
+        checked.map(
+          item => updateShoppingItem(item.id, {
+            ...item,
+            estado: 'comprado'
+          })
+        )
+      );
+
+      setItems(current =>
+        current.filter(item =>
+          !checked.some(checkedItem => checkedItem.id === item.id)
+        )
+      );
+    } catch (err) {
+      setError(err.message || 'No se pudieron limpiar los productos comprados.');
+
+      const fresh = await getShoppingItems().catch(() => null);
+
+      if (fresh) setItems(fresh);
+    }
+  };
+
   return (
     <div className="compra-app">
       <ShoppingHeader view="lista" openNew={openNew} />
@@ -190,11 +231,11 @@ export default function ListView({ onChangeView }) {
 
         {loading ? (
           <div className="compra-empty"><p>Cargando lista...</p></div>
-        ) : pending.length === 0 ? (
+        ) : (pending.length === 0 && checked.length === 0) ? (
           <div className="compra-empty">
             <span><Icon name="cart" size={28} /></span>
             <h2>Tu lista está vacía</h2>
-            <p>Añade productos manualmente o genera ingredientes desde las recetas planificadas.</p>
+            <p>Añade productos manualmente.</p>
           </div>
         ) : null}
 
@@ -209,7 +250,7 @@ export default function ListView({ onChangeView }) {
                 <ShoppingItem
                   key={item.id}
                   item={item}
-                  onToggle={markAsBought}
+                  onToggle={checkItem}
                   onEdit={openEdit}
                   onDelete={deleteItem}
                 />
@@ -217,6 +258,18 @@ export default function ListView({ onChangeView }) {
             </section>
           );
         })}
+
+        {checked.length > 0 && (
+          <section className="compra-grupo compra-comprados">
+              <div className="compra-grupo-title">
+                <h2>Comprados</h2>
+                <button onClick={clearBought}>Limpiar</button>
+              </div>
+            {checked.map(item => (
+              <ShoppingItem key={item.id} item={item} onToggle={checkItem}/>
+            ))}
+          </section>
+        )}
       </div>
 
       {showForm && (
