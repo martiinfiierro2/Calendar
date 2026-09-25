@@ -24,7 +24,7 @@ const rules = [
 
   body('estado')
     .optional()
-    .isIn(['apuntado', 'comprado', 'usado'])
+    .isIn(['apuntado', 'apuntadoChecked', 'comprado', 'compradoChecked', 'usado'])
     .withMessage(
       'El estado debe ser apuntado, comprado o usado.'
     ),

@@ -30,7 +30,7 @@ const ProductoCompra = sequelize.define('ProductoCompra', {
     allowNull: false,
     defaultValue: 'apuntado',
     validate: {
-      isIn: [['apuntado', 'comprado', 'usado']]
+      isIn: [['apuntado', 'apuntadoChecked', 'comprado', 'compradoChecked', 'usado']]
     }
   },
 
