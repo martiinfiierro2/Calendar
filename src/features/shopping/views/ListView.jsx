@@ -321,7 +321,14 @@ export default function ListView({ onChangeView }) {
               <div className="compra-form-row">
                 <label>
                   Cantidad
-                  <div className="compra-quantity-input">
+                  <div
+                    className="compra-quantity-input"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(0, 1fr) 72px',
+                      gap: '6px'
+                    }}
+                  >
                     <input
                       value={quantity}
                       onChange={event => setQuantity(event.target.value)}
