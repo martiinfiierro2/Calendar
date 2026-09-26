@@ -1,4 +1,5 @@
 import { Comida, ProductoCompra, Receta } from '../models/index.js';
+import { procesarComidasPendientes } from '../services/consumptionService.js';
 
 function categoriaIngrediente(nombre = '') {
   const texto = nombre.toLowerCase();
@@ -38,6 +39,10 @@ function categoriaIngrediente(nombre = '') {
 
 export async function listShopping(req, res, next) {
   try {
+    // Antes de devolver la nevera/lista,
+    // actualizamos el stock según las comidas ya pasadas.
+    await procesarComidasPendientes(req.user.id);
+
     const productos = await ProductoCompra.findAll({
       where: {
         usuarioId: req.user.id
