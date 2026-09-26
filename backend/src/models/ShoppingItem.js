@@ -14,9 +14,15 @@ const ProductoCompra = sequelize.define('ProductoCompra', {
   },
 
   cantidad: {
-    type: DataTypes.STRING(60),
+    type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
-    defaultValue: '1'
+    defaultValue: 1
+  },
+
+  unidad: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    defaultValue: 'ud'
   },
 
   categoria: {
@@ -30,7 +36,13 @@ const ProductoCompra = sequelize.define('ProductoCompra', {
     allowNull: false,
     defaultValue: 'apuntado',
     validate: {
-      isIn: [['apuntado', 'apuntadoChecked', 'comprado', 'compradoChecked', 'usado']]
+      isIn: [[
+        'apuntado',
+        'apuntadoChecked',
+        'comprado',
+        'compradoChecked',
+        'usado'
+      ]]
     }
   },
 

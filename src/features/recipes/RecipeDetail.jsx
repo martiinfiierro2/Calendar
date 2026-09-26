@@ -1,6 +1,18 @@
 import React from 'react';
 import Icon from '../../shared/Icon';
 
+function formatearIngrediente(ingrediente) {
+  if (typeof ingrediente === 'string') {
+    return ingrediente;
+  }
+
+  const cantidad = ingrediente.cantidad ?? '';
+  const unidad = ingrediente.unidad ?? '';
+  const nombre = ingrediente.nombre ?? '';
+
+  return `${cantidad} ${unidad} de ${nombre}`.trim();
+}
+
 // Hoja inferior con toda la información de una receta.
 export default function RecipeDetail({ recipe, onClose, onEdit, onDelete, onToggleFavorite }) {
   if (!recipe) return null;
@@ -37,7 +49,13 @@ export default function RecipeDetail({ recipe, onClose, onEdit, onDelete, onTogg
           <div className="receta-detalle-scroll">
             <h3>Ingredientes</h3>
             {recipe.ingredientes.length ? (
-              <ul>{recipe.ingredientes.map((item, index) => <li key={index}>{item}</li>)}</ul>
+              <ul>
+                {recipe.ingredientes.map((item, index) => (
+                  <li key={index}>
+                    {formatearIngrediente(item)}
+                  </li>
+                ))}
+              </ul>
             ) : (
               <p className="receta-muted">Sin ingredientes añadidos.</p>
             )}
