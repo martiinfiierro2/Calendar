@@ -20,7 +20,7 @@ export default function FridgeItem({ item, onEdit, onDelete }) {
 
       <div className="compra-item-info">
         <strong>{item.nombre}</strong>
-        <span>{item.cantidad}</span>
+        <span>{item.cantidad} {item.unidad || 'ud'}</span>
       </div>
 
       <button
