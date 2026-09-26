@@ -243,27 +243,6 @@
   z-index: 200;
 }
 
-.compra-cantidad-unidad {
-  display: grid;
-  grid-template-columns: 1fr 90px;
-  gap: 0;
-}
-
-.compra-cantidad-unidad input,
-.compra-cantidad-unidad select {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.compra-cantidad-unidad input {
-  border-radius: 10px 0 0 10px;
-  border-right: 0;
-}
-
-.compra-cantidad-unidad select {
-  border-radius: 0 10px 10px 0;
-}
-
 .compra-sheet {
   position: absolute;
   left: 8px;
@@ -317,6 +296,50 @@
   outline: none;
 }
 
+.compra-sheet input:focus,
+.compra-sheet select:focus {
+  border-color: #b8d5bb;
+  box-shadow: 0 0 0 3px rgba(79, 148, 86, .08);
+}
+
+.compra-cantidad-unidad {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 78px;
+  gap: 0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(25, 42, 29, .02);
+}
+
+.compra-sheet .compra-cantidad-unidad input,
+.compra-sheet .compra-cantidad-unidad select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.compra-sheet .compra-cantidad-unidad input {
+  border-radius: 12px 0 0 12px;
+  border-right: 0;
+}
+
+.compra-sheet .compra-cantidad-unidad select {
+  border-radius: 0 12px 12px 0;
+  padding-left: 10px;
+  padding-right: 8px;
+  background: #f1f6f1;
+  color: #435147;
+  font-weight: 800;
+}
+
+.compra-sheet .compra-cantidad-unidad:focus-within input,
+.compra-sheet .compra-cantidad-unidad:focus-within select {
+  border-color: #b8d5bb;
+  box-shadow: none;
+}
+
+.compra-sheet .compra-cantidad-unidad:focus-within {
+  box-shadow: 0 0 0 3px rgba(79, 148, 86, .08);
+}
+
 .compra-form-row {
   display: grid;
   grid-template-columns: 1fr 1.25fr;
@@ -362,6 +385,10 @@
   .compra-delete {
     width: 30px;
     height: 30px;
+  }
+
+  .compra-sheet .compra-cantidad-unidad {
+    grid-template-columns: minmax(0, 1fr) 70px;
   }
 }
 
