@@ -2,13 +2,29 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { CATEGORIAS_RECETA } from '../../config/appConfig';
 import { createRecipe, deleteRecipe as deleteRecipeApi, getRecipes, updateRecipe } from '../../services/recipeService';
 import Icon from '../../shared/Icon';
-import { ingredientToText, parseIngredientLine } from '../../utils/unitUtils';
+import { normalizeUnit, parseIngredientLine } from '../../utils/unitUtils';
 import RecipeCard from './RecipeCard';
 import RecipeDetail from './RecipeDetail';
 import RecipeForm from './RecipeForm';
 import '../../componentes/recetas.css';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80';
+
+function normalizarIngredienteFormulario(ingrediente) {
+  if (typeof ingrediente === 'string') {
+    return parseIngredientLine(ingrediente);
+  }
+
+  if (!ingrediente?.nombre) return null;
+
+  const cantidad = Number(ingrediente.cantidad);
+
+  return {
+    nombre: ingrediente.nombre.trim(),
+    cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1,
+    unidad: normalizeUnit(ingrediente.unidad || 'ud')
+  };
+}
 
 function createEmptyForm() {
   return {
@@ -18,7 +34,11 @@ function createEmptyForm() {
     raciones: 2,
     dificultad: 'Fácil',
     imagen: '',
-    ingredientes: '',
+    ingredientes: [],
+    ingredienteNombre: '',
+    ingredienteCantidad: '1',
+    ingredienteUnidad: 'ud',
+    ingredienteEditando: null,
     pasos: ''
   };
 }
@@ -60,10 +80,7 @@ export default function RecipesPage() {
       const matchesText = !text
         || recipe.nombre.toLowerCase().includes(text)
         || recipe.ingredientes.some(item => {
-          const nombre =
-            typeof item === 'string'
-              ? item
-              : item.nombre || '';
+          const nombre = typeof item === 'string' ? item : item.nombre || '';
           return nombre.toLowerCase().includes(text);
         });
       const matchesCategory = category === 'Todas'
@@ -89,8 +106,12 @@ export default function RecipesPage() {
       dificultad: recipe.dificultad,
       imagen: recipe.imagen || '',
       ingredientes: recipe.ingredientes
-        .map(ingredientToText)
-        .join('\n'),
+        .map(normalizarIngredienteFormulario)
+        .filter(Boolean),
+      ingredienteNombre: '',
+      ingredienteCantidad: '1',
+      ingredienteUnidad: 'ud',
+      ingredienteEditando: null,
       pasos: recipe.pasos.join('\n')
     });
   };
@@ -114,8 +135,7 @@ export default function RecipesPage() {
       favorito: editing?.favorito || false,
       imagen: form.imagen.trim() || FALLBACK_IMAGE,
       ingredientes: form.ingredientes
-        .split('\n')
-        .map(parseIngredientLine)
+        .map(normalizarIngredienteFormulario)
         .filter(Boolean),
       pasos: form.pasos
         .split('\n')
