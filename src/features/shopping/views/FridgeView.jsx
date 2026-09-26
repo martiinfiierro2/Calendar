@@ -19,6 +19,7 @@ export default function FridgeView({ onChangeView }){
     const [items, setItems] = useState([]);
     const [name, setName] = useState('');
     const [quantity, setQuantity] = useState('1');
+    const [unit, setUnit] = useState('ud');
     const [category, setCategory] = useState('Otros');
     const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState(null);
@@ -56,6 +57,7 @@ export default function FridgeView({ onChangeView }){
       setEditing(null);
       setName('');
       setQuantity('1');
+      setUnit('ud');
       setCategory('Otros');
       setShowForm(true);
     };
@@ -64,6 +66,7 @@ export default function FridgeView({ onChangeView }){
       setEditing(item);
       setName(item.nombre);
       setQuantity(item.cantidad || '1');
+      setUnit(item.unidad || 'ud');
       setCategory(item.categoria || 'Otros');
       setShowForm(true);
     };
@@ -81,6 +84,7 @@ export default function FridgeView({ onChangeView }){
       const data = {
         nombre: name.trim(),
         cantidad: quantity.trim() || '1',
+        unidad: unit,
         categoria: category,
         estado: editing?.estado || 'comprado',
         automatico: editing?.automatico || false
@@ -192,7 +196,27 @@ export default function FridgeView({ onChangeView }){
                       <div className="compra-form-row">
                         <label>
                           Cantidad
-                          <input value={quantity} onChange={event => setQuantity(event.target.value)} />
+                          <div className="compra-cantidad-unidad">
+                            <input
+                              type="number"
+                              min="0"
+                              value={quantity}
+                              onChange={event => setQuantity(event.target.value)}
+                              placeholder="Cantidad"
+                            />
+
+                            <select
+                              value={unit}
+                              onChange={event => setUnit(event.target.value)}
+                              aria-label="Unidad"
+                            >
+                              <option value="ud">ud</option>
+                              <option value="g">g</option>
+                              <option value="kg">kg</option>
+                              <option value="ml">ml</option>
+                              <option value="l">l</option>
+                            </select>
+                          </div>
                         </label>
                         <label>
                           Categoría

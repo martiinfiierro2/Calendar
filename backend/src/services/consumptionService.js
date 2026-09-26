@@ -1,4 +1,3 @@
-import { Comida, Receta } from '../models/index.js';
 import {
   sequelize,
   Comida,
@@ -234,12 +233,6 @@ async function procesarComida(comidaPendiente) {
         id: comidaPendiente.id,
         usuarioId: comidaPendiente.usuarioId
       },
-      include: [
-        {
-          model: Receta,
-          required: false
-        }
-      ],
       transaction,
       lock: transaction.LOCK.UPDATE
     });
@@ -248,12 +241,19 @@ async function procesarComida(comidaPendiente) {
       return;
     }
 
+    let receta = null;
+
+    if (comida.modo === 'receta' && comida.recetaId) {
+      receta = await Receta.findByPk(comida.recetaId, {
+        transaction
+      });
+    }
+
     if (
-      comida.modo === 'receta' &&
-      comida.Receta &&
-      Array.isArray(comida.Receta.ingredientes)
+      receta &&
+      Array.isArray(receta.ingredientes)
     ) {
-      for (const ingrediente of comida.Receta.ingredientes) {
+      for (const ingrediente of receta.ingredientes) {
         await consumirIngrediente(
           ingrediente,
           comida.usuarioId,

@@ -243,6 +243,27 @@
   z-index: 200;
 }
 
+.compra-cantidad-unidad {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 0;
+}
+
+.compra-cantidad-unidad input,
+.compra-cantidad-unidad select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.compra-cantidad-unidad input {
+  border-radius: 10px 0 0 10px;
+  border-right: 0;
+}
+
+.compra-cantidad-unidad select {
+  border-radius: 0 10px 10px 0;
+}
+
 .compra-sheet {
   position: absolute;
   left: 8px;

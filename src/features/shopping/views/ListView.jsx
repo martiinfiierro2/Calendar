@@ -34,7 +34,7 @@ export default function ListView({ onChangeView }) {
   const [items, setItems] = useState([]);
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
-  const [unit, setUnit] = useState('');
+  const [unit, setUnit] = useState('ud');
   const [category, setCategory] = useState('Otros');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -77,7 +77,7 @@ export default function ListView({ onChangeView }) {
     setEditing(null);
     setName('');
     setQuantity('1');
-    setUnit('');
+    setUnit('ud');
     setCategory('Otros');
     setShowForm(true);
   };
@@ -88,7 +88,7 @@ export default function ListView({ onChangeView }) {
     setEditing(item);
     setName(item.nombre);
     setQuantity(parsed.cantidad);
-    setUnit(parsed.unidad);
+    setUnit(item.unidad || 'ud');
     setCategory(item.categoria || 'Otros');
     setShowForm(true);
   };
@@ -103,11 +103,10 @@ export default function ListView({ onChangeView }) {
     event.preventDefault();
     if (!name.trim() || saving) return;
 
-    const cantidadCompleta = `${quantity.trim() || '1'}${unit ? ` ${unit}` : ''}`;
-
     const data = {
       nombre: name.trim(),
-      cantidad: cantidadCompleta,
+      cantidad: quantity.trim() || '1',
+      unidad: unit,
       categoria: category,
       estado: editing?.estado || 'apuntado',
       automatico: editing?.automatico || false
@@ -321,30 +320,25 @@ export default function ListView({ onChangeView }) {
               <div className="compra-form-row">
                 <label>
                   Cantidad
-                  <div
-                    className="compra-quantity-input"
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'minmax(0, 1fr) 72px',
-                      gap: '6px'
-                    }}
-                  >
-                    <input
+                    <div className="compra-cantidad-unidad">
+                      <input
+                      type="number"
+                      min="0"
                       value={quantity}
                       onChange={event => setQuantity(event.target.value)}
-                      inputMode="decimal"
-                      placeholder="1"
+                      placeholder="Cantidad"
                     />
+
                     <select
                       value={unit}
                       onChange={event => setUnit(event.target.value)}
                       aria-label="Unidad"
                     >
-                      {UNIDADES.map(item => (
-                        <option key={item || 'sin-unidad'} value={item}>
-                          {item || 'ud.'}
-                        </option>
-                      ))}
+                      <option value="ud">ud</option>
+                      <option value="g">g</option>
+                      <option value="kg">kg</option>
+                      <option value="ml">ml</option>
+                      <option value="l">l</option>
                     </select>
                   </div>
                 </label>

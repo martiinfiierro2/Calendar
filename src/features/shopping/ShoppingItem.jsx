@@ -1,34 +1,50 @@
 import React from 'react';
 import Icon from '../../shared/Icon';
 
-// Fila reutilizable de un producto de la lista de la compra.
-export default function ShoppingItem({ item, onToggle, onEdit, onDelete }) {
+export default function ShoppingItem({
+  item,
+  onToggle,
+  onEdit,
+  onDelete
+}) {
+  const isChecked = item.estado?.endsWith('Checked');
+
   return (
-    <div className={`compra-item ${item.estado === 'apuntadoChecked' ? 'hecho' : ''}`}>
+    <div className={`compra-item ${isChecked ? 'hecho' : ''}`}>
       <button
         className="compra-check"
         onClick={() => onToggle(item.id)}
-        aria-label={item.estado}
+        aria-label={isChecked ? 'Marcar pendiente' : 'Marcar comprado'}
       >
-        {item.estado === 'apuntadoChecked' && <Icon name="check" size={15} />}
+        {isChecked && <Icon name="check" size={15} />}
       </button>
 
       <div className="compra-item-info">
         <strong>{item.nombre}</strong>
-        <span>{item.cantidad}</span>
+        <span>
+          {item.cantidad} {item.unidad || ''}
+        </span>
       </div>
 
-        {!item.estado.endsWith('Checked') && (
-          <button className="compra-delete" onClick={() => onEdit(item)} aria-label="Editar">
-            <Icon name="edit" size={17} />
-          </button>
-        )}
-        {!item.estado.endsWith('Checked') && (
-          <button className="compra-delete" onClick={() => onDelete(item.id)} aria-label="Eliminar">
-            <Icon name="trash" size={17} />
-          </button>
-        )}
-      
+      {!isChecked && (
+        <button
+          className="compra-delete"
+          onClick={() => onEdit(item)}
+          aria-label="Editar"
+        >
+          <Icon name="edit" size={17} />
+        </button>
+      )}
+
+      {!isChecked && (
+        <button
+          className="compra-delete"
+          onClick={() => onDelete(item.id)}
+          aria-label="Eliminar"
+        >
+          <Icon name="trash" size={17} />
+        </button>
+      )}
     </div>
   );
 }
