@@ -8,27 +8,12 @@ import {
   updateShoppingItem
 } from '../../../services/shoppingService';
 import { categoriaIngrediente } from '../../../utils/ingredientUtils';
+import { normalizeUnit, UNIT_OPTIONS } from '../../../utils/unitUtils';
 import Icon from '../../../shared/Icon';
 import ShoppingItem from '../ShoppingItem';
 import '../../../componentes/compra.css';
 import ToogleListFridge from '../ToogleListFridge';
 import ShoppingHeader from '../ShoppingHeader';
-
-const UNIDADES = ['', 'uds', 'g', 'kg', 'ml', 'L'];
-
-function separarCantidad(valor = '1') {
-  const texto = String(valor).trim();
-  const match = texto.match(/^(.+?)\s*(uds|kg|g|ml|L)$/);
-
-  if (!match) {
-    return { cantidad: texto || '1', unidad: '' };
-  }
-
-  return {
-    cantidad: match[1].trim() || '1',
-    unidad: match[2]
-  };
-}
 
 export default function ListView({ onChangeView }) {
   const [items, setItems] = useState([]);
@@ -83,12 +68,10 @@ export default function ListView({ onChangeView }) {
   };
 
   const openEdit = item => {
-    const parsed = separarCantidad(item.cantidad);
-
     setEditing(item);
     setName(item.nombre);
-    setQuantity(parsed.cantidad);
-    setUnit(item.unidad || 'ud');
+    setQuantity(String(item.cantidad ?? '1'));
+    setUnit(normalizeUnit(item.unidad || 'ud'));
     setCategory(item.categoria || 'Otros');
     setShowForm(true);
   };
@@ -103,10 +86,12 @@ export default function ListView({ onChangeView }) {
     event.preventDefault();
     if (!name.trim() || saving) return;
 
+    const numericQuantity = Number(String(quantity).replace(',', '.'));
+
     const data = {
       nombre: name.trim(),
-      cantidad: quantity.trim() || '1',
-      unidad: unit,
+      cantidad: Number.isFinite(numericQuantity) && numericQuantity >= 0 ? numericQuantity : 1,
+      unidad: normalizeUnit(unit),
       categoria: category,
       estado: editing?.estado || 'apuntado',
       automatico: editing?.automatico || false
@@ -139,10 +124,9 @@ export default function ListView({ onChangeView }) {
     if (!item) return;
 
     let statusChanged = '';
-    if(item.estado === 'apuntado') {
+    if (item.estado === 'apuntado') {
       statusChanged = 'apuntadoChecked';
-    }
-    else if(item.estado === 'apuntadoChecked') {
+    } else if (item.estado === 'apuntadoChecked') {
       statusChanged = 'apuntado';
     }
 
@@ -161,6 +145,7 @@ export default function ListView({ onChangeView }) {
       const saved = await updateShoppingItem(id, {
         nombre: next.nombre,
         cantidad: next.cantidad,
+        unidad: normalizeUnit(next.unidad || 'ud'),
         categoria: next.categoria,
         estado: next.estado,
         automatico: next.automatico
@@ -216,6 +201,7 @@ export default function ListView({ onChangeView }) {
         checked.map(
           item => updateShoppingItem(item.id, {
             ...item,
+            unidad: normalizeUnit(item.unidad || 'ud'),
             estado: 'comprado'
           })
         )
@@ -283,12 +269,12 @@ export default function ListView({ onChangeView }) {
 
         {checked.length > 0 && (
           <section className="compra-grupo compra-comprados">
-              <div className="compra-grupo-title">
-                <h2>Comprados</h2>
-                <button onClick={clearBought}>Limpiar</button>
-              </div>
+            <div className="compra-grupo-title">
+              <h2>Comprados</h2>
+              <button onClick={clearBought}>Limpiar</button>
+            </div>
             {checked.map(item => (
-              <ShoppingItem key={item.id} item={item} onToggle={checkItem}/>
+              <ShoppingItem key={item.id} item={item} onToggle={checkItem} />
             ))}
           </section>
         )}
@@ -320,13 +306,14 @@ export default function ListView({ onChangeView }) {
               <div className="compra-form-row">
                 <label>
                   Cantidad
-                    <div className="compra-cantidad-unidad">
-                      <input
+                  <div className="compra-cantidad-unidad">
+                    <input
                       type="number"
                       min="0"
+                      step="0.01"
                       value={quantity}
                       onChange={event => setQuantity(event.target.value)}
-                      placeholder="Cantidad"
+                      placeholder="1"
                     />
 
                     <select
@@ -334,11 +321,11 @@ export default function ListView({ onChangeView }) {
                       onChange={event => setUnit(event.target.value)}
                       aria-label="Unidad"
                     >
-                      <option value="ud">ud</option>
-                      <option value="g">g</option>
-                      <option value="kg">kg</option>
-                      <option value="ml">ml</option>
-                      <option value="l">l</option>
+                      {UNIT_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </label>
