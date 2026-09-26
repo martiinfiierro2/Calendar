@@ -2,44 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { CATEGORIAS_RECETA } from '../../config/appConfig';
 import { createRecipe, deleteRecipe as deleteRecipeApi, getRecipes, updateRecipe } from '../../services/recipeService';
 import Icon from '../../shared/Icon';
+import { ingredientToText, parseIngredientLine } from '../../utils/unitUtils';
 import RecipeCard from './RecipeCard';
 import RecipeDetail from './RecipeDetail';
 import RecipeForm from './RecipeForm';
 import '../../componentes/recetas.css';
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=700&q=80';
-
-function parseIngrediente(texto) {
-  const limpio = texto.trim();
-
-  const match = limpio.match(
-    /^(\d+(?:[.,]\d+)?)\s*(kg|g|mg|l|ml|ud|uds)?\s*(?:de\s+)?(.+)$/i
-  );
-
-  if (!match) {
-    return {
-      nombre: limpio,
-      cantidad: 1,
-      unidad: 'ud'
-    };
-  }
-
-  const [, cantidad, unidad, nombre] = match;
-
-  return {
-    nombre: nombre.trim(),
-    cantidad: Number(cantidad.replace(',', '.')),
-    unidad: (unidad || 'ud').toLowerCase()
-  };
-}
-
-function ingredienteATexto(ingrediente) {
-  if (typeof ingrediente === 'string') {
-    return ingrediente;
-  }
-
-  return `${ingrediente.cantidad} ${ingrediente.unidad} de ${ingrediente.nombre}`;
-}
 
 function createEmptyForm() {
   return {
@@ -90,13 +59,13 @@ export default function RecipesPage() {
     return recipes.filter(recipe => {
       const matchesText = !text
         || recipe.nombre.toLowerCase().includes(text)
-        ||recipe.ingredientes.some(item => {
-            const nombre =
-              typeof item === 'string'
-                ? item
-                : item.nombre || '';
-            return nombre.toLowerCase().includes(text);
-          })
+        || recipe.ingredientes.some(item => {
+          const nombre =
+            typeof item === 'string'
+              ? item
+              : item.nombre || '';
+          return nombre.toLowerCase().includes(text);
+        });
       const matchesCategory = category === 'Todas'
         || (category === 'Favoritas' ? recipe.favorito : recipe.categoria === category);
       return matchesText && matchesCategory;
@@ -120,7 +89,7 @@ export default function RecipesPage() {
       dificultad: recipe.dificultad,
       imagen: recipe.imagen || '',
       ingredientes: recipe.ingredientes
-        .map(ingredienteATexto)
+        .map(ingredientToText)
         .join('\n'),
       pasos: recipe.pasos.join('\n')
     });
@@ -146,9 +115,8 @@ export default function RecipesPage() {
       imagen: form.imagen.trim() || FALLBACK_IMAGE,
       ingredientes: form.ingredientes
         .split('\n')
-        .map(value => value.trim())
-        .filter(Boolean)
-        .map(parseIngrediente),
+        .map(parseIngredientLine)
+        .filter(Boolean),
       pasos: form.pasos
         .split('\n')
         .map(value => value.trim())
