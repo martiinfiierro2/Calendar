@@ -67,7 +67,46 @@ export default function RecipeForm({ form, editing, onChange, onClose, onSubmit 
 
           <label>
             Ingredientes <span className="label-ayuda">uno por línea</span>
-            <textarea rows="5" value={form.ingredientes} onChange={event => update('ingredientes', event.target.value)} placeholder={'200 g de pasta\n2 tomates\nAceite de oliva'} />
+            <textarea
+              rows="5"
+              value={form.ingredientes}
+              onChange={event => update('ingredientes', event.target.value)}
+              placeholder={'200 g de pasta\n2 tomates\n1 litro de leche\n500 gramos de harina'}
+            />
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '5px',
+                marginTop: '2px'
+              }}
+            >
+              {['ud', 'g', 'kg', 'ml', 'l'].map(unit => (
+                <span
+                  key={unit}
+                  style={{
+                    padding: '3px 7px',
+                    borderRadius: '999px',
+                    background: '#eef6ef',
+                    color: 'var(--appDecorationStrong)',
+                    fontSize: '9px',
+                    fontWeight: 800
+                  }}
+                >
+                  {unit}
+                </span>
+              ))}
+              <span
+                style={{
+                  alignSelf: 'center',
+                  color: '#8a948c',
+                  fontSize: '9px',
+                  fontWeight: 600
+                }}
+              >
+                También entiende gramos, kilos, litros, mililitros y unidades.
+              </span>
+            </div>
           </label>
 
           <label>
