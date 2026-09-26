@@ -73,20 +73,38 @@ function normalizarNombre(nombre = '') {
 }
 
 function normalizarUnidad(unidad = 'ud') {
-  const valor = unidad.toLowerCase().trim();
+  const valor = String(unidad)
+    .toLowerCase()
+    .trim()
+    .replace(/\./g, '');
 
   const equivalencias = {
+    ud: 'ud',
     uds: 'ud',
     unidad: 'ud',
     unidades: 'ud',
-    gramos: 'g',
+
+    g: 'g',
+    gr: 'g',
+    grs: 'g',
     gramo: 'g',
-    kilogramos: 'kg',
+    gramos: 'g',
+
+    kg: 'kg',
+    kilo: 'kg',
+    kilos: 'kg',
     kilogramo: 'kg',
-    litros: 'l',
-    litro: 'l',
+    kilogramos: 'kg',
+
+    ml: 'ml',
+    mililitro: 'ml',
     mililitros: 'ml',
-    mililitro: 'ml'
+
+    l: 'l',
+    lt: 'l',
+    lts: 'l',
+    litro: 'l',
+    litros: 'l'
   };
 
   return equivalencias[valor] || valor;
