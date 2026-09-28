@@ -11,7 +11,28 @@ const rules = [
   body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio.'),
   body('tiempo').optional().isInt({ min: 1 }),
   body('raciones').optional().isInt({ min: 1 }),
-  body('ingredientes').optional().isArray(),
+
+  body('ingredientes')
+    .optional()
+    .isArray()
+    .withMessage('Los ingredientes deben ser un array.'),
+
+  body('ingredientes.*.nombre')
+    .if(body('ingredientes').isArray())
+    .trim()
+    .notEmpty()
+    .withMessage('Cada ingrediente debe tener nombre.'),
+
+  body('ingredientes.*.cantidad')
+    .if(body('ingredientes').isArray())
+    .isFloat({ gt: 0 })
+    .withMessage('La cantidad de cada ingrediente debe ser mayor que 0.'),
+
+  body('ingredientes.*.unidad')
+    .if(body('ingredientes').isArray())
+    .isIn(['ud', 'g', 'kg', 'ml', 'L'])
+    .withMessage('La unidad de cada ingrediente debe ser ud, g, kg, ml o L.'),
+
   body('pasos').optional().isArray(),
   validateRequest
 ];
