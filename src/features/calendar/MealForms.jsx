@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
 import { getRecipes } from '../../services/recipeService';
 import { fechaClave } from '../../utils/dateUtils';
+import { normalizeUnit, UNIT_OPTIONS } from '../../utils/unitUtils';
 import IconButton from '../../shared/IconButton';
 
 // Formulario para añadir una receta guardada al calendario.
@@ -131,21 +132,52 @@ export function RecipeMealForm({ date, initialHour, initialMeal, onClose, onSave
 // Formulario rápido para comidas que no vienen de una receta.
 export function QuickMealForm({ date, initialHour, initialMeal, onClose, onSave }) {
   const [name, setName] = useState(initialMeal?.nombre || '');
-  const [ingredients, setIngredients] = useState(initialMeal?.ingredientes?.join(', ') || '');
+  const [ingredients, setIngredients] = useState(
+    Array.isArray(initialMeal?.ingredientes)
+      ? initialMeal.ingredientes.filter(item => item && typeof item === 'object')
+      : []
+  );
+  const [ingredientName, setIngredientName] = useState('');
+  const [ingredientQuantity, setIngredientQuantity] = useState('1');
+  const [ingredientUnit, setIngredientUnit] = useState('ud');
   const [mealType, setMealType] = useState(initialMeal?.tipo || 'comida');
   const [formDate, setFormDate] = useState(initialMeal?.fecha || fechaClave(date));
   const [hour, setHour] = useState(initialMeal?.hora || initialHour || '14:00');
 
+  const addIngredient = () => {
+    const nombre = ingredientName.trim();
+    const cantidad = Number(String(ingredientQuantity).replace(',', '.'));
+
+    if (!nombre || !Number.isFinite(cantidad) || cantidad <= 0) return;
+
+    setIngredients(current => [
+      ...current,
+      {
+        nombre,
+        cantidad,
+        unidad: normalizeUnit(ingredientUnit)
+      }
+    ]);
+
+    setIngredientName('');
+    setIngredientQuantity('1');
+    setIngredientUnit('ud');
+  };
+
+  const removeIngredient = index => {
+    setIngredients(current => current.filter((_, currentIndex) => currentIndex !== index));
+  };
+
   const submit = event => {
     event.preventDefault();
-    if (!name.trim() || !ingredients.trim() || !formDate || !hour) return;
+    if (!name.trim() || ingredients.length === 0 || !formDate || !hour) return;
 
     const typeInfo = TIPOS_COMIDA.find(item => item.valor === mealType) || TIPOS_COMIDA[2];
     onSave({
       nombre: name.trim(),
       tipo: mealType,
       icono: typeInfo.icono,
-      ingredientes: ingredients.split(',').map(item => item.trim()).filter(Boolean),
+      ingredientes: ingredients,
       fecha: formDate,
       hora: hour,
       modo: 'rapida'
@@ -170,8 +202,69 @@ export function QuickMealForm({ date, initialHour, initialMeal, onClose, onSave 
           </div>
 
           <div className="campo-formulario">
-            <label htmlFor="ingredientes-rapida">Ingredientes</label>
-            <input id="ingredientes-rapida" value={ingredients} onChange={event => setIngredients(event.target.value)} placeholder="Ej.: pan, tomate, queso..." required />
+            <label>Ingredientes</label>
+
+            <input
+              value={ingredientName}
+              onChange={event => setIngredientName(event.target.value)}
+              placeholder="Ej.: Pan"
+              aria-label="Nombre del ingrediente"
+            />
+
+            <div className="compra-cantidad-unidad">
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={ingredientQuantity}
+                onChange={event => setIngredientQuantity(event.target.value)}
+                aria-label="Cantidad del ingrediente"
+              />
+
+              <select
+                value={ingredientUnit}
+                onChange={event => setIngredientUnit(event.target.value)}
+                aria-label="Unidad del ingrediente"
+              >
+                {UNIT_OPTIONS.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              className="boton-formulario-secundario"
+              type="button"
+              onClick={addIngredient}
+              disabled={
+                !ingredientName.trim()
+                || !Number.isFinite(Number(String(ingredientQuantity).replace(',', '.')))
+                || Number(String(ingredientQuantity).replace(',', '.')) <= 0
+              }
+            >
+              Añadir ingrediente
+            </button>
+
+            {ingredients.length > 0 && (
+              <div className="ingredientes-rapidos-lista">
+                {ingredients.map((ingredient, index) => (
+                  <div className="ingrediente-rapido-item" key={`${ingredient.nombre}-${index}`}>
+                    <span>
+                      <strong>{ingredient.nombre}</strong> — {ingredient.cantidad} {ingredient.unidad}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeIngredient(index)}
+                      aria-label={`Eliminar ${ingredient.nombre}`}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="campo-formulario">
@@ -192,7 +285,7 @@ export function QuickMealForm({ date, initialHour, initialMeal, onClose, onSave 
             </div>
           </div>
 
-          <button className="boton-formulario-guardar" type="submit">
+          <button className="boton-formulario-guardar" type="submit" disabled={ingredients.length === 0}>
             {initialMeal ? 'Guardar cambios' : 'Guardar'}
           </button>
         </form>
