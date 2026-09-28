@@ -100,11 +100,11 @@ function normalizarUnidad(unidad = 'ud') {
     mililitro: 'ml',
     mililitros: 'ml',
 
-    l: 'l',
-    lt: 'l',
-    lts: 'l',
-    litro: 'l',
-    litros: 'l'
+    l: 'L',
+    lt: 'L',
+    lts: 'L',
+    litro: 'L',
+    litros: 'L'
   };
 
   return equivalencias[valor] || valor;
@@ -117,7 +117,7 @@ function tipoUnidad(unidad) {
     return 'peso';
   }
 
-  if (['ml', 'l'].includes(normalizada)) {
+  if (['ml', 'L'].includes(normalizada)) {
     return 'volumen';
   }
 
@@ -136,7 +136,7 @@ function convertirABase(cantidad, unidad) {
     case 'kg':
       return numero * 1000;
 
-    case 'l':
+    case 'L':
       return numero * 1000;
 
     default:
@@ -151,7 +151,7 @@ function convertirDesdeBase(cantidad, unidad) {
     case 'kg':
       return cantidad / 1000;
 
-    case 'l':
+    case 'L':
       return cantidad / 1000;
 
     default:
