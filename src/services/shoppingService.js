@@ -26,7 +26,13 @@ export async function deleteShoppingItem(id) {
   await apiRequest(`/compra/${id}`, { method: 'DELETE' });
 }
 
-export async function createItemsFromCalendar() {
-  const items = await apiRequest('/compra/desde-calendario', { method: 'POST' });
+export async function createItemsFromCalendar(days = 7) {
+  const items = await apiRequest(
+    `/compra/desde-calendario?dias=${days}`,
+    {
+      method: 'POST'
+    }
+  );
+
   return Array.isArray(items) ? items : [];
 }

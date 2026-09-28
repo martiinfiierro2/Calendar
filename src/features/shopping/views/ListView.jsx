@@ -26,6 +26,9 @@ export default function ListView({ onChangeView }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [showOptions, setShowOptions] = useState(false);
+  const [calendarDays, setCalendarDays] = useState('7');
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -178,17 +181,31 @@ export default function ListView({ onChangeView }) {
 
   const generateFromCalendar = async () => {
     try {
+      setGenerating(true);
       setError('');
-      const created = await createItemsFromCalendar();
+
+      const created = await createItemsFromCalendar(
+        Number(calendarDays)
+      );
 
       if (!created.length) {
-        window.alert('No hay ingredientes nuevos en las recetas planificadas.');
+        window.alert(
+          'No faltan ingredientes para el periodo seleccionado.'
+        );
+
+        setShowOptions(false);
         return;
       }
 
       setItems(current => [...created, ...current]);
+      setShowOptions(false);
     } catch (err) {
-      setError(err.message || 'No se pudo generar la lista desde el calendario.');
+      setError(
+        err.message ||
+        'No se pudo generar la lista desde el calendario.'
+      );
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -223,7 +240,11 @@ export default function ListView({ onChangeView }) {
 
   return (
     <div className="compra-app">
-      <ShoppingHeader view="lista" openNew={openNew} />
+      <ShoppingHeader
+        view="lista"
+        openNew={openNew}
+        openOptions={() => setShowOptions(true)}
+      />
       <ToogleListFridge view="lista" onChange={onChangeView} />
 
       {/*<section className="compra-summary">
@@ -347,6 +368,49 @@ export default function ListView({ onChangeView }) {
                 {saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Añadir a la lista'}
               </button>
             </form>
+          </div>
+        </>
+      )}
+
+      {showOptions && (
+        <>
+          <div
+            className="compra-overlay"
+            onClick={() => !generating && setShowOptions(false)}
+          />
+
+          <div className="compra-sheet">
+            <div className="compra-handle" />
+
+            <h2>Opciones de lista</h2>
+
+            <div className="compra-options-content">
+              <label>
+                Generar compra desde calendario
+
+                <select
+                  value={calendarDays}
+                  onChange={event =>
+                    setCalendarDays(event.target.value)
+                  }
+                >
+                  <option value="3">Próximos 3 días</option>
+                  <option value="7">Próximos 7 días</option>
+                  <option value="14">Próximos 14 días</option>
+                  <option value="30">Próximos 30 días</option>
+                </select>
+              </label>
+
+              <button
+                className="compra-save"
+                onClick={generateFromCalendar}
+                disabled={generating}
+              >
+                {generating
+                  ? 'Generando...'
+                  : 'Generar lista'}
+              </button>
+            </div>
           </div>
         </>
       )}

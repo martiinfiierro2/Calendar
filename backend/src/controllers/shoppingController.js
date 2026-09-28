@@ -1,5 +1,35 @@
 import { Comida, ProductoCompra, Receta } from '../models/index.js';
 import { procesarComidasPendientes } from '../services/consumptionService.js';
+import { Op } from 'sequelize';
+
+function obtenerFechaMadrid() {
+  const partes = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+
+  const valores = Object.fromEntries(
+    partes
+      .filter(parte => parte.type !== 'literal')
+      .map(parte => [parte.type, parte.value])
+  );
+
+  return `${valores.year}-${valores.month}-${valores.day}`;
+}
+
+function sumarDias(fecha, dias) {
+  const [year, month, day] = fecha.split('-').map(Number);
+
+  const date = new Date(
+    Date.UTC(year, month - 1, day)
+  );
+
+  date.setUTCDate(date.getUTCDate() + dias);
+
+  return date.toISOString().slice(0, 10);
+}
 
 function categoriaIngrediente(nombre = '') {
   const texto = nombre.toLowerCase();
@@ -131,10 +161,32 @@ export async function deleteShoppingItem(req, res, next) {
 // POST /compra/desde-calendario
 export async function generateFromCalendar(req, res, next) {
   try {
+    const diasSolicitados = Number(req.query.dias ?? 7);
+
+    const diasPermitidos = [3, 7, 14, 30];
+
+    const dias = diasPermitidos.includes(diasSolicitados)
+      ? diasSolicitados
+      : 7;
+
+    const fechaInicio = obtenerFechaMadrid();
+
+    const fechaFin = sumarDias(
+      fechaInicio,
+      dias - 1
+    );
+
     const [comidas, recetas, existentes] = await Promise.all([
       Comida.findAll({
         where: {
-          usuarioId: req.user.id
+          usuarioId: req.user.id,
+
+          fecha: {
+            [Op.between]: [
+              fechaInicio,
+              fechaFin
+            ]
+          }
         }
       }),
 
