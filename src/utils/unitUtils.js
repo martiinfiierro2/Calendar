@@ -3,7 +3,7 @@ export const UNIT_OPTIONS = [
   { value: 'g', label: 'g' },
   { value: 'kg', label: 'kg' },
   { value: 'ml', label: 'ml' },
-  { value: 'l', label: 'l' }
+  { value: 'L', label: 'L' }
 ];
 
 const UNIT_ALIASES = {
@@ -28,11 +28,11 @@ const UNIT_ALIASES = {
   mililitro: 'ml',
   mililitros: 'ml',
 
-  l: 'l',
-  lt: 'l',
-  lts: 'l',
-  litro: 'l',
-  litros: 'l'
+  l: 'L',
+  lt: 'L',
+  lts: 'L',
+  litro: 'L',
+  litros: 'L'
 };
 
 export function normalizeUnit(value = 'ud') {
