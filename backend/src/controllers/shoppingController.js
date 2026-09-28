@@ -168,11 +168,12 @@ export async function deleteShoppingItem(req, res, next) {
 export async function generateFromCalendar(req, res, next) {
   try {
     const diasSolicitados = Number(req.query.dias ?? 7);
-    const diasPermitidos = [3, 7, 14, 30];
 
-    const dias = diasPermitidos.includes(diasSolicitados)
-      ? diasSolicitados
-      : 7;
+    const dias =
+      Number.isInteger(diasSolicitados) &&
+      diasSolicitados >= 1
+        ? diasSolicitados
+        : 7;
 
     const fechaInicio = obtenerFechaMadrid();
     const fechaFin = sumarDias(fechaInicio, dias - 1);

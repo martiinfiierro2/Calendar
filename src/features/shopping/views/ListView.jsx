@@ -386,19 +386,19 @@ export default function ListView({ onChangeView }) {
 
             <div className="compra-options-content">
               <label>
-                Generar compra desde calendario
+                Hacer lista de la compra para: 
 
-                <select
+                <input
+                  type="number"
+                  min="1"
+                  max="365"
                   value={calendarDays}
                   onChange={event =>
                     setCalendarDays(event.target.value)
                   }
-                >
-                  <option value="3">Próximos 3 días</option>
-                  <option value="7">Próximos 7 días</option>
-                  <option value="14">Próximos 14 días</option>
-                  <option value="30">Próximos 30 días</option>
-                </select>
+                />
+
+                <span>días</span>
               </label>
 
               <button
