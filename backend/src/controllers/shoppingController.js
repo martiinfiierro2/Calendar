@@ -1,6 +1,12 @@
 import { Comida, ProductoCompra, Receta } from '../models/index.js';
 import { procesarComidasPendientes } from '../services/consumptionService.js';
 import { Op } from 'sequelize';
+import {
+  calcularFaltanteTotal,
+  convertirABase,
+  normalizarNombre,
+  obtenerUnidadBase
+} from '../utils/stockUtils.js';
 
 function obtenerFechaMadrid() {
   const partes = new Intl.DateTimeFormat('en-CA', {
@@ -162,7 +168,6 @@ export async function deleteShoppingItem(req, res, next) {
 export async function generateFromCalendar(req, res, next) {
   try {
     const diasSolicitados = Number(req.query.dias ?? 7);
-
     const diasPermitidos = [3, 7, 14, 30];
 
     const dias = diasPermitidos.includes(diasSolicitados)
@@ -170,17 +175,12 @@ export async function generateFromCalendar(req, res, next) {
       : 7;
 
     const fechaInicio = obtenerFechaMadrid();
-
-    const fechaFin = sumarDias(
-      fechaInicio,
-      dias - 1
-    );
+    const fechaFin = sumarDias(fechaInicio, dias - 1);
 
     const [comidas, recetas, existentes] = await Promise.all([
       Comida.findAll({
         where: {
           usuarioId: req.user.id,
-
           fecha: {
             [Op.between]: [
               fechaInicio,
@@ -210,60 +210,89 @@ export async function generateFromCalendar(req, res, next) {
       ])
     );
 
-    const vistos = new Set(
-      existentes
-        .filter(producto => producto.estado !== 'usado')
-        .map(producto =>
-          producto.nombre.trim().toLowerCase()
-        )
-    );
+    const necesidades = new Map();
+
+    comidas.forEach(comida => {
+      let ingredientes = [];
+
+      if (comida.modo === 'receta') {
+        const receta = mapaRecetas.get(
+          String(comida.recetaId)
+        );
+
+        ingredientes = Array.isArray(receta?.ingredientes)
+          ? receta.ingredientes
+          : [];
+      } else if (
+        comida.modo === 'rapida' &&
+        Array.isArray(comida.ingredientes)
+      ) {
+        ingredientes = comida.ingredientes;
+      }
+
+      ingredientes.forEach(ingrediente => {
+        if (!ingrediente?.nombre) {
+          return;
+        }
+
+        const cantidadBase = convertirABase(
+          ingrediente.cantidad,
+          ingrediente.unidad
+        );
+
+        if (
+          !Number.isFinite(cantidadBase) ||
+          cantidadBase <= 0
+        ) {
+          return;
+        }
+
+        const unidadBase = obtenerUnidadBase(
+          ingrediente.unidad
+        );
+
+        const clave = `${normalizarNombre(
+          ingrediente.nombre
+        )}-${unidadBase}`;
+
+        const actual = necesidades.get(clave);
+
+        if (actual) {
+          actual.cantidad += cantidadBase;
+        } else {
+          necesidades.set(clave, {
+            nombre: ingrediente.nombre.trim(),
+            cantidad: cantidadBase,
+            unidad: unidadBase
+          });
+        }
+      });
+    });
 
     const filas = [];
 
-    comidas.forEach(comida => {
-      const receta =
-        comida.modo === 'receta'
-          ? mapaRecetas.get(String(comida.recetaId))
-          : null;
+    for (const ingrediente of necesidades.values()) {
+      const faltante = calcularFaltanteTotal(
+        ingrediente,
+        existentes
+      );
 
-      const ingredientes =
-        comida.modo === 'receta'
-          ? (receta?.ingredientes || [])
-          : (
-              Array.isArray(comida.ingredientes)
-                ? comida.ingredientes
-                : []
-            );
+      if (faltante <= 0) {
+        continue;
+      }
 
-      ingredientes.forEach(ingrediente => {
-        const nombre = String(ingrediente).trim();
-
-        if (!nombre) {
-          return;
-        }
-
-        const clave = nombre.toLowerCase();
-
-        if (vistos.has(clave)) {
-          return;
-        }
-
-        vistos.add(clave);
-
-        filas.push({
-          nombre,
-          cantidad: '1',
-          categoria: categoriaIngrediente(nombre),
-
-          // Los ingredientes generados desde calendario
-          // aparecen primero en la lista de compra.
-          estado: 'apuntado',
-
-          automatico: true,
-          usuarioId: req.user.id
-        });
+      filas.push({
+        nombre: ingrediente.nombre,
+        cantidad: faltante,
+        unidad: ingrediente.unidad,
+        categoria: categoriaIngrediente(
+          ingrediente.nombre
+        ),
+        estado: 'apuntado',
+        automatico: true,
+        usuarioId: req.user.id
       });
-    });
+    }
 
     const creados = filas.length
       ? await ProductoCompra.bulkCreate(filas)

@@ -172,3 +172,17 @@ export function calcularFaltanteTotal(
     disponibles
   );
 }
+
+export function obtenerUnidadBase(unidad) {
+  const tipo = tipoUnidad(unidad);
+
+  if (tipo === 'peso') {
+    return 'g';
+  }
+
+  if (tipo === 'volumen') {
+    return 'ml';
+  }
+
+  return 'ud';
+}
