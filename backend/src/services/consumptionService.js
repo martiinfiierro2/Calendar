@@ -259,25 +259,29 @@ async function procesarComida(comidaPendiente) {
       return;
     }
 
-    let receta = null;
+    let ingredientes = [];
 
     if (comida.modo === 'receta' && comida.recetaId) {
-      receta = await Receta.findByPk(comida.recetaId, {
+      const receta = await Receta.findByPk(comida.recetaId, {
         transaction
       });
+
+      ingredientes = Array.isArray(receta?.ingredientes)
+        ? receta.ingredientes
+        : [];
+    } else if (
+      comida.modo === 'rapida' &&
+      Array.isArray(comida.ingredientes)
+    ) {
+      ingredientes = comida.ingredientes;
     }
 
-    if (
-      receta &&
-      Array.isArray(receta.ingredientes)
-    ) {
-      for (const ingrediente of receta.ingredientes) {
-        await consumirIngrediente(
-          ingrediente,
-          comida.usuarioId,
-          transaction
-        );
-      }
+    for (const ingrediente of ingredientes) {
+      await consumirIngrediente(
+        ingrediente,
+        comida.usuarioId,
+        transaction
+      );
     }
 
     await comida.update(
