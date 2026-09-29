@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
+import './features/shopping/options.css';
 
 // Registra la PWA solo en navegadores compatibles.
 if ('serviceWorker' in navigator) {
