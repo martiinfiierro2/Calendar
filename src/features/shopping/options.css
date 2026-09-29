@@ -25,6 +25,14 @@
   display: flex;
   flex-direction: column;
   gap: 9px;
+  max-height: 62vh;
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-width: none;
+}
+
+.compra-options-menu::-webkit-scrollbar {
+  display: none;
 }
 
 .compra-options-menu > button {
@@ -80,6 +88,40 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
+}
+
+.compra-options-future-title {
+  margin: 8px 2px 1px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--mutedText);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.compra-options-menu > .compra-options-future {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  background: #f8faf8;
+  box-shadow: none;
+}
+
+.compra-options-menu > .compra-options-future:disabled {
+  opacity: .72;
+}
+
+.compra-options-menu > .compra-options-future .compra-options-icon {
+  background: #f0f3f0;
+  color: #7f8a81;
+}
+
+.compra-options-badge {
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: #eef2ee;
+  color: #7b857d;
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .compra-options-content .compra-save {
@@ -191,6 +233,15 @@
   .compra-options-menu > button {
     grid-template-columns: 36px minmax(0, 1fr) 18px;
     padding: 10px;
+  }
+
+  .compra-options-menu > .compra-options-future {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .compra-options-menu > .compra-options-future .compra-options-badge {
+    grid-column: 2;
+    justify-self: start;
   }
 
   .compra-options-icon {
