@@ -9,6 +9,16 @@ export default function ShoppingHeader({ view, openNew, openOptions }) {
       </div>
 
       <div className="compra-header-actions">
+        {view === 'lista' && (
+          <button
+            className="compra-icon-btn"
+            onClick={openOptions}
+            aria-label="Opciones de lista"
+          >
+            <Icon name="sliders" />
+          </button>
+        )}
+
         <button
           className="compra-icon-btn compra-add"
           onClick={openNew}
@@ -16,16 +26,6 @@ export default function ShoppingHeader({ view, openNew, openOptions }) {
         >
           <Icon name="plus" />
         </button>
-
-        {view === 'lista' && (
-          <button
-            className="compra-icon-btn"
-            onClick={openOptions}
-            aria-label="Opciones de lista"
-          >
-            <Icon name="settings" />
-          </button>
-        )}
       </div>
     </header>
   );
