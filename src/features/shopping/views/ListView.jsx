@@ -29,6 +29,7 @@ export default function ListView({ onChangeView }) {
   const [showOptions, setShowOptions] = useState(false);
   const [calendarDays, setCalendarDays] = useState('7');
   const [generating, setGenerating] = useState(false);
+  const [sortOrder, setSortOrder] = useState('category');
 
   useEffect(() => {
     let active = true;
@@ -60,6 +61,20 @@ export default function ListView({ onChangeView }) {
     () => items.filter(item => item.estado === 'apuntadoChecked'),
     [items]
   );
+
+  const sortedPending = useMemo(() => {
+    if (sortOrder === 'category') return pending;
+
+    return [...pending].sort((a, b) => {
+      const comparison = (a.nombre || '').localeCompare(
+        b.nombre || '',
+        'es',
+        { sensitivity: 'base' }
+      );
+
+      return sortOrder === 'name-desc' ? -comparison : comparison;
+    });
+  }, [pending, sortOrder]);
 
   const openNew = () => {
     setEditing(null);
@@ -229,6 +244,7 @@ export default function ListView({ onChangeView }) {
           !checked.some(checkedItem => checkedItem.id === item.id)
         )
       );
+      setShowOptions(false);
     } catch (err) {
       setError(err.message || 'No se pudieron limpiar los productos comprados.');
 
@@ -247,14 +263,6 @@ export default function ListView({ onChangeView }) {
       />
       <ToogleListFridge view="lista" onChange={onChangeView} />
 
-      {/*<section className="compra-summary">
-        <div><strong>{pending.length}</strong><span>Pendientes</span></div>
-        <button onClick={generateFromCalendar}>
-          <Icon name="wand" size={17} />
-          Desde calendario
-        </button>
-      </section>*/}
-
       <div className="compra-lista">
         {error && <div className="compra-empty"><p>{error}</p></div>}
 
@@ -269,7 +277,7 @@ export default function ListView({ onChangeView }) {
         ) : null}
 
         {CATEGORIAS_COMPRA.map(groupName => {
-          const group = pending.filter(item => item.categoria === groupName);
+          const group = sortedPending.filter(item => item.categoria === groupName);
           if (!group.length) return null;
 
           return (
@@ -381,24 +389,22 @@ export default function ListView({ onChangeView }) {
 
           <div className="compra-sheet">
             <div className="compra-handle" />
-
             <h2>Opciones de lista</h2>
 
             <div className="compra-options-content">
               <label>
-                Hacer lista de la compra para: 
-
-                <input
-                  type="number"
-                  min="1"
-                  max="365"
-                  value={calendarDays}
-                  onChange={event =>
-                    setCalendarDays(event.target.value)
-                  }
-                />
-
-                <span>días</span>
+                Generar desde calendario
+                <div className="compra-cantidad-unidad">
+                  <input
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={calendarDays}
+                    onChange={event => setCalendarDays(event.target.value)}
+                    aria-label="Número de días"
+                  />
+                  <span>días</span>
+                </div>
               </label>
 
               <button
@@ -406,9 +412,31 @@ export default function ListView({ onChangeView }) {
                 onClick={generateFromCalendar}
                 disabled={generating}
               >
-                {generating
-                  ? 'Generando...'
-                  : 'Generar lista'}
+                <Icon name="wand" size={17} />
+                {generating ? 'Generando...' : 'Generar lista'}
+              </button>
+
+              <label>
+                Ordenar lista
+                <select
+                  value={sortOrder}
+                  onChange={event => setSortOrder(event.target.value)}
+                >
+                  <option value="category">Por categoría</option>
+                  <option value="name-asc">Nombre A-Z</option>
+                  <option value="name-desc">Nombre Z-A</option>
+                </select>
+              </label>
+
+              <button
+                className="compra-save compra-options-clean"
+                onClick={clearBought}
+                disabled={!checked.length || generating}
+              >
+                <Icon name="trash" size={17} />
+                {checked.length
+                  ? `Limpiar comprados (${checked.length})`
+                  : 'No hay productos comprados'}
               </button>
             </div>
           </div>
