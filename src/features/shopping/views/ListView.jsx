@@ -27,6 +27,7 @@ export default function ListView({ onChangeView }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [showOptions, setShowOptions] = useState(false);
+  const [activeOption, setActiveOption] = useState(null);
   const [calendarDays, setCalendarDays] = useState('7');
   const [generating, setGenerating] = useState(false);
   const [sortOrder, setSortOrder] = useState('category');
@@ -36,9 +37,7 @@ export default function ListView({ onChangeView }) {
 
     getShoppingItems()
       .then(data => {
-        if (active) {
-          setItems(data);
-        }
+        if (active) setItems(data);
       })
       .catch(err => {
         if (active) setError(err.message || 'No se pudo cargar la lista de la compra.');
@@ -100,6 +99,17 @@ export default function ListView({ onChangeView }) {
     setEditing(null);
   };
 
+  const openOptions = () => {
+    setActiveOption(null);
+    setShowOptions(true);
+  };
+
+  const closeOptions = () => {
+    if (generating) return;
+    setShowOptions(false);
+    setActiveOption(null);
+  };
+
   const saveItem = async event => {
     event.preventDefault();
     if (!name.trim() || saving) return;
@@ -141,12 +151,9 @@ export default function ListView({ onChangeView }) {
     const item = items.find(current => current.id === id);
     if (!item) return;
 
-    let statusChanged = '';
-    if (item.estado === 'apuntado') {
-      statusChanged = 'apuntadoChecked';
-    } else if (item.estado === 'apuntadoChecked') {
-      statusChanged = 'apuntado';
-    }
+    const statusChanged = item.estado === 'apuntado'
+      ? 'apuntadoChecked'
+      : 'apuntado';
 
     const next = {
       ...item,
@@ -199,26 +206,18 @@ export default function ListView({ onChangeView }) {
       setGenerating(true);
       setError('');
 
-      const created = await createItemsFromCalendar(
-        Number(calendarDays)
-      );
+      const created = await createItemsFromCalendar(Number(calendarDays));
 
       if (!created.length) {
-        window.alert(
-          'No faltan ingredientes para el periodo seleccionado.'
-        );
-
-        setShowOptions(false);
+        window.alert('No faltan ingredientes para el periodo seleccionado.');
+        closeOptions();
         return;
       }
 
       setItems(current => [...created, ...current]);
-      setShowOptions(false);
+      closeOptions();
     } catch (err) {
-      setError(
-        err.message ||
-        'No se pudo generar la lista desde el calendario.'
-      );
+      setError(err.message || 'No se pudo generar la lista desde el calendario.');
     } finally {
       setGenerating(false);
     }
@@ -230,13 +229,11 @@ export default function ListView({ onChangeView }) {
     try {
       setError('');
       await Promise.all(
-        checked.map(
-          item => updateShoppingItem(item.id, {
-            ...item,
-            unidad: normalizeUnit(item.unidad || 'ud'),
-            estado: 'comprado'
-          })
-        )
+        checked.map(item => updateShoppingItem(item.id, {
+          ...item,
+          unidad: normalizeUnit(item.unidad || 'ud'),
+          estado: 'comprado'
+        }))
       );
 
       setItems(current =>
@@ -244,12 +241,11 @@ export default function ListView({ onChangeView }) {
           !checked.some(checkedItem => checkedItem.id === item.id)
         )
       );
-      setShowOptions(false);
+      closeOptions();
     } catch (err) {
       setError(err.message || 'No se pudieron limpiar los productos comprados.');
 
       const fresh = await getShoppingItems().catch(() => null);
-
       if (fresh) setItems(fresh);
     }
   };
@@ -259,7 +255,7 @@ export default function ListView({ onChangeView }) {
       <ShoppingHeader
         view="lista"
         openNew={openNew}
-        openOptions={() => setShowOptions(true)}
+        openOptions={openOptions}
       />
       <ToogleListFridge view="lista" onChange={onChangeView} />
 
@@ -382,63 +378,138 @@ export default function ListView({ onChangeView }) {
 
       {showOptions && (
         <>
-          <div
-            className="compra-overlay"
-            onClick={() => !generating && setShowOptions(false)}
-          />
+          <div className="compra-overlay" onClick={closeOptions} />
 
           <div className="compra-sheet">
             <div className="compra-handle" />
-            <h2>Opciones de lista</h2>
 
-            <div className="compra-options-content">
-              <label>
-                Generar desde calendario
-                <div className="compra-cantidad-unidad">
-                  <input
-                    type="number"
-                    min="1"
-                    max="365"
-                    value={calendarDays}
-                    onChange={event => setCalendarDays(event.target.value)}
-                    aria-label="Número de días"
-                  />
-                  <span>días</span>
-                </div>
-              </label>
-
-              <button
-                className="compra-save"
-                onClick={generateFromCalendar}
-                disabled={generating}
-              >
-                <Icon name="wand" size={17} />
-                {generating ? 'Generando...' : 'Generar lista'}
-              </button>
-
-              <label>
-                Ordenar lista
-                <select
-                  value={sortOrder}
-                  onChange={event => setSortOrder(event.target.value)}
+            <div className="compra-options-heading">
+              {activeOption && (
+                <button
+                  className="compra-options-back"
+                  onClick={() => setActiveOption(null)}
+                  aria-label="Volver a opciones"
                 >
-                  <option value="category">Por categoría</option>
-                  <option value="name-asc">Nombre A-Z</option>
-                  <option value="name-desc">Nombre Z-A</option>
-                </select>
-              </label>
-
-              <button
-                className="compra-save compra-options-clean"
-                onClick={clearBought}
-                disabled={!checked.length || generating}
-              >
-                <Icon name="trash" size={17} />
-                {checked.length
-                  ? `Limpiar comprados (${checked.length})`
-                  : 'No hay productos comprados'}
-              </button>
+                  <Icon name="back" size={18} />
+                </button>
+              )}
+              <h2>
+                {!activeOption && 'Opciones de lista'}
+                {activeOption === 'calendar' && 'Generar desde calendario'}
+                {activeOption === 'sort' && 'Ordenar lista'}
+                {activeOption === 'clean' && 'Limpiar comprados'}
+              </h2>
             </div>
+
+            {!activeOption && (
+              <div className="compra-options-menu">
+                <button onClick={() => setActiveOption('calendar')}>
+                  <span className="compra-options-icon"><Icon name="wand" size={20} /></span>
+                  <span>
+                    <strong>Generar desde calendario</strong>
+                    <small>Añade los ingredientes que falten para los próximos días.</small>
+                  </span>
+                  <Icon name="right" size={18} />
+                </button>
+
+                <button onClick={() => setActiveOption('sort')}>
+                  <span className="compra-options-icon"><Icon name="sliders" size={20} /></span>
+                  <span>
+                    <strong>Ordenar lista</strong>
+                    <small>Cambia cómo se muestran los productos pendientes.</small>
+                  </span>
+                  <Icon name="right" size={18} />
+                </button>
+
+                <button
+                  onClick={() => setActiveOption('clean')}
+                  disabled={!checked.length}
+                >
+                  <span className="compra-options-icon"><Icon name="trash" size={20} /></span>
+                  <span>
+                    <strong>Limpiar comprados</strong>
+                    <small>
+                      {checked.length
+                        ? `${checked.length} producto${checked.length === 1 ? '' : 's'} marcado${checked.length === 1 ? '' : 's'}.`
+                        : 'No hay productos marcados como comprados.'}
+                    </small>
+                  </span>
+                  <Icon name="right" size={18} />
+                </button>
+              </div>
+            )}
+
+            {activeOption === 'calendar' && (
+              <div className="compra-options-content">
+                <label>
+                  Número de días
+                  <div className="compra-cantidad-unidad">
+                    <input
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={calendarDays}
+                      onChange={event => setCalendarDays(event.target.value)}
+                      aria-label="Número de días"
+                    />
+                    <span>días</span>
+                  </div>
+                </label>
+
+                <button
+                  className="compra-save"
+                  onClick={generateFromCalendar}
+                  disabled={generating}
+                >
+                  <Icon name="wand" size={17} />
+                  {generating ? 'Generando...' : 'Generar lista'}
+                </button>
+              </div>
+            )}
+
+            {activeOption === 'sort' && (
+              <div className="compra-options-content">
+                <label>
+                  Orden de la lista
+                  <select
+                    value={sortOrder}
+                    onChange={event => setSortOrder(event.target.value)}
+                  >
+                    <option value="category">Por categoría</option>
+                    <option value="name-asc">Nombre A-Z</option>
+                    <option value="name-desc">Nombre Z-A</option>
+                  </select>
+                </label>
+
+                <button className="compra-save" onClick={closeOptions}>
+                  <Icon name="check" size={17} />
+                  Aplicar orden
+                </button>
+              </div>
+            )}
+
+            {activeOption === 'clean' && (
+              <div className="compra-options-content">
+                <div className="compra-options-confirm">
+                  <span className="compra-options-icon"><Icon name="trash" size={21} /></span>
+                  <div>
+                    <strong>¿Limpiar productos comprados?</strong>
+                    <p>
+                      Se moverán {checked.length} producto{checked.length === 1 ? '' : 's'} a la nevera y desaparecerán de la lista.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  className="compra-save compra-options-clean"
+                  onClick={clearBought}
+                  disabled={!checked.length}
+                >
+                  <Icon name="trash" size={17} />
+                  Limpiar comprados
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
