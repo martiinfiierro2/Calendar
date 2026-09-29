@@ -30,6 +30,14 @@
   letter-spacing: -.03em;
 }
 
+.compra-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .compra-icon-btn {
   width: 40px;
   height: 40px;
@@ -40,6 +48,15 @@
   place-items: center;
   box-shadow: var(--shadowCard);
   cursor: pointer;
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+}
+
+.compra-icon-btn:hover {
+  transform: translateY(-1px);
+}
+
+.compra-icon-btn:active {
+  transform: translateY(0);
 }
 
 .compra-add {
@@ -361,10 +378,67 @@
   cursor: not-allowed;
 }
 
+/* Opciones para generar la lista desde el calendario */
+.compra-options-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #e3e9e3;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f8fbf8 0%, #f3f7f3 100%);
+}
+
+.compra-options-content label {
+  min-height: 62px;
+  padding: 10px 12px;
+  border: 1px solid #e0e6e0;
+  border-radius: 14px;
+  background: #fff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  line-height: 1.35;
+  box-shadow: 0 2px 8px rgba(25, 42, 29, .04);
+}
+
+.compra-options-content label input {
+  width: 82px;
+  min-width: 82px;
+  min-height: 40px;
+  margin-left: auto;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f5f8f5;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--colorTextBlack);
+}
+
+.compra-options-content label span {
+  flex: 0 0 auto;
+  color: var(--mutedText);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.compra-options-content .compra-save {
+  width: 100%;
+  min-height: 48px;
+  box-shadow: 0 8px 18px rgba(42, 100, 50, .14);
+}
+
 @media (max-width: 380px) {
   .compra-header {
     padding-left: 14px;
     padding-right: 14px;
+  }
+
+  .compra-header-actions {
+    gap: 6px;
   }
 
   .compra-summary {
@@ -389,6 +463,19 @@
 
   .compra-sheet .compra-cantidad-unidad {
     grid-template-columns: minmax(0, 1fr) 70px;
+  }
+
+  .compra-options-content {
+    padding: 12px;
+  }
+
+  .compra-options-content label {
+    flex-wrap: wrap;
+  }
+
+  .compra-options-content label input {
+    width: 76px;
+    min-width: 76px;
   }
 }
 
