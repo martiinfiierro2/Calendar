@@ -89,6 +89,81 @@
   gap: 7px;
 }
 
+/* Generar desde calendario */
+.compra-options-content label:has(input[type="number"]) {
+  min-height: auto;
+  padding: 14px;
+  border: 1px solid #e1e8e1;
+  border-radius: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #475149;
+  box-shadow: 0 3px 12px rgba(25, 42, 29, .04);
+}
+
+.compra-options-content label:has(input[type="number"])::after {
+  content: 'Se añadirán únicamente los ingredientes que falten para ese periodo.';
+  order: 3;
+  font-size: 10px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--mutedText);
+}
+
+.compra-options-content label:has(input[type="number"]) .compra-cantidad-unidad {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  gap: 0;
+  border: 1px solid #dce4dc;
+  border-radius: 13px;
+  overflow: hidden;
+  background: #f7faf7;
+  box-shadow: none;
+}
+
+.compra-options-content label:has(input[type="number"]) .compra-cantidad-unidad input {
+  min-width: 0;
+  min-height: 48px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--colorTextBlack);
+  box-shadow: none;
+}
+
+.compra-options-content label:has(input[type="number"]) .compra-cantidad-unidad span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #dce4dc;
+  background: #eef5ef;
+  color: var(--appDecorationStrong);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.compra-options-content label:has(input[type="number"]) .compra-cantidad-unidad:focus-within {
+  border-color: #b8d5bb;
+  box-shadow: 0 0 0 3px rgba(79, 148, 86, .08);
+}
+
+.compra-options-content label:has(input[type="number"]) + .compra-save {
+  min-height: 50px;
+  border-radius: 14px;
+  font-size: 13px;
+  box-shadow: 0 8px 18px rgba(42, 100, 50, .14);
+}
+
 .compra-options-confirm {
   padding: 12px;
   border: 1px solid #e2e7e2;
@@ -121,5 +196,13 @@
   .compra-options-icon {
     width: 34px;
     height: 34px;
+  }
+
+  .compra-options-content label:has(input[type="number"]) {
+    padding: 12px;
+  }
+
+  .compra-options-content label:has(input[type="number"]) .compra-cantidad-unidad {
+    grid-template-columns: minmax(0, 1fr) 64px;
   }
 }
