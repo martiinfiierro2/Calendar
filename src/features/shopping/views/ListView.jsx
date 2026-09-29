@@ -436,6 +436,53 @@ export default function ListView({ onChangeView }) {
                   </span>
                   <Icon name="right" size={18} />
                 </button>
+
+                <div className="compra-options-future-title">Próximamente</div>
+
+                <button className="compra-options-future" disabled>
+                  <span className="compra-options-icon"><Icon name="trash" size={20} /></span>
+                  <span>
+                    <strong>Vaciar lista pendiente</strong>
+                    <small>Eliminar todos los productos que sigan pendientes de compra.</small>
+                  </span>
+                  <span className="compra-options-badge">Próximamente</span>
+                </button>
+
+                <button className="compra-options-future" disabled>
+                  <span className="compra-options-icon"><Icon name="calendar" size={20} /></span>
+                  <span>
+                    <strong>Copiar faltantes de recetas próximas</strong>
+                    <small>Revisar las recetas planificadas y añadir solo lo que falte.</small>
+                  </span>
+                  <span className="compra-options-badge">Próximamente</span>
+                </button>
+
+                <button className="compra-options-future" disabled>
+                  <span className="compra-options-icon"><Icon name="check" size={20} /></span>
+                  <span>
+                    <strong>Mostrar u ocultar comprados</strong>
+                    <small>Elegir si los productos marcados siguen visibles en la lista.</small>
+                  </span>
+                  <span className="compra-options-badge">Próximamente</span>
+                </button>
+
+                <button className="compra-options-future" disabled>
+                  <span className="compra-options-icon"><Icon name="wand" size={20} /></span>
+                  <span>
+                    <strong>Restablecer lista automática</strong>
+                    <small>Regenerar desde cero los productos añadidos automáticamente.</small>
+                  </span>
+                  <span className="compra-options-badge">Próximamente</span>
+                </button>
+
+                <button className="compra-options-future" disabled>
+                  <span className="compra-options-icon"><Icon name="bell" size={20} /></span>
+                  <span>
+                    <strong>Avisos de ingredientes faltantes</strong>
+                    <small>Recibir un aviso cuando se acerque una comida y falten ingredientes.</small>
+                  </span>
+                  <span className="compra-options-badge">Próximamente</span>
+                </button>
               </div>
             )}
 
