@@ -1,0 +1,125 @@
+.compra-options-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.compra-options-heading h2 {
+  margin: 0;
+}
+
+.compra-options-back {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: #f2f6f2;
+  color: var(--appDecorationStrong);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.compra-options-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.compra-options-menu > button {
+  width: 100%;
+  min-height: 68px;
+  padding: 11px 12px;
+  border: 1px solid #e2e7e2;
+  border-radius: 15px;
+  background: #fff;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 20px;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  color: var(--colorTextBlack);
+  box-shadow: 0 2px 8px rgba(25, 42, 29, .04);
+  cursor: pointer;
+}
+
+.compra-options-menu > button:hover {
+  border-color: #cfe0d1;
+  background: #f8fbf8;
+}
+
+.compra-options-menu > button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.compra-options-menu > button > span:nth-child(2) {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.compra-options-menu strong {
+  font-size: 13px;
+}
+
+.compra-options-menu small {
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--mutedText);
+}
+
+.compra-options-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: #eef6ef;
+  color: var(--appDecorationStrong);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.compra-options-content .compra-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.compra-options-confirm {
+  padding: 12px;
+  border: 1px solid #e2e7e2;
+  border-radius: 14px;
+  background: #fff;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.compra-options-confirm strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.compra-options-confirm p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--mutedText);
+}
+
+@media (max-width: 380px) {
+  .compra-options-menu > button {
+    grid-template-columns: 36px minmax(0, 1fr) 18px;
+    padding: 10px;
+  }
+
+  .compra-options-icon {
+    width: 34px;
+    height: 34px;
+  }
+}
