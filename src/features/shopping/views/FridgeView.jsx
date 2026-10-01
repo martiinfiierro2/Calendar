@@ -24,6 +24,7 @@ export default function FridgeView({ onChangeView }) {
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [cleaningUsed, setCleaningUsed] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -49,6 +50,11 @@ export default function FridgeView({ onChangeView }) {
 
   const pending = useMemo(
     () => items.filter(item => item.estado === 'comprado'),
+    [items]
+  );
+
+  const used = useMemo(
+    () => items.filter(item => item.estado === 'usado'),
     [items]
   );
 
@@ -131,6 +137,27 @@ export default function FridgeView({ onChangeView }) {
     }
   };
 
+  const clearUsed = async () => {
+    if (!used.length || cleaningUsed) return;
+
+    if (!window.confirm('¿Eliminar definitivamente los productos usados?')) {
+      return;
+    }
+
+    try {
+      setCleaningUsed(true);
+      setError('');
+      await Promise.all(used.map(item => deleteShoppingItem(item.id)));
+      setItems(current => current.filter(item => item.estado !== 'usado'));
+    } catch (err) {
+      setError(err.message || 'No se pudieron limpiar los productos usados.');
+      const fresh = await getShoppingItems().catch(() => null);
+      if (fresh) setItems(fresh);
+    } finally {
+      setCleaningUsed(false);
+    }
+  };
+
   return (
     <div className="compra-app">
       <ShoppingHeader view="nevera" openNew={openNew} />
@@ -141,11 +168,16 @@ export default function FridgeView({ onChangeView }) {
 
         {loading ? (
           <div className="compra-empty"><p>Cargando lista...</p></div>
-        ) : pending.length === 0 ? (
+        ) : pending.length === 0 && used.length === 0 ? (
           <div className="compra-empty">
             <span><Icon name="cart" size={28} /></span>
             <h2>Tu nevera está vacía</h2>
             <p>Añade productos manualmente o al comprarlos en la lista de la compra aparecerán.</p>
+          </div>
+        ) : pending.length === 0 ? (
+          <div className="nevera-sin-activos">
+            <strong>No hay productos en la nevera</strong>
+            <span>Los productos consumidos recientemente aparecen debajo.</span>
           </div>
         ) : null}
 
@@ -162,6 +194,32 @@ export default function FridgeView({ onChangeView }) {
             </section>
           );
         })}
+
+        {used.length > 0 && (
+          <section className="nevera-usados">
+            <div className="nevera-usados-header">
+              <div>
+                <h2>Usados recientemente</h2>
+                <span>{used.length} {used.length === 1 ? 'producto consumido' : 'productos consumidos'}</span>
+              </div>
+              <button type="button" onClick={clearUsed} disabled={cleaningUsed}>
+                {cleaningUsed ? 'Limpiando...' : 'Limpiar usados'}
+              </button>
+            </div>
+
+            <div className="nevera-usados-lista">
+              {used.map(item => (
+                <div className="nevera-usado-item" key={item.id}>
+                  <span className="nevera-usado-icono"><Icon name="check" size={14} /></span>
+                  <div>
+                    <strong>{item.nombre}</strong>
+                    <span>Consumido</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
       {showForm && (
