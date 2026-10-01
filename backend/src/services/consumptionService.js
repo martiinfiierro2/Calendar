@@ -7,7 +7,6 @@ import {
 import {
   convertirABase,
   convertirDesdeBase,
-  normalizarIngrediente,
   normalizarNombre,
   tipoUnidad
 } from '../utils/stockUtils.js';
@@ -36,8 +35,7 @@ export async function obtenerComidasPendientes(usuarioId) {
   return comidas.filter(comida => comida.fecha < fecha || (comida.fecha === fecha && comida.hora <= hora));
 }
 
-async function consumirIngrediente(valorIngrediente, usuarioId, transaction) {
-  const ingrediente = normalizarIngrediente(valorIngrediente);
+async function consumirIngrediente(ingrediente, usuarioId, transaction) {
   if (!ingrediente?.nombre) return;
 
   let cantidadPendiente = convertirABase(ingrediente.cantidad, ingrediente.unidad);
