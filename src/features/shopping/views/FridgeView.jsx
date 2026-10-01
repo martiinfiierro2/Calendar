@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { CATEGORIAS_COMPRA } from '../../../config/appConfig';
 import {
-  createItemsFromCalendar,
   createShoppingItem,
   deleteShoppingItem,
   getShoppingItems,
@@ -132,22 +131,6 @@ export default function FridgeView({ onChangeView }) {
     }
   };
 
-  const generateFromCalendar = async () => {
-    try {
-      setError('');
-      const created = await createItemsFromCalendar();
-
-      if (!created.length) {
-        window.alert('No hay ingredientes nuevos en las recetas planificadas.');
-        return;
-      }
-
-      setItems(current => [...created, ...current]);
-    } catch (err) {
-      setError(err.message || 'No se pudo generar la lista desde el calendario.');
-    }
-  };
-
   return (
     <div className="compra-app">
       <ShoppingHeader view="nevera" openNew={openNew} />
@@ -158,7 +141,7 @@ export default function FridgeView({ onChangeView }) {
 
         {loading ? (
           <div className="compra-empty"><p>Cargando lista...</p></div>
-        ) : items.length === 0 ? (
+        ) : pending.length === 0 ? (
           <div className="compra-empty">
             <span><Icon name="cart" size={28} /></span>
             <h2>Tu nevera está vacía</h2>
