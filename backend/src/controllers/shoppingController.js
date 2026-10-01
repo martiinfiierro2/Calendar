@@ -1,4 +1,4 @@
-import { Comida, ProductoCompra, Receta } from '../models/index.js';
+import { Comida, Consumo, ProductoCompra, Receta } from '../models/index.js';
 import { procesarComidasPendientes } from '../services/consumptionService.js';
 import { Op } from 'sequelize';
 import {
@@ -29,6 +29,25 @@ export async function listShopping(req, res, next) {
     await procesarComidasPendientes(req.user.id);
     const productos = await ProductoCompra.findAll({ where: { usuarioId: req.user.id }, order: [['estado', 'ASC'], ['creadoEn', 'DESC']] });
     res.json(productos);
+  } catch (error) { next(error); }
+}
+
+export async function listConsumptions(req, res, next) {
+  try {
+    await procesarComidasPendientes(req.user.id);
+    const consumos = await Consumo.findAll({
+      where: { usuarioId: req.user.id },
+      order: [['fecha', 'DESC'], ['hora', 'DESC'], ['creadoEn', 'DESC']],
+      limit: 50
+    });
+    res.json(consumos);
+  } catch (error) { next(error); }
+}
+
+export async function clearConsumptions(req, res, next) {
+  try {
+    await Consumo.destroy({ where: { usuarioId: req.user.id } });
+    res.status(204).end();
   } catch (error) { next(error); }
 }
 
