@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { TIPOS_COMIDA } from '../../config/appConfig';
 import { actualizarComida, crearComida, eliminarComida, obtenerComidas } from '../../services/mealService';
 import { fechaClave, fechaDesdeClave } from '../../utils/dateUtils';
 import Icon from '../../shared/Icon';
