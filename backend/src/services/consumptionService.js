@@ -1,6 +1,7 @@
 import {
   sequelize,
   Comida,
+  Consumo,
   Receta,
   ProductoCompra
 } from '../models/index.js';
@@ -35,14 +36,14 @@ export async function obtenerComidasPendientes(usuarioId) {
   return comidas.filter(comida => comida.fecha < fecha || (comida.fecha === fecha && comida.hora <= hora));
 }
 
-async function consumirIngrediente(ingrediente, usuarioId, transaction) {
+async function consumirIngrediente(ingrediente, comida, transaction) {
   if (!ingrediente?.nombre) return;
 
   let cantidadPendiente = convertirABase(ingrediente.cantidad, ingrediente.unidad);
   if (!Number.isFinite(cantidadPendiente) || cantidadPendiente <= 0) return;
 
   const productos = await ProductoCompra.findAll({
-    where: { usuarioId, estado: 'comprado' },
+    where: { usuarioId: comida.usuarioId, estado: 'comprado' },
     order: [['creadoEn', 'ASC']],
     transaction,
     lock: transaction.LOCK.UPDATE
@@ -60,9 +61,23 @@ async function consumirIngrediente(ingrediente, usuarioId, transaction) {
     const disponible = convertirABase(producto.cantidad, producto.unidad);
     if (!Number.isFinite(disponible) || disponible <= 0) continue;
 
-    const consumido = Math.min(disponible, cantidadPendiente);
-    const restanteBase = disponible - consumido;
-    cantidadPendiente -= consumido;
+    const consumidoBase = Math.min(disponible, cantidadPendiente);
+    const restanteBase = disponible - consumidoBase;
+    cantidadPendiente -= consumidoBase;
+
+    const cantidadConsumida = convertirDesdeBase(consumidoBase, producto.unidad);
+
+    await Consumo.create({
+      nombreProducto: producto.nombre,
+      cantidad: cantidadConsumida,
+      unidad: producto.unidad,
+      fecha: comida.fecha,
+      hora: comida.hora,
+      comidaNombre: comida.nombre,
+      usuarioId: comida.usuarioId,
+      comidaId: comida.id,
+      recetaId: comida.recetaId || null
+    }, { transaction });
 
     if (restanteBase <= 0) {
       await producto.update({ cantidad: 0, estado: 'usado' }, { transaction });
@@ -92,7 +107,7 @@ async function procesarComida(comidaPendiente) {
     }
 
     for (const ingrediente of ingredientes) {
-      await consumirIngrediente(ingrediente, comida.usuarioId, transaction);
+      await consumirIngrediente(ingrediente, comida, transaction);
     }
 
     await comida.update({ procesada: true }, { transaction });
