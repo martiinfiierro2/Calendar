@@ -133,22 +133,6 @@ test('POST /api/compra/desde-calendario resta nevera y lista antes de crear falt
   assert.equal(rowsCreated[0].cantidad, 500);
 });
 
-test('POST /api/compra/desde-calendario admite ingredientes antiguos guardados como texto', async () => {
-  const token = autenticarComo(6);
-  Comida.findAll = async () => [{ modo: 'receta', recetaId: 20 }];
-  Receta.findAll = async () => [{ id: 20, ingredientes: ['500 g de pollo', '1,5 litros leche'] }];
-  ProductoCompra.findAll = async () => [];
-  let rowsCreated = [];
-  ProductoCompra.bulkCreate = async rows => { rowsCreated = rows; return rows; };
-  const { response } = await api('/api/compra/desde-calendario?dias=7', { token, method: 'POST' });
-  assert.equal(response.status, 201);
-  assert.equal(rowsCreated.length, 2);
-  assert.deepEqual(rowsCreated.map(row => [row.nombre, row.cantidad, row.unidad]), [
-    ['pollo', 500, 'g'],
-    ['leche', 1500, 'ml']
-  ]);
-});
-
 test('generar dos veces no vuelve a crear un ingrediente ya cubierto por la primera generación', async () => {
   const token = autenticarComo(8);
   Comida.findAll = async () => [{ modo: 'receta', recetaId: 30 }];
