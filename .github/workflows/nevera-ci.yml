@@ -20,8 +20,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: npm ci
+
+      - name: Install backend dependencies
+        run: npm --prefix backend ci
 
       - name: Run tests
         run: npm test
