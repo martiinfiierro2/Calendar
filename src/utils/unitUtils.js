@@ -52,7 +52,7 @@ export function parseIngredientLine(text = '') {
   }
 
   const match = clean.match(
-    /^(\d+(?:[.,]\d+)?)\s*(kg|kilo|kilos|kilogramo|kilogramos|g|gr|grs|gramo|gramos|l|lt|lts|litro|litros|ml|mililitro|mililitros|ud|uds|unidad|unidades)?\s*(?:de\s+)?(.+)$/i
+    /^(\d+(?:[.,]\d+)?)\s*(kilogramos|kilogramo|kilos|kilo|kg|mililitros|mililitro|ml|litros|litro|lts|lt|l|gramos|gramo|grs|gr|g|unidades|unidad|uds|ud)?\s*(?:de\s+)?(.+)$/i
   );
 
   if (!match) {
