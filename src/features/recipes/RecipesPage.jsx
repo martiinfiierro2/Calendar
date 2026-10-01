@@ -164,7 +164,7 @@ export default function RecipesPage() {
   };
 
   const deleteRecipe = async recipe => {
-    if (!window.confirm(`¿Eliminar \"${recipe.nombre}\"?`)) return;
+    if (!window.confirm(`¿Eliminar "${recipe.nombre}"?`)) return;
 
     try {
       setError('');
