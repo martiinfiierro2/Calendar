@@ -5,6 +5,7 @@ import {
   calcularCantidadDisponible,
   calcularFaltante,
   calcularFaltanteTotal,
+  categoriaIngrediente,
   convertirABase,
   convertirDesdeBase,
   normalizarNombre,
@@ -14,20 +15,27 @@ import {
   tipoUnidad
 } from '../../backend/src/utils/stockUtils.js';
 
-test('normalizarNombre ignora mayúsculas, tildes y espacios exteriores', () => {
-  assert.equal(normalizarNombre('  LIMÓN  '), 'limon');
+test('normalizarNombre ignora mayúsculas, tildes y espacios repetidos', () => {
+  assert.equal(normalizarNombre('  LIMÓN   VERDE  '), 'limon verde');
 });
 
-test('normalizarUnidad normaliza aliases y conserva unidades desconocidas', () => {
+test('normalizarUnidad normaliza aliases y usa ud para unidades desconocidas', () => {
   assert.equal(normalizarUnidad('gramos'), 'g');
   assert.equal(normalizarUnidad('Litros'), 'L');
-  assert.equal(normalizarUnidad('cucharadas'), 'cucharadas');
+  assert.equal(normalizarUnidad('cucharadas'), 'ud');
 });
 
 test('tipoUnidad agrupa peso, volumen y unidades', () => {
   assert.equal(tipoUnidad('kg'), 'peso');
   assert.equal(tipoUnidad('ml'), 'volumen');
   assert.equal(tipoUnidad('uds'), 'unidad');
+  assert.equal(tipoUnidad('cucharadas'), 'unidad');
+});
+
+test('categoriaIngrediente reconoce categorías con y sin tildes', () => {
+  assert.equal(categoriaIngrediente('Calabacín'), 'Fruta y verdura');
+  assert.equal(categoriaIngrediente('Salmón'), 'Carne y pescado');
+  assert.equal(categoriaIngrediente('Pimentón dulce'), 'Despensa');
 });
 
 test('convertirABase y convertirDesdeBase convierten kg/g y L/ml', () => {
