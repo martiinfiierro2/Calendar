@@ -8,20 +8,18 @@ import {
 
 test('categoriaIngrediente clasifica categorías principales', () => {
   assert.equal(categoriaIngrediente('Tomate cherry'), 'Fruta y verdura');
+  assert.equal(categoriaIngrediente('Calabacín'), 'Fruta y verdura');
   assert.equal(categoriaIngrediente('Pechuga de pollo'), 'Carne y pescado');
+  assert.equal(categoriaIngrediente('Salmón'), 'Carne y pescado');
   assert.equal(categoriaIngrediente('Leche entera'), 'Lácteos');
   assert.equal(categoriaIngrediente('Pan integral'), 'Panadería');
-  assert.equal(categoriaIngrediente('Arroz basmati'), 'Despensa');
+  assert.equal(categoriaIngrediente('Pimentón dulce'), 'Despensa');
 });
 
 test('categoriaIngrediente devuelve Otros cuando no reconoce el alimento', () => {
   assert.equal(categoriaIngrediente('Chocolate negro'), 'Otros');
 });
 
-test('normalizarIngrediente elimina espacios sobrantes y normaliza mayúsculas', () => {
-  assert.equal(normalizarIngrediente('  Leche   Entera  '), 'leche entera');
-});
-
-test('normalizarIngrediente conserva tildes actualmente', () => {
-  assert.equal(normalizarIngrediente('Limón'), 'limón');
+test('normalizarIngrediente elimina espacios sobrantes, mayúsculas y tildes', () => {
+  assert.equal(normalizarIngrediente('  LIMÓN   Verde  '), 'limon verde');
 });
