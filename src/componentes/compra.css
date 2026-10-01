@@ -251,6 +251,131 @@
   line-height: 1.5;
 }
 
+.nevera-sin-activos {
+  margin: 6px 0 16px;
+  padding: 13px 14px;
+  border: 1px dashed #d9dfda;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .55);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nevera-sin-activos strong {
+  font-size: 12px;
+  color: var(--colorTextBlack);
+}
+
+.nevera-sin-activos span {
+  font-size: 10px;
+  color: var(--mutedText);
+}
+
+.nevera-usados {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e6e2;
+}
+
+.nevera-usados-header {
+  margin-bottom: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nevera-usados-header > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nevera-usados-header h2 {
+  margin: 0;
+  font-size: 12px;
+  color: #69736b;
+}
+
+.nevera-usados-header span {
+  font-size: 10px;
+  color: var(--mutedText);
+}
+
+.nevera-usados-header button {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: #f3f5f3;
+  color: #69736b;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.nevera-usados-header button:hover {
+  background: #fff0f0;
+  color: #b65252;
+}
+
+.nevera-usados-header button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.nevera-usados-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nevera-usado-item {
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 1px solid #e7eae7;
+  border-radius: 13px;
+  background: #f7f8f7;
+  display: grid;
+  grid-template-columns: 27px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  opacity: .78;
+}
+
+.nevera-usado-icono {
+  width: 25px;
+  height: 25px;
+  border-radius: 8px;
+  background: #e8ece8;
+  color: #7b857d;
+  display: grid;
+  place-items: center;
+}
+
+.nevera-usado-item > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nevera-usado-item strong {
+  font-size: 12px;
+  color: #59615b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nevera-usado-item > div span {
+  margin-top: 2px;
+  font-size: 10px;
+  color: #929a94;
+}
+
 /* Formulario inferior */
 .compra-overlay {
   position: absolute;
@@ -476,6 +601,10 @@
   .compra-options-content label input {
     width: 76px;
     min-width: 76px;
+  }
+
+  .nevera-usados-header {
+    align-items: flex-start;
   }
 }
 
