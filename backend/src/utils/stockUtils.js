@@ -3,9 +3,35 @@ export function normalizarNombre(nombre = '') {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .trim();
+    .trim()
+    .replace(/\s+/g, ' ');
 }
 
+export function categoriaIngrediente(nombre = '') {
+  const texto = normalizarNombre(nombre);
+
+  if (/(tomate|cebolla|zanahoria|pepino|pimiento|patata|limon|verdura|fruta|ajo|calabacin|lechuga)/.test(texto)) {
+    return 'Fruta y verdura';
+  }
+
+  if (/(pollo|carne|ternera|cerdo|jamon|salmon|pescado|atun|conejo)/.test(texto)) {
+    return 'Carne y pescado';
+  }
+
+  if (/(leche|queso|yogur|mantequilla|nata)/.test(texto)) {
+    return 'Lácteos';
+  }
+
+  if (/(pan|baguette|barra|tostada)/.test(texto)) {
+    return 'Panadería';
+  }
+
+  if (/(arroz|pasta|harina|lenteja|garbanzo|aceite|vinagre|sal|pimienta|curry|azafran|pimenton)/.test(texto)) {
+    return 'Despensa';
+  }
+
+  return 'Otros';
+}
 
 export function normalizarUnidad(unidad = 'ud') {
   const valor = String(unidad)
@@ -42,9 +68,8 @@ export function normalizarUnidad(unidad = 'ud') {
     litros: 'L'
   };
 
-  return equivalencias[valor] || valor;
+  return equivalencias[valor] || 'ud';
 }
-
 
 export function tipoUnidad(unidad) {
   const normalizada = normalizarUnidad(unidad);
@@ -57,13 +82,8 @@ export function tipoUnidad(unidad) {
     return 'volumen';
   }
 
-  if (normalizada === 'ud') {
-    return 'unidad';
-  }
-
-  return normalizada;
+  return 'unidad';
 }
-
 
 export function convertirABase(cantidad, unidad) {
   const numero = Number(cantidad);
@@ -76,15 +96,12 @@ export function convertirABase(cantidad, unidad) {
   switch (normalizada) {
     case 'kg':
       return numero * 1000;
-
     case 'L':
       return numero * 1000;
-
     default:
       return numero;
   }
 }
-
 
 export function convertirDesdeBase(cantidad, unidad) {
   const normalizada = normalizarUnidad(unidad);
@@ -92,15 +109,12 @@ export function convertirDesdeBase(cantidad, unidad) {
   switch (normalizada) {
     case 'kg':
       return cantidad / 1000;
-
     case 'L':
       return cantidad / 1000;
-
     default:
       return cantidad;
   }
 }
-
 
 export function sonCompatibles(ingrediente, producto) {
   if (!ingrediente || !producto) {
@@ -108,81 +122,41 @@ export function sonCompatibles(ingrediente, producto) {
   }
 
   return (
-    normalizarNombre(ingrediente.nombre) ===
-      normalizarNombre(producto.nombre) &&
-    tipoUnidad(ingrediente.unidad) ===
-      tipoUnidad(producto.unidad)
+    normalizarNombre(ingrediente.nombre) === normalizarNombre(producto.nombre) &&
+    tipoUnidad(ingrediente.unidad) === tipoUnidad(producto.unidad)
   );
 }
 
-
-export function calcularCantidadDisponible(
-  ingrediente,
-  productos = []
-) {
+export function calcularCantidadDisponible(ingrediente, productos = []) {
   return productos
-    .filter(producto =>
-      sonCompatibles(ingrediente, producto)
-    )
+    .filter(producto => sonCompatibles(ingrediente, producto))
     .reduce(
-      (total, producto) =>
-        total +
-        convertirABase(
-          producto.cantidad,
-          producto.unidad
-        ),
+      (total, producto) => total + convertirABase(producto.cantidad, producto.unidad),
       0
     );
 }
 
+export function calcularFaltante(ingrediente, productos = []) {
+  const necesaria = convertirABase(ingrediente.cantidad, ingrediente.unidad);
+  const disponible = calcularCantidadDisponible(ingrediente, productos);
 
-export function calcularFaltante(
-  ingrediente,
-  productos = []
-) {
-  const necesaria = convertirABase(
-    ingrediente.cantidad,
-    ingrediente.unidad
-  );
-
-  const disponible = calcularCantidadDisponible(
-    ingrediente,
-    productos
-  );
-
-  return Math.max(
-    necesaria - disponible,
-    0
-  );
+  return Math.max(necesaria - disponible, 0);
 }
 
-
-export function calcularFaltanteTotal(
-  ingrediente,
-  productos = []
-) {
+export function calcularFaltanteTotal(ingrediente, productos = []) {
   const disponibles = productos.filter(producto =>
     producto.estado === 'comprado' ||
     producto.estado === 'apuntado' ||
     producto.estado === 'apuntadoChecked'
   );
 
-  return calcularFaltante(
-    ingrediente,
-    disponibles
-  );
+  return calcularFaltante(ingrediente, disponibles);
 }
 
 export function obtenerUnidadBase(unidad) {
   const tipo = tipoUnidad(unidad);
 
-  if (tipo === 'peso') {
-    return 'g';
-  }
-
-  if (tipo === 'volumen') {
-    return 'ml';
-  }
-
+  if (tipo === 'peso') return 'g';
+  if (tipo === 'volumen') return 'ml';
   return 'ud';
 }
