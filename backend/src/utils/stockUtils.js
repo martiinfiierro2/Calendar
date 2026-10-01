@@ -30,38 +30,6 @@ export function normalizarUnidad(unidad = 'ud') {
   return equivalencias[valor] || 'ud';
 }
 
-export function normalizarIngrediente(ingrediente) {
-  if (!ingrediente) return null;
-
-  if (typeof ingrediente === 'object') {
-    if (!ingrediente.nombre) return null;
-    const cantidad = Number(ingrediente.cantidad);
-    return {
-      nombre: String(ingrediente.nombre).trim(),
-      cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1,
-      unidad: normalizarUnidad(ingrediente.unidad || 'ud')
-    };
-  }
-
-  const texto = String(ingrediente).trim();
-  if (!texto) return null;
-
-  const match = texto.match(
-    /^(\d+(?:[.,]\d+)?)\s*(kilogramos|kilogramo|kilos|kilo|kg|mililitros|mililitro|ml|litros|litro|lts|lt|gramos|gramo|grs|gr|g|unidades|unidad|uds|ud|l)?\s*(?:de\s+)?(.+)$/i
-  );
-
-  if (!match) {
-    return { nombre: texto, cantidad: 1, unidad: 'ud' };
-  }
-
-  const [, cantidad, unidad, nombre] = match;
-  return {
-    nombre: nombre.trim(),
-    cantidad: Number(cantidad.replace(',', '.')),
-    unidad: normalizarUnidad(unidad || 'ud')
-  };
-}
-
 export function tipoUnidad(unidad) {
   const normalizada = normalizarUnidad(unidad);
   if (['g', 'kg'].includes(normalizada)) return 'peso';
