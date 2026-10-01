@@ -34,7 +34,7 @@ export default function AppRouter() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [session?.token]);
 
   const protectedPage = page => (
     <ProtectedRoute authenticated={authenticated}>{page}</ProtectedRoute>
