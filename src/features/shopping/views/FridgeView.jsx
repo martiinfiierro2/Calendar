@@ -83,9 +83,14 @@ export default function FridgeView({ onChangeView }) {
 
     const numericQuantity = Number(String(quantity).replace(',', '.'));
 
+    if (!Number.isFinite(numericQuantity) || numericQuantity <= 0) {
+      setError('La cantidad debe ser un número mayor que 0.');
+      return;
+    }
+
     const data = {
       nombre: name.trim(),
-      cantidad: Number.isFinite(numericQuantity) && numericQuantity >= 0 ? numericQuantity : 1,
+      cantidad: numericQuantity,
       unidad: normalizeUnit(unit),
       categoria: category,
       estado: editing?.estado || 'comprado',
@@ -205,7 +210,7 @@ export default function FridgeView({ onChangeView }) {
                   <div className="compra-cantidad-unidad">
                     <input
                       type="number"
-                      min="0"
+                      min="0.01"
                       step="0.01"
                       value={quantity}
                       onChange={event => setQuantity(event.target.value)}
