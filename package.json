@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "node --test tests/frontend/unitUtils.test.js tests/frontend/ingredientUtils.test.js tests/backend/stockUtils.test.js tests/integration/normalizationConsistency.test.js",
-    "test:integration": "node --test tests/integration/shoppingApi.test.js",
+    "test:integration": "node --test tests/integration/shoppingApi.test.js tests/integration/consumptionFlow.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
