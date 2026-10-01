@@ -5,7 +5,6 @@ import {
   calcularFaltanteTotal,
   categoriaIngrediente,
   convertirABase,
-  normalizarIngrediente,
   normalizarNombre,
   obtenerUnidadBase
 } from '../utils/stockUtils.js';
@@ -82,8 +81,7 @@ export async function generateFromCalendar(req, res, next) {
         ingredientes = comida.ingredientes;
       }
 
-      ingredientes.forEach(valor => {
-        const ingrediente = normalizarIngrediente(valor);
+      ingredientes.forEach(ingrediente => {
         if (!ingrediente?.nombre) return;
         const cantidadBase = convertirABase(ingrediente.cantidad, ingrediente.unidad);
         if (!Number.isFinite(cantidadBase) || cantidadBase <= 0) return;
