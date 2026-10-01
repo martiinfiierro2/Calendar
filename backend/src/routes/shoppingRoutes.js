@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 
 import {
+  clearConsumptions,
   createShoppingItem,
   deleteShoppingItem,
   generateFromCalendar,
+  listConsumptions,
   listShopping,
   updateShoppingItem
 } from '../controllers/shoppingController.js';
@@ -48,6 +50,8 @@ const rules = [
 ];
 
 router.get('/', listShopping);
+router.get('/consumos', listConsumptions);
+router.delete('/consumos', clearConsumptions);
 router.post('/', rules, createShoppingItem);
 router.post('/desde-calendario', generateFromCalendar);
 router.post('/from-calendar', generateFromCalendar);
