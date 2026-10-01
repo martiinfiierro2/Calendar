@@ -6,19 +6,21 @@ process.env.DATABASE_URL = 'postgres://calendar:calendar@localhost:5432/calendar
 
 let sequelize;
 let Comida;
+let Consumo;
 let Receta;
 let ProductoCompra;
 let procesarComidasPendientes;
 let originals;
 
 before(async () => {
-  ({ sequelize, Comida, Receta, ProductoCompra } = await import('../../backend/src/models/index.js'));
+  ({ sequelize, Comida, Consumo, Receta, ProductoCompra } = await import('../../backend/src/models/index.js'));
   ({ procesarComidasPendientes } = await import('../../backend/src/services/consumptionService.js'));
 
   originals = {
     transaction: sequelize.transaction,
     comidaFindAll: Comida.findAll,
     comidaFindOne: Comida.findOne,
+    consumoCreate: Consumo.create,
     recetaFindByPk: Receta.findByPk,
     productoFindAll: ProductoCompra.findAll
   };
@@ -28,6 +30,7 @@ afterEach(() => {
   sequelize.transaction = originals.transaction;
   Comida.findAll = originals.comidaFindAll;
   Comida.findOne = originals.comidaFindOne;
+  Consumo.create = originals.consumoCreate;
   Receta.findByPk = originals.recetaFindByPk;
   ProductoCompra.findAll = originals.productoFindAll;
 });
@@ -43,6 +46,7 @@ function comidaPendiente({ id = 1, usuarioId = 1, recetaId = 10 } = {}) {
     id,
     usuarioId,
     recetaId,
+    nombre: 'Comida de prueba',
     modo: 'receta',
     fecha: '2000-01-01',
     hora: '08:00:00',
@@ -50,12 +54,13 @@ function comidaPendiente({ id = 1, usuarioId = 1, recetaId = 10 } = {}) {
   };
 }
 
-test('una comida pasada descuenta parcialmente el stock y conserva el producto en nevera', async () => {
+test('una comida pasada descuenta parcialmente el stock y registra solo lo consumido', async () => {
   fakeTransaction();
 
   const pendiente = comidaPendiente();
   const comidaActualizaciones = [];
   const productoActualizaciones = [];
+  const consumos = [];
 
   Comida.findAll = async () => [pendiente];
   Comida.findOne = async () => ({
@@ -79,19 +84,29 @@ test('una comida pasada descuenta parcialmente el stock y conserva el producto e
     }
   ];
 
+  Consumo.create = async values => {
+    consumos.push(values);
+    return values;
+  };
+
   const procesadas = await procesarComidasPendientes(1);
 
   assert.equal(procesadas, 1);
   assert.deepEqual(productoActualizaciones, [{ cantidad: 0.7 }]);
+  assert.equal(consumos.length, 1);
+  assert.equal(consumos[0].cantidad, 0.3);
+  assert.equal(consumos[0].unidad, 'kg');
+  assert.equal(consumos[0].comidaNombre, 'Comida de prueba');
   assert.deepEqual(comidaActualizaciones, [{ procesada: true }]);
 });
 
-test('si una comida agota un producto, su cantidad pasa a 0 y su estado a usado', async () => {
+test('si una comida agota un producto, registra la cantidad consumida y lo marca como usado', async () => {
   fakeTransaction();
 
   const pendiente = comidaPendiente({ id: 2 });
   const comidaActualizaciones = [];
   const productoActualizaciones = [];
+  const consumos = [];
 
   Comida.findAll = async () => [pendiente];
   Comida.findOne = async () => ({
@@ -115,10 +130,18 @@ test('si una comida agota un producto, su cantidad pasa a 0 y su estado a usado'
     }
   ];
 
+  Consumo.create = async values => {
+    consumos.push(values);
+    return values;
+  };
+
   const procesadas = await procesarComidasPendientes(1);
 
   assert.equal(procesadas, 1);
   assert.deepEqual(productoActualizaciones, [{ cantidad: 0, estado: 'usado' }]);
+  assert.equal(consumos.length, 1);
+  assert.equal(consumos[0].cantidad, 0.5);
+  assert.equal(consumos[0].unidad, 'L');
   assert.deepEqual(comidaActualizaciones, [{ procesada: true }]);
 });
 
