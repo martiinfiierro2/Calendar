@@ -4,7 +4,10 @@ import Icon from '../../shared/Icon';
 // Fila reutilizable de un producto guardado en la nevera.
 export default function FridgeItem({ item, onReturn }) {
   return (
-    <div className="compra-item fridge-stock-item">
+    <div
+      className="compra-item fridge-stock-item"
+      style={{ gridTemplateColumns: '30px minmax(0, 1fr) 32px' }}
+    >
       <div
         className="compra-check"
         aria-hidden="true"
@@ -29,7 +32,7 @@ export default function FridgeItem({ item, onReturn }) {
         aria-label={`Devolver ${item.nombre} a la lista de la compra`}
         title="Devolver a la lista de la compra"
       >
-        <Icon name="undo" size={17} />
+        <Icon name="back" size={17} />
       </button>
     </div>
   );
