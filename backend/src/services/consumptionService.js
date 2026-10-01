@@ -4,6 +4,12 @@ import {
   Receta,
   ProductoCompra
 } from '../models/index.js';
+import {
+  convertirABase,
+  convertirDesdeBase,
+  normalizarNombre,
+  tipoUnidad
+} from '../utils/stockUtils.js';
 
 function obtenerFechaHoraMadrid() {
   const ahora = new Date();
@@ -64,101 +70,6 @@ export async function obtenerComidasPendientes(usuarioId) {
   });
 }
 
-function normalizarNombre(nombre = '') {
-  return nombre
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
-}
-
-function normalizarUnidad(unidad = 'ud') {
-  const valor = String(unidad)
-    .toLowerCase()
-    .trim()
-    .replace(/\./g, '');
-
-  const equivalencias = {
-    ud: 'ud',
-    uds: 'ud',
-    unidad: 'ud',
-    unidades: 'ud',
-
-    g: 'g',
-    gr: 'g',
-    grs: 'g',
-    gramo: 'g',
-    gramos: 'g',
-
-    kg: 'kg',
-    kilo: 'kg',
-    kilos: 'kg',
-    kilogramo: 'kg',
-    kilogramos: 'kg',
-
-    ml: 'ml',
-    mililitro: 'ml',
-    mililitros: 'ml',
-
-    l: 'L',
-    lt: 'L',
-    lts: 'L',
-    litro: 'L',
-    litros: 'L'
-  };
-
-  return equivalencias[valor] || valor;
-}
-
-function tipoUnidad(unidad) {
-  const normalizada = normalizarUnidad(unidad);
-
-  if (['g', 'kg'].includes(normalizada)) {
-    return 'peso';
-  }
-
-  if (['ml', 'L'].includes(normalizada)) {
-    return 'volumen';
-  }
-
-  if (normalizada === 'ud') {
-    return 'unidad';
-  }
-
-  return normalizada;
-}
-
-function convertirABase(cantidad, unidad) {
-  const numero = Number(cantidad);
-  const normalizada = normalizarUnidad(unidad);
-
-  switch (normalizada) {
-    case 'kg':
-      return numero * 1000;
-
-    case 'L':
-      return numero * 1000;
-
-    default:
-      return numero;
-  }
-}
-
-function convertirDesdeBase(cantidad, unidad) {
-  const normalizada = normalizarUnidad(unidad);
-
-  switch (normalizada) {
-    case 'kg':
-      return cantidad / 1000;
-
-    case 'L':
-      return cantidad / 1000;
-
-    default:
-      return cantidad;
-  }
-}
-
 async function consumirIngrediente(
   ingrediente,
   usuarioId,
@@ -211,13 +122,8 @@ async function consumirIngrediente(
       continue;
     }
 
-    const consumido = Math.min(
-      disponible,
-      cantidadPendiente
-    );
-
+    const consumido = Math.min(disponible, cantidadPendiente);
     const restanteBase = disponible - consumido;
-
     cantidadPendiente -= consumido;
 
     if (restanteBase <= 0) {
@@ -235,9 +141,7 @@ async function consumirIngrediente(
       );
 
       await producto.update(
-        {
-          cantidad: restante
-        },
+        { cantidad: restante },
         { transaction }
       );
     }
@@ -285,9 +189,7 @@ async function procesarComida(comidaPendiente) {
     }
 
     await comida.update(
-      {
-        procesada: true
-      },
+      { procesada: true },
       { transaction }
     );
   });
