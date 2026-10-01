@@ -70,4 +70,5 @@ Después, con backend y PostgreSQL accesibles, comprobar manualmente:
 
 La rama ya no presenta los fallos de normalización detectados en la primera batería y la lógica de stock pura queda coherente entre frontend y backend.
 
-No debe considerarse todavía lista para merge únicamente con estos tests: falta la prueba de integración real con Express + PostgreSQL y el cierre de build/lint/UI.
+No debe considerarse todavía lista para merge únicamente con estos tests: falta la prueba de integración real con Express + PostgreSQL y el cierre de build/lint/UI.b
+ 
