@@ -59,6 +59,10 @@ export default function FridgeView({ onChangeView }) {
   const returnToShoppingList = async item => {
     if (returningId !== null) return;
 
+    if (!window.confirm('¿Seguro que quieres devolverlo a la lista de la compra?')) {
+      return;
+    }
+
     try {
       setReturningId(item.id);
       setError('');
