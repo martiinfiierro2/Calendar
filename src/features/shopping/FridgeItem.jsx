@@ -2,9 +2,9 @@ import React from 'react';
 import Icon from '../../shared/Icon';
 
 // Fila reutilizable de un producto guardado en la nevera.
-export default function FridgeItem({ item, onEdit, onDelete }) {
+export default function FridgeItem({ item, onReturn }) {
   return (
-    <div className="compra-item">
+    <div className="compra-item fridge-stock-item">
       <div
         className="compra-check"
         aria-hidden="true"
@@ -24,19 +24,12 @@ export default function FridgeItem({ item, onEdit, onDelete }) {
       </div>
 
       <button
-        className="compra-delete"
-        onClick={() => onEdit(item)}
-        aria-label={`Editar ${item.nombre}`}
+        className="compra-delete fridge-return"
+        onClick={() => onReturn(item)}
+        aria-label={`Devolver ${item.nombre} a la lista de la compra`}
+        title="Devolver a la lista de la compra"
       >
-        <Icon name="edit" size={17} />
-      </button>
-
-      <button
-        className="compra-delete"
-        onClick={() => onDelete(item.id)}
-        aria-label={`Eliminar ${item.nombre}`}
-      >
-        <Icon name="trash" size={17} />
+        <Icon name="undo" size={17} />
       </button>
     </div>
   );
