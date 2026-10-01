@@ -5,6 +5,15 @@ export async function getShoppingItems() {
   return Array.isArray(items) ? items : [];
 }
 
+export async function getConsumptions() {
+  const items = await apiRequest('/compra/consumos');
+  return Array.isArray(items) ? items : [];
+}
+
+export async function clearConsumptions() {
+  await apiRequest('/compra/consumos', { method: 'DELETE' });
+}
+
 export async function createShoppingItem(data) {
   return apiRequest('/compra', {
     method: 'POST',
