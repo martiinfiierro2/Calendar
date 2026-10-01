@@ -3,6 +3,7 @@ import { procesarComidasPendientes } from '../services/consumptionService.js';
 import { Op } from 'sequelize';
 import {
   calcularFaltanteTotal,
+  categoriaIngrediente,
   convertirABase,
   normalizarNombre,
   obtenerUnidadBase
@@ -37,46 +38,8 @@ function sumarDias(fecha, dias) {
   return date.toISOString().slice(0, 10);
 }
 
-function categoriaIngrediente(nombre = '') {
-  const texto = nombre.toLowerCase();
-
-  if (
-    /(tomate|cebolla|zanahoria|pepino|pimiento|patata|lim[oó]n|verdura|fruta|ajo|lechuga)/.test(texto)
-  ) {
-    return 'Fruta y verdura';
-  }
-
-  if (
-    /(pollo|carne|ternera|cerdo|jam[oó]n|salm[oó]n|pescado|at[uú]n|conejo)/.test(texto)
-  ) {
-    return 'Carne y pescado';
-  }
-
-  if (
-    /(leche|queso|yogur|mantequilla|nata)/.test(texto)
-  ) {
-    return 'Lácteos';
-  }
-
-  if (
-    /(pan|baguette|barra|tostada)/.test(texto)
-  ) {
-    return 'Panadería';
-  }
-
-  if (
-    /(arroz|pasta|harina|lenteja|garbanzo|aceite|vinagre|sal|pimienta|curry|azafr[aá]n|piment[oó]n)/.test(texto)
-  ) {
-    return 'Despensa';
-  }
-
-  return 'Otros';
-}
-
 export async function listShopping(req, res, next) {
   try {
-    // Antes de devolver la nevera/lista,
-    // actualizamos el stock según las comidas ya pasadas.
     await procesarComidasPendientes(req.user.id);
 
     const productos = await ProductoCompra.findAll({
@@ -95,17 +58,11 @@ export async function listShopping(req, res, next) {
   }
 }
 
-
-// POST /compra
 export async function createShoppingItem(req, res, next) {
   try {
     const producto = await ProductoCompra.create({
       ...req.body,
-
-      // Si el frontend no manda estado,
-      // cualquier producto nuevo entra en la lista de compra.
       estado: req.body.estado || 'apuntado',
-
       usuarioId: req.user.id
     });
 
@@ -115,8 +72,6 @@ export async function createShoppingItem(req, res, next) {
   }
 }
 
-
-// PUT /compra/:id
 export async function updateShoppingItem(req, res, next) {
   try {
     const producto = await ProductoCompra.findOne({
@@ -140,8 +95,6 @@ export async function updateShoppingItem(req, res, next) {
   }
 }
 
-
-// DELETE /compra/:id
 export async function deleteShoppingItem(req, res, next) {
   try {
     const eliminados = await ProductoCompra.destroy({
@@ -163,8 +116,6 @@ export async function deleteShoppingItem(req, res, next) {
   }
 }
 
-
-// POST /compra/desde-calendario
 export async function generateFromCalendar(req, res, next) {
   try {
     const diasSolicitados = Number(req.query.dias ?? 7);
@@ -183,10 +134,7 @@ export async function generateFromCalendar(req, res, next) {
         where: {
           usuarioId: req.user.id,
           fecha: {
-            [Op.between]: [
-              fechaInicio,
-              fechaFin
-            ]
+            [Op.between]: [fechaInicio, fechaFin]
           }
         }
       }),
@@ -205,10 +153,7 @@ export async function generateFromCalendar(req, res, next) {
     ]);
 
     const mapaRecetas = new Map(
-      recetas.map(receta => [
-        String(receta.id),
-        receta
-      ])
+      recetas.map(receta => [String(receta.id), receta])
     );
 
     const necesidades = new Map();
@@ -217,9 +162,7 @@ export async function generateFromCalendar(req, res, next) {
       let ingredientes = [];
 
       if (comida.modo === 'receta') {
-        const receta = mapaRecetas.get(
-          String(comida.recetaId)
-        );
+        const receta = mapaRecetas.get(String(comida.recetaId));
 
         ingredientes = Array.isArray(receta?.ingredientes)
           ? receta.ingredientes
@@ -241,21 +184,12 @@ export async function generateFromCalendar(req, res, next) {
           ingrediente.unidad
         );
 
-        if (
-          !Number.isFinite(cantidadBase) ||
-          cantidadBase <= 0
-        ) {
+        if (!Number.isFinite(cantidadBase) || cantidadBase <= 0) {
           return;
         }
 
-        const unidadBase = obtenerUnidadBase(
-          ingrediente.unidad
-        );
-
-        const clave = `${normalizarNombre(
-          ingrediente.nombre
-        )}-${unidadBase}`;
-
+        const unidadBase = obtenerUnidadBase(ingrediente.unidad);
+        const clave = `${normalizarNombre(ingrediente.nombre)}-${unidadBase}`;
         const actual = necesidades.get(clave);
 
         if (actual) {
@@ -286,9 +220,7 @@ export async function generateFromCalendar(req, res, next) {
         nombre: ingrediente.nombre,
         cantidad: faltante,
         unidad: ingrediente.unidad,
-        categoria: categoriaIngrediente(
-          ingrediente.nombre
-        ),
+        categoria: categoriaIngrediente(ingrediente.nombre),
         estado: 'apuntado',
         automatico: true,
         usuarioId: req.user.id
