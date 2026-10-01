@@ -8,10 +8,6 @@ function normalizarComida(comida) {
   };
 }
 
-function requestComidas(path = '', options) {
-  return apiRequest(`/meals${path}`, options);
-}
-
 export async function obtenerComidas() {
   const comidas = await apiRequest('/meals');
   return Array.isArray(comidas) ? comidas.map(normalizarComida) : [];
