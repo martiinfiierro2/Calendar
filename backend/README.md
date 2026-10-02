@@ -2,7 +2,7 @@
 
 Backend de Calendar con Node.js, Express, Sequelize y PostgreSQL.
 
-## Desarrollo local
+## Desarrollos locales
 
 1. Crea una base PostgreSQL llamada `calendar_app`.
 2. Copia `.env.example` como `.env`.
