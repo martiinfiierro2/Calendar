@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calendar-pwa-v2';
+const CACHE_NAME = 'calendar-pwa-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -37,26 +37,44 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy));
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy));
+          }
           return response;
         })
-        .catch(() => caches.match('/index.html'))
+        .catch(async () => {
+          const cached = await caches.match('/index.html');
+          return cached || new Response('Sin conexión', {
+            status: 503,
+            statusText: 'Service Unavailable'
+          });
+        })
     );
     return;
   }
 
   event.respondWith(
-    caches.match(request).then(cached => {
+    caches.match(request).then(async cached => {
       if (cached) return cached;
 
-      return fetch(request).then(response => {
-        if (!response || response.status !== 200) return response;
+      try {
+        const response = await fetch(request);
 
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        if (response && response.ok) {
+          const copy = response.clone();
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, copy);
+        }
+
         return response;
-      });
+      } catch {
+        console.warn('[Service Worker] No se pudo cargar:', request.url);
+        return new Response('', {
+          status: 503,
+          statusText: 'Service Unavailable'
+        });
+      }
     })
   );
 });
