@@ -10,6 +10,9 @@ const reglasRegistro = [
   body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio.'),
   body('email').isEmail().withMessage('Email no válido.'),
   body('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres.'),
+  body('accountType')
+    .isIn(['individual', 'grupal'])
+    .withMessage('El tipo de cuenta no es válido.'),
   validateRequest
 ];
 
