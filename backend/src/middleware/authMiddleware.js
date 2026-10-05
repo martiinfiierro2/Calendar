@@ -10,7 +10,7 @@ export async function requireAuth(req, res, next) {
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     const usuario = await Usuario.findByPk(payload.id, {
-      attributes: ['id', 'nombre', 'email', 'cuentaId'],
+      attributes: ['id', 'nombre', 'email', 'cuentaId', 'rol'],
       include: [{ model: Cuenta, as: 'cuenta', attributes: ['tipo'] }]
     });
 
