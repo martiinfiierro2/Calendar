@@ -179,23 +179,39 @@ export default function LoginPage({ onAuth }) {
 
         {mode == 'registro' && registerStep === 2 && 
           <div className="login-form">
-              <button
-                type="button"
-                className={`account-option ${accountType === 'individual' ? 'selected' : ''}`}
-                onClick={() => setAccountType('individual')}
-              >
-                <span className="account-icon">👤</span>
-                <span>Cuenta individual</span>
-              </button>
+              <div className="account-type-heading">
+                <strong>¿Cómo vas a usar Calendar?</strong>
+                <span>Podrás cambiar esta opción más adelante.</span>
+              </div>
 
-              <button
-                type="button"
-                className={`account-option ${accountType === 'grupal' ? 'selected' : ''}`}
-                onClick={() => setAccountType('grupal')}
-              >
-                <span className="account-icon">👥</span>
-                <span>Cuenta compartida</span>
-              </button>
+              <div className="account-type-selector" role="group" aria-label="Tipo de cuenta">
+                <button
+                  type="button"
+                  className={`account-option ${accountType === 'individual' ? 'selected' : ''}`}
+                  onClick={() => setAccountType('individual')}
+                  aria-pressed={accountType === 'individual'}
+                >
+                  <span className="account-icon"><Icon name="user" size={30} strokeWidth={1.9} /></span>
+                  <span className="account-option-text">
+                    <strong>Individual</strong>
+                    <small>Solo para ti</small>
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`account-option ${accountType === 'grupal' ? 'selected' : ''}`}
+                  onClick={() => setAccountType('grupal')}
+                  aria-pressed={accountType === 'grupal'}
+                >
+                  <span className="account-icon"><Icon name="users" size={30} strokeWidth={1.9} /></span>
+                  <span className="account-option-text">
+                    <strong>Compartida</strong>
+                    <small>Para familia o grupo</small>
+                  </span>
+                </button>
+              </div>
+
               {error && <div className="login-error" role="alert">{error}</div>}
 
               <button className="login-submit" onClick={submit} disabled={loading}>
