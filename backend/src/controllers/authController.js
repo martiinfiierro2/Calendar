@@ -8,7 +8,7 @@ function usuarioPublico(usuario) {
     nombre: usuario.nombre,
     email: usuario.email,
     cuentaId: usuario.cuentaId,
-    tipoCuenta: usuario.Cuentum?.tipo || null
+    tipoCuenta: usuario.cuenta?.tipo || null
   };
 }
 
@@ -57,7 +57,7 @@ export async function registrar(req, res, next) {
 
     await transaction.commit();
 
-    usuario.Cuentum = cuenta;
+    usuario.cuenta = cuenta;
 
     res
       .status(201)
@@ -74,7 +74,7 @@ export async function acceder(req, res, next) {
 
     const usuario = await Usuario.findOne({
       where: { email },
-      include: [{ model: Cuenta, attributes: ['tipo'] }]
+      include: [{ model: Cuenta, as: 'cuenta', attributes: ['tipo'] }]
     });
 
     const valida =
