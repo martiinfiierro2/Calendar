@@ -30,10 +30,10 @@ export function hasSession() {
   return Boolean(getSession()?.token);
 }
 
-export async function registerUser({ nombre, email, password }) {
+export async function registerUser({ nombre, email, password, accountType }) {
   const options = {
     method: 'POST',
-    body: JSON.stringify({ nombre: nombre.trim(), email: email.trim(), password })
+    body: JSON.stringify({ nombre: nombre.trim(), email: email.trim(), password, accountType: accountType.trim() })
   };
 
   const data = await authRequest('/autenticacion/registro', '/auth/register', options);

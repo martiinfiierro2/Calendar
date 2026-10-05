@@ -12,8 +12,31 @@ export default function LoginPage({ onAuth }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registerStep, setRegisterStep] = useState(1);
+  const [accountType, setAccountType] = useState('individual');
 
   if (hasSession()) return <Navigate to="/" replace />;
+
+  const changeToAccount = () =>{
+      setError('');
+
+    if (!name.trim()) {
+      setError('Introduce tu nombre.');
+      return;
+    }
+
+    if (!email.trim()) {
+      setError('Introduce tu email.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    setRegisterStep(2);
+  }
 
   const submit = async event => {
     event.preventDefault();
@@ -35,7 +58,7 @@ export default function LoginPage({ onAuth }) {
     try {
       setLoading(true);
       const session = mode === 'registro'
-        ? await registerUser({ nombre: name, email, password })
+        ? await registerUser({ nombre: name, email, password, accountType })
         : await loginUser({ email, password });
       onAuth(session);
     } catch (err) {
@@ -76,48 +99,110 @@ export default function LoginPage({ onAuth }) {
           <button className={mode === 'registro' ? 'activo' : ''} onClick={() => changeMode('registro')} type="button">Crear cuenta</button>
         </div>
 
-        <form className="login-form" onSubmit={submit}>
-          {mode === 'registro' && (
+        {mode =='login' && 
+          <form className="login-form" onSubmit={submit}>
             <label>
-              <span>Nombre</span>
+              <span>Email</span>
               <div className="login-input-wrap">
-                <Icon name="user" size={18} />
-                <input autoComplete="name" value={name} onChange={event => setName(event.target.value)} placeholder="Tu nombre" />
+                <Icon name="mail" size={18} />
+                <input type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="tu@email.com" />
               </div>
             </label>
-          )}
 
-          <label>
-            <span>Email</span>
-            <div className="login-input-wrap">
-              <Icon name="mail" size={18} />
-              <input type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="tu@email.com" />
-            </div>
-          </label>
+            <label>
+              <span>Contraseña</span>
+              <div className="login-input-wrap">
+                <Icon name="lock" size={18} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
+                  value={password}
+                  onChange={event => setPassword(event.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                />
+                <button type="button" className="login-password-toggle" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                  <Icon name={showPassword ? 'eyeOff' : 'eye'} size={18} />
+                </button>
+              </div>
+            </label>
 
-          <label>
-            <span>Contraseña</span>
-            <div className="login-input-wrap">
-              <Icon name="lock" size={18} />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
-                value={password}
-                onChange={event => setPassword(event.target.value)}
-                placeholder="Mínimo 6 caracteres"
-              />
-              <button type="button" className="login-password-toggle" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
-                <Icon name={showPassword ? 'eyeOff' : 'eye'} size={18} />
+            {error && <div className="login-error" role="alert">{error}</div>}
+
+            <button className="login-submit" disabled={loading}>
+              {loading ? 'Accediendo...' : mode === 'login' ? 'Entrar' : 'Crear cuenta'}
+            </button>
+          </form>
+        }
+
+        {mode == 'registro' && registerStep === 1 && 
+          <div className="login-form">
+                <label>
+                  <span>Nombre</span>
+                  <div className="login-input-wrap">
+                    <Icon name="user" size={18} />
+                    <input autoComplete="name" value={name} onChange={event => setName(event.target.value)} placeholder="Tu nombre" />
+                  </div>
+                </label>
+
+                <label>
+                  <span>Email</span>
+                  <div className="login-input-wrap">
+                    <Icon name="mail" size={18} />
+                    <input type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="tu@email.com" />
+                  </div>
+                </label>
+
+                <label>
+                  <span>Contraseña</span>
+                  <div className="login-input-wrap">
+                    <Icon name="lock" size={18} />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete={mode === 'registro' ? 'new-password' : 'current-password'}
+                      value={password}
+                      onChange={event => setPassword(event.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                    />
+                    <button type="button" className="login-password-toggle" onClick={() => setShowPassword(value => !value)} aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+                      <Icon name={showPassword ? 'eyeOff' : 'eye'} size={18} />
+                    </button>
+                  </div>
+                </label>
+
+                {error && <div className="login-error" role="alert">{error}</div>}
+
+                <button className="login-submit" onClick={() => changeToAccount()} disabled={loading}>
+                  {loading ? 'Cambiando...' : 'Siguiente'}
+                </button>
+          </div>
+        }
+
+        {mode == 'registro' && registerStep === 2 && 
+          <div className="login-form">
+              <button
+                type="button"
+                className={`account-option ${accountType === 'individual' ? 'selected' : ''}`}
+                onClick={() => setAccountType('individual')}
+              >
+                <span className="account-icon">👤</span>
+                <span>Cuenta individual</span>
               </button>
-            </div>
-          </label>
 
-          {error && <div className="login-error" role="alert">{error}</div>}
+              <button
+                type="button"
+                className={`account-option ${accountType === 'grupal' ? 'selected' : ''}`}
+                onClick={() => setAccountType('grupal')}
+              >
+                <span className="account-icon">👥</span>
+                <span>Cuenta compartida</span>
+              </button>
+              {error && <div className="login-error" role="alert">{error}</div>}
 
-          <button className="login-submit" disabled={loading}>
-            {loading ? 'Accediendo...' : mode === 'login' ? 'Entrar' : 'Crear cuenta'}
-          </button>
-        </form>
+              <button className="login-submit" onClick={submit} disabled={loading}>
+                  {loading ? 'Accediendo...' : 'Crear cuenta'}
+              </button>
+          </div>
+        }
 
         <p className="login-nota">Tu cuenta se sincroniza con la API y tus datos quedan asociados a tu usuario.</p>
       </section>
