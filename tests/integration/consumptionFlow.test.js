@@ -21,7 +21,7 @@ before(async () => {
     comidaFindAll: Comida.findAll,
     comidaFindOne: Comida.findOne,
     consumoCreate: Consumo.create,
-    recetaFindByPk: Receta.findByPk,
+    recetaFindOne: Receta.findOne,
     productoFindAll: ProductoCompra.findAll
   };
 });
@@ -31,7 +31,7 @@ afterEach(() => {
   Comida.findAll = originals.comidaFindAll;
   Comida.findOne = originals.comidaFindOne;
   Consumo.create = originals.consumoCreate;
-  Receta.findByPk = originals.recetaFindByPk;
+  Receta.findOne = originals.recetaFindOne;
   ProductoCompra.findAll = originals.productoFindAll;
 });
 
@@ -41,10 +41,10 @@ function fakeTransaction() {
   return transaction;
 }
 
-function comidaPendiente({ id = 1, usuarioId = 1, recetaId = 10 } = {}) {
+function comidaPendiente({ id = 1, cuentaId = 1, recetaId = 10 } = {}) {
   return {
     id,
-    usuarioId,
+    cuentaId,
     recetaId,
     nombre: 'Comida de prueba',
     modo: 'receta',
@@ -54,40 +54,21 @@ function comidaPendiente({ id = 1, usuarioId = 1, recetaId = 10 } = {}) {
   };
 }
 
-test('una comida pasada descuenta parcialmente el stock y registra solo lo consumido', async () => {
+test('una comida pasada descuenta parcialmente el stock compartido y registra solo lo consumido', async () => {
   fakeTransaction();
-
   const pendiente = comidaPendiente();
   const comidaActualizaciones = [];
   const productoActualizaciones = [];
   const consumos = [];
 
   Comida.findAll = async () => [pendiente];
-  Comida.findOne = async () => ({
-    ...pendiente,
-    update: async values => comidaActualizaciones.push(values)
-  });
-
-  Receta.findByPk = async () => ({
-    ingredientes: [
-      { nombre: 'Arroz', cantidad: 300, unidad: 'g' }
-    ]
-  });
-
-  ProductoCompra.findAll = async () => [
-    {
-      nombre: 'arroz',
-      cantidad: 1,
-      unidad: 'kg',
-      estado: 'comprado',
-      update: async values => productoActualizaciones.push(values)
-    }
-  ];
-
-  Consumo.create = async values => {
-    consumos.push(values);
-    return values;
-  };
+  Comida.findOne = async () => ({ ...pendiente, update: async values => comidaActualizaciones.push(values) });
+  Receta.findOne = async () => ({ ingredientes: [{ nombre: 'Arroz', cantidad: 300, unidad: 'g' }] });
+  ProductoCompra.findAll = async () => [{
+    nombre: 'arroz', cantidad: 1, unidad: 'kg', estado: 'comprado',
+    update: async values => productoActualizaciones.push(values)
+  }];
+  Consumo.create = async values => { consumos.push(values); return values; };
 
   const procesadas = await procesarComidasPendientes(1);
 
@@ -96,44 +77,25 @@ test('una comida pasada descuenta parcialmente el stock y registra solo lo consu
   assert.equal(consumos.length, 1);
   assert.equal(consumos[0].cantidad, 0.3);
   assert.equal(consumos[0].unidad, 'kg');
-  assert.equal(consumos[0].comidaNombre, 'Comida de prueba');
+  assert.equal(consumos[0].cuentaId, 1);
   assert.deepEqual(comidaActualizaciones, [{ procesada: true }]);
 });
 
 test('si una comida agota un producto, registra la cantidad consumida y lo marca como usado', async () => {
   fakeTransaction();
-
   const pendiente = comidaPendiente({ id: 2 });
   const comidaActualizaciones = [];
   const productoActualizaciones = [];
   const consumos = [];
 
   Comida.findAll = async () => [pendiente];
-  Comida.findOne = async () => ({
-    ...pendiente,
-    update: async values => comidaActualizaciones.push(values)
-  });
-
-  Receta.findByPk = async () => ({
-    ingredientes: [
-      { nombre: 'Leche', cantidad: 500, unidad: 'ml' }
-    ]
-  });
-
-  ProductoCompra.findAll = async () => [
-    {
-      nombre: 'Leche',
-      cantidad: 0.5,
-      unidad: 'L',
-      estado: 'comprado',
-      update: async values => productoActualizaciones.push(values)
-    }
-  ];
-
-  Consumo.create = async values => {
-    consumos.push(values);
-    return values;
-  };
+  Comida.findOne = async () => ({ ...pendiente, update: async values => comidaActualizaciones.push(values) });
+  Receta.findOne = async () => ({ ingredientes: [{ nombre: 'Leche', cantidad: 500, unidad: 'ml' }] });
+  ProductoCompra.findAll = async () => [{
+    nombre: 'Leche', cantidad: 0.5, unidad: 'L', estado: 'comprado',
+    update: async values => productoActualizaciones.push(values)
+  }];
+  Consumo.create = async values => { consumos.push(values); return values; };
 
   const procesadas = await procesarComidasPendientes(1);
 
@@ -147,26 +109,12 @@ test('si una comida agota un producto, registra la cantidad consumida y lo marca
 
 test('una comida futura no consume stock ni se marca como procesada', async () => {
   fakeTransaction();
-
   let findOneCalled = false;
   let productQueryCalled = false;
 
-  Comida.findAll = async () => [
-    {
-      ...comidaPendiente({ id: 3 }),
-      fecha: '2999-01-01'
-    }
-  ];
-
-  Comida.findOne = async () => {
-    findOneCalled = true;
-    return null;
-  };
-
-  ProductoCompra.findAll = async () => {
-    productQueryCalled = true;
-    return [];
-  };
+  Comida.findAll = async () => [{ ...comidaPendiente({ id: 3 }), fecha: '2999-01-01' }];
+  Comida.findOne = async () => { findOneCalled = true; return null; };
+  ProductoCompra.findAll = async () => { productQueryCalled = true; return []; };
 
   const procesadas = await procesarComidasPendientes(1);
 
