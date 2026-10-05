@@ -33,7 +33,6 @@ export default function AccountManagement() {
 
   if (!account) return null;
 
-  const me = account.cuenta?.usuarios?.find(usuario => usuario.rol === 'propietario') || null;
   const currentIsOwner = Boolean(account.invitaciones);
 
   const run = async action => {
