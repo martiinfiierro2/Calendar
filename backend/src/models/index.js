@@ -6,8 +6,8 @@ import Comida from './Meal.js';
 import ProductoCompra from './ShoppingItem.js';
 import Consumo from './Consumption.js';
 
-Cuenta.hasMany(Usuario, { foreignKey: 'cuentaId', onDelete: 'RESTRICT' });
-Usuario.belongsTo(Cuenta, { foreignKey: 'cuentaId' });
+Cuenta.hasMany(Usuario, { foreignKey: 'cuentaId', as: 'usuarios', onDelete: 'RESTRICT' });
+Usuario.belongsTo(Cuenta, { foreignKey: 'cuentaId', as: 'cuenta' });
 
 // Relaciones principales de la aplicación.
 Usuario.hasMany(Receta, { foreignKey: 'usuarioId', onDelete: 'CASCADE' });
