@@ -18,7 +18,10 @@ export async function updateRecipe(req, res, next) {
   try {
     const receta = await Receta.findOne({ where: { id: req.params.id, cuentaId: req.user.cuentaId } });
     if (!receta) return res.status(404).json({ message: 'Receta no encontrada.' });
-    await receta.update(req.body);
+
+    const datos = { ...req.body };
+    delete datos.cuentaId;
+    await receta.update(datos);
     res.json(receta);
   } catch (error) { next(error); }
 }
