@@ -1,12 +1,14 @@
 import bcrypt from 'bcryptjs';
-import { Usuario } from '../models/index.js';
+import { Cuenta, Usuario, sequelize } from '../models/index.js';
 import { createToken } from '../utils/token.js';
 
 function usuarioPublico(usuario) {
   return {
     id: usuario.id,
     nombre: usuario.nombre,
-    email: usuario.email
+    email: usuario.email,
+    cuentaId: usuario.cuentaId,
+    tipoCuenta: usuario.Cuentum?.tipo || null
   };
 }
 
@@ -21,32 +23,47 @@ function respuestaSesion(usuario, token) {
 }
 
 export async function registrar(req, res, next) {
+  const transaction = await sequelize.transaction();
+
   try {
     const nombre = req.body.nombre.trim();
     const email = req.body.email.trim().toLowerCase();
+    const accountType = req.body.accountType;
 
     const existe = await Usuario.findOne({
-      where: { email }
+      where: { email },
+      transaction
     });
 
     if (existe) {
+      await transaction.rollback();
       return res.status(409).json({
         message: 'Ya existe una cuenta con ese email.'
       });
     }
+
+    const cuenta = await Cuenta.create({
+      tipo: accountType
+    }, { transaction });
 
     const hashContrasena = await bcrypt.hash(req.body.password, 12);
 
     const usuario = await Usuario.create({
       nombre,
       email,
-      hashContrasena
-    });
+      hashContrasena,
+      cuentaId: cuenta.id
+    }, { transaction });
+
+    await transaction.commit();
+
+    usuario.Cuentum = cuenta;
 
     res
       .status(201)
       .json(respuestaSesion(usuario, createToken(usuario.id)));
   } catch (error) {
+    if (!transaction.finished) await transaction.rollback();
     next(error);
   }
 }
@@ -56,7 +73,8 @@ export async function acceder(req, res, next) {
     const email = req.body.email.trim().toLowerCase();
 
     const usuario = await Usuario.findOne({
-      where: { email }
+      where: { email },
+      include: [{ model: Cuenta, attributes: ['tipo'] }]
     });
 
     const valida =
