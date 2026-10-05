@@ -1,9 +1,13 @@
 import sequelize from '../config/database.js';
+import Cuenta from './Account.js';
 import Usuario from './User.js';
 import Receta from './Recipe.js';
 import Comida from './Meal.js';
 import ProductoCompra from './ShoppingItem.js';
 import Consumo from './Consumption.js';
+
+Cuenta.hasMany(Usuario, { foreignKey: 'cuentaId', onDelete: 'RESTRICT' });
+Usuario.belongsTo(Cuenta, { foreignKey: 'cuentaId' });
 
 // Relaciones principales de la aplicación.
 Usuario.hasMany(Receta, { foreignKey: 'usuarioId', onDelete: 'CASCADE' });
@@ -27,4 +31,4 @@ Consumo.belongsTo(Comida, { foreignKey: 'comidaId' });
 Receta.hasMany(Consumo, { foreignKey: 'recetaId', onDelete: 'SET NULL' });
 Consumo.belongsTo(Receta, { foreignKey: 'recetaId' });
 
-export { sequelize, Usuario, Receta, Comida, ProductoCompra, Consumo };
+export { sequelize, Cuenta, Usuario, Receta, Comida, ProductoCompra, Consumo };
