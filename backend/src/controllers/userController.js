@@ -6,7 +6,8 @@ function respuestaUsuario(usuario) {
     email: usuario.email,
     recordatorios: usuario.recordatorios,
     cuentaId: usuario.cuentaId,
-    tipoCuenta: usuario.cuenta?.tipo || null
+    tipoCuenta: usuario.cuenta?.tipo || null,
+    rol: usuario.rol
   };
 }
 
@@ -29,20 +30,11 @@ export async function updateUser(req, res, next) {
       include: [{ model: Cuenta, as: 'cuenta', attributes: ['tipo'] }]
     });
 
-    if (nombre !== undefined) {
-      usuario.nombre = nombre.trim() || usuario.nombre;
-    }
-
-    if (email !== undefined) {
-      usuario.email = email.trim().toLowerCase();
-    }
-
-    if (recordatorios !== undefined) {
-      usuario.recordatorios = recordatorios;
-    }
+    if (nombre !== undefined) usuario.nombre = nombre.trim() || usuario.nombre;
+    if (email !== undefined) usuario.email = email.trim().toLowerCase();
+    if (recordatorios !== undefined) usuario.recordatorios = recordatorios;
 
     await usuario.save();
-
     res.json(respuestaUsuario(usuario));
   } catch (error) {
     next(error);
