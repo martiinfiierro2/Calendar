@@ -50,11 +50,8 @@
   scrollbar-width: none;
 }
 
-.perfil-scroll::-webkit-scrollbar {
-  display: none;
-}
+.perfil-scroll::-webkit-scrollbar { display: none; }
 
-/* Datos principales */
 .perfil-card {
   background: #fff;
   border: 1px solid #e5e9e5;
@@ -80,16 +77,8 @@
   flex-shrink: 0;
 }
 
-.perfil-identidad h2 {
-  margin: 0;
-  font-size: 16px;
-}
-
-.perfil-identidad p {
-  margin: 3px 0 0;
-  font-size: 11px;
-  color: var(--mutedText);
-}
+.perfil-identidad h2 { margin: 0; font-size: 16px; }
+.perfil-identidad p { margin: 3px 0 0; font-size: 11px; color: var(--mutedText); }
 
 .perfil-stats {
   display: grid;
@@ -122,29 +111,11 @@
   place-items: center;
 }
 
-.perfil-stats strong {
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+.perfil-stats strong { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.perfil-stats small { font-size: 9px; color: var(--mutedText); line-height: 1.25; }
 
-.perfil-stats small {
-  font-size: 9px;
-  color: var(--mutedText);
-  line-height: 1.25;
-}
-
-/* Preferencias */
-.perfil-seccion {
-  margin-top: 18px;
-}
-
-.perfil-seccion > h2 {
-  margin: 0 0 8px;
-  font-size: 12px;
-  color: #69736b;
-}
+.perfil-seccion { margin-top: 18px; }
+.perfil-seccion > h2 { margin: 0 0 8px; font-size: 12px; color: #69736b; }
 
 .perfil-ajustes {
   overflow: hidden;
@@ -163,9 +134,7 @@
   border-bottom: 1px solid #edf0ed;
 }
 
-.perfil-ajuste:last-child {
-  border-bottom: 0;
-}
+.perfil-ajuste:last-child { border-bottom: 0; }
 
 .perfil-ajuste-icon {
   width: 34px;
@@ -177,22 +146,9 @@
   place-items: center;
 }
 
-.perfil-ajuste > div {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.perfil-ajuste strong {
-  font-size: 12px;
-}
-
-.perfil-ajuste small {
-  margin-top: 2px;
-  font-size: 9px;
-  line-height: 1.35;
-  color: var(--mutedText);
-}
+.perfil-ajuste > div { min-width: 0; display: flex; flex-direction: column; }
+.perfil-ajuste strong { font-size: 12px; }
+.perfil-ajuste small { margin-top: 2px; font-size: 9px; line-height: 1.35; color: var(--mutedText); }
 
 .perfil-switch {
   width: 40px;
@@ -215,15 +171,9 @@
   transition: .18s;
 }
 
-.perfil-switch.activo {
-  background: var(--appDecorationStrong);
-}
+.perfil-switch.activo { background: var(--appDecorationStrong); }
+.perfil-switch.activo span { transform: translateX(16px); }
 
-.perfil-switch.activo span {
-  transform: translateX(16px);
-}
-
-/* Acciones de cuenta */
 .perfil-logout,
 .perfil-danger {
   width: 100%;
@@ -237,42 +187,15 @@
   cursor: pointer;
 }
 
-.perfil-logout {
-  border: 1px solid #dfe7df;
-  background: #fff;
-  color: #405047;
-}
-
+.perfil-logout { border: 1px solid #dfe7df; background: #fff; color: #405047; }
 .perfil-logout > span,
-.perfil-danger > span {
-  display: flex;
-  flex-direction: column;
-}
-
+.perfil-danger > span { display: flex; flex-direction: column; }
 .perfil-logout strong,
-.perfil-danger strong {
-  font-size: 12px;
-}
+.perfil-danger strong { font-size: 12px; }
+.perfil-logout small { margin-top: 2px; font-size: 9px; color: var(--mutedText); }
+.perfil-danger { border: 1px solid #f0dddd; background: #fff8f8; color: #b95050; }
+.perfil-danger small { margin-top: 2px; font-size: 9px; color: #a97474; }
 
-.perfil-logout small {
-  margin-top: 2px;
-  font-size: 9px;
-  color: var(--mutedText);
-}
-
-.perfil-danger {
-  border: 1px solid #f0dddd;
-  background: #fff8f8;
-  color: #b95050;
-}
-
-.perfil-danger small {
-  margin-top: 2px;
-  font-size: 9px;
-  color: #a97474;
-}
-
-/* Formulario de edición */
 .perfil-overlay {
   position: absolute;
   inset: 0;
@@ -293,35 +216,12 @@
   box-shadow: 0 -12px 35px rgba(15, 22, 17, .17);
 }
 
-.perfil-handle {
-  width: 38px;
-  height: 4px;
-  margin: 2px auto 14px;
-  border-radius: 999px;
-  background: #d9ded9;
-}
-
-.perfil-sheet h2 {
-  margin: 0 0 14px;
-  font-size: 18px;
-}
-
+.perfil-handle { width: 38px; height: 4px; margin: 2px auto 14px; border-radius: 999px; background: #d9ded9; }
+.perfil-sheet h2 { margin: 0 0 14px; font-size: 18px; }
 .perfil-sheet form,
-.perfil-sheet label {
-  display: flex;
-  flex-direction: column;
-}
-
-.perfil-sheet form {
-  gap: 12px;
-}
-
-.perfil-sheet label {
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  color: #4f5951;
-}
+.perfil-sheet label { display: flex; flex-direction: column; }
+.perfil-sheet form { gap: 12px; }
+.perfil-sheet label { gap: 6px; font-size: 11px; font-weight: 800; color: #4f5951; }
 
 .perfil-sheet input,
 .perfil-sheet select {
@@ -334,11 +234,7 @@
   outline: none;
 }
 
-.perfil-form-row {
-  display: grid;
-  grid-template-columns: .75fr 1.4fr;
-  gap: 9px;
-}
+.perfil-form-row { display: grid; grid-template-columns: .75fr 1.4fr; gap: 9px; }
 
 .perfil-save {
   min-height: 46px;
@@ -354,14 +250,128 @@
   cursor: pointer;
 }
 
-@media (max-width: 380px) {
-  .perfil-header {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
+/* Multicuenta */
+.perfil-cuenta-card,
+.perfil-incoming {
+  overflow: hidden;
+  border: 1px solid #e5e9e5;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--shadowCard);
+}
 
-  .perfil-scroll {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
+.perfil-cuenta-header,
+.perfil-miembro {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 11px;
+}
+
+.perfil-cuenta-header { border-bottom: 1px solid #edf0ed; }
+.perfil-cuenta-header > div,
+.perfil-miembro > div { min-width: 0; display: flex; flex-direction: column; }
+.perfil-cuenta-header strong,
+.perfil-miembro strong { font-size: 12px; }
+.perfil-cuenta-header small,
+.perfil-miembro small { margin-top: 2px; color: var(--mutedText); font-size: 9px; }
+
+.perfil-miembro { border-bottom: 1px solid #f0f2f0; }
+.perfil-miembro-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #f2f6f2;
+  color: var(--appDecorationStrong);
+  display: grid;
+  place-items: center;
+}
+
+.perfil-miembro-remove {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: #fff2f2;
+  color: #b95050;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.perfil-account-action {
+  width: calc(100% - 22px);
+  min-height: 42px;
+  margin: 11px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--appDecorationStrong);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.perfil-account-leave { background: #fff3f3; color: #a94f4f; border: 1px solid #efd5d5; }
+
+.perfil-invite-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 11px;
+}
+
+.perfil-invite-form input {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid #dde4dd;
+  border-radius: 11px;
+  padding: 0 11px;
+  background: #f8faf8;
+  outline: none;
+}
+
+.perfil-invite-form button {
+  border: 0;
+  border-radius: 11px;
+  padding: 0 14px;
+  background: var(--appDecorationStrong);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.perfil-pending {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0 11px 11px;
+}
+.perfil-pending small { color: var(--mutedText); font-size: 9px; font-weight: 800; }
+.perfil-pending span { font-size: 10px; color: #5c685f; }
+
+.perfil-incoming { margin-top: 9px; padding: 11px; }
+.perfil-incoming > strong { font-size: 11px; }
+.perfil-incoming > div { margin-top: 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.perfil-incoming span { font-size: 10px; color: #5f6b62; }
+.perfil-incoming button { border: 0; border-radius: 9px; padding: 7px 9px; font-size: 9px; font-weight: 800; cursor: pointer; }
+.perfil-incoming button:first-child { background: var(--appDecorationStrong); color: #fff; }
+.perfil-incoming button:last-child { margin-left: 5px; background: #eef1ee; color: #667068; }
+
+.perfil-account-error {
+  margin-top: 8px;
+  padding: 9px 10px;
+  border: 1px solid #f0d3d3;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #a34b4b;
+  font-size: 10px;
+}
+
+@media (max-width: 380px) {
+  .perfil-header { padding-left: 14px; padding-right: 14px; }
+  .perfil-scroll { padding-left: 12px; padding-right: 12px; }
+  .perfil-invite-form { grid-template-columns: 1fr; }
+  .perfil-invite-form button { min-height: 40px; }
 }
