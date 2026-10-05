@@ -4,9 +4,12 @@ import sequelize from '../config/database.js';
 const Cuenta = sequelize.define('Cuenta', {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   tipo: {
-    type: DataTypes.ENUM('individual', 'grupal'),
+    type: DataTypes.STRING(20),
     allowNull: false,
-    defaultValue: 'individual'
+    defaultValue: 'individual',
+    validate: {
+      isIn: [['individual', 'grupal']]
+    }
   }
 }, {
   tableName: 'cuentas',
