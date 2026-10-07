@@ -25,10 +25,10 @@ function obtenerFechaHoraMadrid() {
   };
 }
 
-export async function obtenerComidasPendientes(usuarioId) {
+export async function obtenerComidasPendientes(cuentaId) {
   const { fecha, hora } = obtenerFechaHoraMadrid();
   const comidas = await Comida.findAll({
-    where: { usuarioId, procesada: false },
+    where: { cuentaId, procesada: false },
     include: [{ model: Receta, required: false }],
     order: [['fecha', 'ASC'], ['hora', 'ASC']]
   });
@@ -43,7 +43,7 @@ async function consumirIngrediente(ingrediente, comida, transaction) {
   if (!Number.isFinite(cantidadPendiente) || cantidadPendiente <= 0) return;
 
   const productos = await ProductoCompra.findAll({
-    where: { usuarioId: comida.usuarioId, estado: 'comprado' },
+    where: { cuentaId: comida.cuentaId, estado: 'comprado' },
     order: [['creadoEn', 'ASC']],
     transaction,
     lock: transaction.LOCK.UPDATE
@@ -74,7 +74,7 @@ async function consumirIngrediente(ingrediente, comida, transaction) {
       fecha: comida.fecha,
       hora: comida.hora,
       comidaNombre: comida.nombre,
-      usuarioId: comida.usuarioId,
+      cuentaId: comida.cuentaId,
       comidaId: comida.id,
       recetaId: comida.recetaId || null
     }, { transaction });
@@ -91,7 +91,7 @@ async function consumirIngrediente(ingrediente, comida, transaction) {
 async function procesarComida(comidaPendiente) {
   return sequelize.transaction(async transaction => {
     const comida = await Comida.findOne({
-      where: { id: comidaPendiente.id, usuarioId: comidaPendiente.usuarioId },
+      where: { id: comidaPendiente.id, cuentaId: comidaPendiente.cuentaId },
       transaction,
       lock: transaction.LOCK.UPDATE
     });
@@ -100,7 +100,7 @@ async function procesarComida(comidaPendiente) {
 
     let ingredientes = [];
     if (comida.modo === 'receta' && comida.recetaId) {
-      const receta = await Receta.findByPk(comida.recetaId, { transaction });
+      const receta = await Receta.findOne({ where: { id: comida.recetaId, cuentaId: comida.cuentaId }, transaction });
       ingredientes = Array.isArray(receta?.ingredientes) ? receta.ingredientes : [];
     } else if (comida.modo === 'rapida' && Array.isArray(comida.ingredientes)) {
       ingredientes = comida.ingredientes;
@@ -114,8 +114,8 @@ async function procesarComida(comidaPendiente) {
   });
 }
 
-export async function procesarComidasPendientes(usuarioId) {
-  const pendientes = await obtenerComidasPendientes(usuarioId);
+export async function procesarComidasPendientes(cuentaId) {
+  const pendientes = await obtenerComidasPendientes(cuentaId);
   for (const comida of pendientes) await procesarComida(comida);
   return pendientes.length;
 }

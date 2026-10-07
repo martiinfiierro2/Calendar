@@ -1,3 +1,6 @@
+import { allowedData } from '../utils/allowedData.js';
+
+
 import { Comida, Consumo, ProductoCompra, Receta } from '../models/index.js';
 import { procesarComidasPendientes } from '../services/consumptionService.js';
 import { Op } from 'sequelize';
@@ -24,19 +27,21 @@ function sumarDias(fecha, dias) {
   return date.toISOString().slice(0, 10);
 }
 
+const fields = ['nombre', 'cantidad', 'unidad', 'categoria', 'estado'];
+
 export async function listShopping(req, res, next) {
   try {
-    await procesarComidasPendientes(req.user.id);
-    const productos = await ProductoCompra.findAll({ where: { usuarioId: req.user.id }, order: [['estado', 'ASC'], ['creadoEn', 'DESC']] });
+    await procesarComidasPendientes(req.user.cuentaId);
+    const productos = await ProductoCompra.findAll({ where: { cuentaId: req.user.cuentaId }, order: [['estado', 'ASC'], ['creadoEn', 'DESC']] });
     res.json(productos);
   } catch (error) { next(error); }
 }
 
 export async function listConsumptions(req, res, next) {
   try {
-    await procesarComidasPendientes(req.user.id);
+    await procesarComidasPendientes(req.user.cuentaId);
     const consumos = await Consumo.findAll({
-      where: { usuarioId: req.user.id },
+      where: { cuentaId: req.user.cuentaId },
       order: [['fecha', 'DESC'], ['hora', 'DESC'], ['creadoEn', 'DESC']],
       limit: 50
     });
@@ -46,30 +51,31 @@ export async function listConsumptions(req, res, next) {
 
 export async function clearConsumptions(req, res, next) {
   try {
-    await Consumo.destroy({ where: { usuarioId: req.user.id } });
+    await Consumo.destroy({ where: { cuentaId: req.user.cuentaId } });
     res.status(204).end();
   } catch (error) { next(error); }
 }
 
 export async function createShoppingItem(req, res, next) {
   try {
-    const producto = await ProductoCompra.create({ ...req.body, estado: req.body.estado || 'apuntado', usuarioId: req.user.id });
+    const producto = await ProductoCompra.create({ ...allowedData(req.body, fields), estado: req.body.estado || 'apuntado', cuentaId: req.user.cuentaId });
     res.status(201).json(producto);
   } catch (error) { next(error); }
 }
 
 export async function updateShoppingItem(req, res, next) {
   try {
-    const producto = await ProductoCompra.findOne({ where: { id: req.params.id, usuarioId: req.user.id } });
+    const producto = await ProductoCompra.findOne({ where: { id: req.params.id, cuentaId: req.user.cuentaId } });
     if (!producto) return res.status(404).json({ message: 'Producto no encontrado.' });
-    await producto.update(req.body);
+    const datos = allowedData(req.body, fields);
+    await producto.update(datos);
     res.json(producto);
   } catch (error) { next(error); }
 }
 
 export async function deleteShoppingItem(req, res, next) {
   try {
-    const eliminados = await ProductoCompra.destroy({ where: { id: req.params.id, usuarioId: req.user.id } });
+    const eliminados = await ProductoCompra.destroy({ where: { id: req.params.id, cuentaId: req.user.cuentaId } });
     if (!eliminados) return res.status(404).json({ message: 'Producto no encontrado.' });
     res.status(204).end();
   } catch (error) { next(error); }
@@ -83,9 +89,9 @@ export async function generateFromCalendar(req, res, next) {
     const fechaFin = sumarDias(fechaInicio, dias - 1);
 
     const [comidas, recetas, existentes] = await Promise.all([
-      Comida.findAll({ where: { usuarioId: req.user.id, fecha: { [Op.between]: [fechaInicio, fechaFin] } } }),
-      Receta.findAll({ where: { usuarioId: req.user.id } }),
-      ProductoCompra.findAll({ where: { usuarioId: req.user.id } })
+      Comida.findAll({ where: { cuentaId: req.user.cuentaId, fecha: { [Op.between]: [fechaInicio, fechaFin] } } }),
+      Receta.findAll({ where: { cuentaId: req.user.cuentaId } }),
+      ProductoCompra.findAll({ where: { cuentaId: req.user.cuentaId } })
     ]);
 
     const mapaRecetas = new Map(recetas.map(receta => [String(receta.id), receta]));
@@ -123,7 +129,7 @@ export async function generateFromCalendar(req, res, next) {
         categoria: categoriaIngrediente(ingrediente.nombre),
         estado: 'apuntado',
         automatico: true,
-        usuarioId: req.user.id
+        cuentaId: req.user.cuentaId
       });
     }
 

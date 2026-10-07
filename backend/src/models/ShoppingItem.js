@@ -2,60 +2,19 @@ import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
 const ProductoCompra = sequelize.define('ProductoCompra', {
-  id: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    autoIncrement: true,
-    primaryKey: true
-  },
-
-  nombre: {
-    type: DataTypes.STRING(160),
-    allowNull: false
-  },
-
-  cantidad: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-    defaultValue: 1
-  },
-
-  unidad: {
-    type: DataTypes.STRING(20),
-    allowNull: false,
-    defaultValue: 'ud'
-  },
-
-  categoria: {
-    type: DataTypes.STRING(60),
-    allowNull: false,
-    defaultValue: 'Otros'
-  },
-
+  id: { type: DataTypes.INTEGER.UNSIGNED, autoIncrement: true, primaryKey: true },
+  nombre: { type: DataTypes.STRING(160), allowNull: false },
+  cantidad: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 1 },
+  unidad: { type: DataTypes.STRING(20), allowNull: false, defaultValue: 'ud' },
+  categoria: { type: DataTypes.STRING(60), allowNull: false, defaultValue: 'Otros' },
   estado: {
     type: DataTypes.STRING(20),
     allowNull: false,
     defaultValue: 'apuntado',
-    validate: {
-      isIn: [[
-        'apuntado',
-        'apuntadoChecked',
-        'comprado',
-        'compradoChecked',
-        'usado'
-      ]]
-    }
+    validate: { isIn: [['apuntado', 'apuntadoChecked', 'comprado', 'compradoChecked', 'usado']] }
   },
-
-  automatico: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false
-  },
-
-  usuarioId: {
-    type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false
-  }
+  automatico: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+  cuentaId: { type: DataTypes.INTEGER, allowNull: false }
 }, {
   tableName: 'lista_compra',
   timestamps: true,

@@ -1,13 +1,12 @@
 import 'dotenv/config';
 import app from './app.js';
-import { sequelize } from './models/index.js';
+import { prepareDatabase } from './config/migrateDatabase.js';
 
 const port = Number(process.env.PORT || 8080);
 
 async function start() {
   try {
-    await sequelize.authenticate();
-    await sequelize.sync();
+    await prepareDatabase();
 
     app.listen(port, () => {
       console.log(`Calendar API escuchando en http://localhost:${port}`);

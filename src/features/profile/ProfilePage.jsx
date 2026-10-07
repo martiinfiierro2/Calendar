@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logoutUser } from '../../services/authService';
+import { logoutUser, refreshSession } from '../../services/authService';
+import { resendEmailVerification } from '../../services/emailVerificationService';
 import { getUser, updateUser } from '../../services/userService';
 import Icon from '../../shared/Icon';
+import AccountManagement from './AccountManagement';
 import '../../componentes/perfil.css';
 
 export default function ProfilePage({ onLogout }) {
@@ -14,6 +16,8 @@ export default function ProfilePage({ onLogout }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
+  const [sendingVerification, setSendingVerification] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -26,14 +30,10 @@ export default function ProfilePage({ onLogout }) {
         }
       })
       .catch(err => {
-        if (active) {
-          setError(err.message || 'No se pudo cargar el perfil.');
-        }
+        if (active) setError(err.message || 'No se pudo cargar el perfil.');
       })
       .finally(() => {
-        if (active) {
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       });
 
     return () => {
@@ -52,11 +52,11 @@ export default function ProfilePage({ onLogout }) {
     try {
       setSaving(true);
       setError('');
-
       const saved = await updateUser(data);
-
       setProfile(saved);
       setDraft(saved);
+      setVerificationMessage(saved.verificacionCorreo?.message || '');
+      await refreshSession();
       setEditing(false);
     } catch (err) {
       setError(err.message || 'No se pudo guardar el perfil.');
@@ -70,25 +70,26 @@ export default function ProfilePage({ onLogout }) {
 
     try {
       setError('');
-
-      const saved = await updateUser({
-        recordatorios: nuevoValor
-      });
-
+      const saved = await updateUser({ recordatorios: nuevoValor });
       setProfile(saved);
       setDraft(saved);
     } catch (err) {
-      setError(
-        err.message || 'No se pudieron actualizar los recordatorios.'
-      );
+      setError(err.message || 'No se pudieron actualizar los recordatorios.');
     }
   };
 
   const toggle = field => {
-    setProfile(current => ({
-      ...current,
-      [field]: !current[field]
-    }));
+    setProfile(current => ({ ...current, [field]: !current[field] }));
+  };
+
+  const resendVerification = async () => {
+    if (sendingVerification) return;
+    setSendingVerification(true);
+    try {
+      const result = await resendEmailVerification();
+      setVerificationMessage(result.message);
+    } catch (err) { setVerificationMessage(err.message || 'No se pudo enviar el correo.'); }
+    finally { setSendingVerification(false); }
   };
 
   const logout = () => {
@@ -97,13 +98,8 @@ export default function ProfilePage({ onLogout }) {
     navigate('/login', { replace: true });
   };
 
-  if (loading) {
-    return <div>Cargando perfil...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  if (loading) return <div>Cargando perfil...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="perfil-app">
@@ -137,19 +133,39 @@ export default function ProfilePage({ onLogout }) {
           </div>
         </section>
 
+        <section className="perfil-seccion">
+          <h2>Verificación del correo</h2>
+          {profile.emailVerificado ? <p>Correo verificado.</p> : (
+            <>
+              <p>Verifica {profile.email} para aceptar invitaciones a cuentas familiares. Revisa el enlace enviado al registrarte.</p>
+              <button type="button" disabled={sendingVerification} onClick={resendVerification}>
+                {sendingVerification ? 'Enviando...' : 'Reenviar correo de verificación'}
+              </button>
+            </>
+          )}
+          {verificationMessage && <p role="status">{verificationMessage}</p>}
+        </section>
+
+        <AccountManagement
+          emailVerified={profile.emailVerificado}
+          onLeave={logout}
+          onAccountChanged={async () => {
+            await refreshSession();
+            const updated = await getUser();
+            setProfile(updated);
+            setDraft(updated);
+          }}
+        />
+
         <section className="perfil-stats">
           <div>
-            <span>
-              <Icon name="users" size={18} />
-            </span>
+            <span><Icon name="users" size={18} /></span>
             <strong>{profile.raciones}</strong>
             <small>Raciones por defecto</small>
           </div>
 
           <div>
-            <span>
-              <Icon name="sliders" size={18} />
-            </span>
+            <span><Icon name="sliders" size={18} /></span>
             <strong>{profile.dieta}</strong>
             <small>Preferencia alimentaria</small>
           </div>
@@ -190,7 +206,6 @@ export default function ProfilePage({ onLogout }) {
 
           <button className="perfil-logout" onClick={logout}>
             <Icon name="logout" size={18} />
-
             <span>
               <strong>Cerrar sesión</strong>
               <small>Vuelve a la pantalla de acceso</small>
@@ -201,14 +216,10 @@ export default function ProfilePage({ onLogout }) {
 
       {editing && (
         <>
-          <div
-            className="perfil-overlay"
-            onClick={() => setEditing(false)}
-          />
+          <div className="perfil-overlay" onClick={() => setEditing(false)} />
 
           <div className="perfil-sheet">
             <div className="perfil-handle" />
-
             <h2>Editar perfil</h2>
 
             <form onSubmit={saveProfile}>
@@ -216,12 +227,7 @@ export default function ProfilePage({ onLogout }) {
                 Nombre
                 <input
                   value={draft.nombre}
-                  onChange={event =>
-                    setDraft({
-                      ...draft,
-                      nombre: event.target.value
-                    })
-                  }
+                  onChange={event => setDraft({ ...draft, nombre: event.target.value })}
                 />
               </label>
 
@@ -230,12 +236,7 @@ export default function ProfilePage({ onLogout }) {
                 <input
                   type="email"
                   value={draft.email}
-                  onChange={event =>
-                    setDraft({
-                      ...draft,
-                      email: event.target.value
-                    })
-                  }
+                  onChange={event => setDraft({ ...draft, email: event.target.value })}
                   placeholder="opcional"
                 />
               </label>
@@ -248,12 +249,7 @@ export default function ProfilePage({ onLogout }) {
                     min="1"
                     max="12"
                     value={draft.raciones}
-                    onChange={event =>
-                      setDraft({
-                        ...draft,
-                        raciones: event.target.value
-                      })
-                    }
+                    onChange={event => setDraft({ ...draft, raciones: event.target.value })}
                   />
                 </label>
 
@@ -261,12 +257,7 @@ export default function ProfilePage({ onLogout }) {
                   Dieta
                   <select
                     value={draft.dieta}
-                    onChange={event =>
-                      setDraft({
-                        ...draft,
-                        dieta: event.target.value
-                      })
-                    }
+                    onChange={event => setDraft({ ...draft, dieta: event.target.value })}
                   >
                     <option>Sin preferencias</option>
                     <option>Vegetariana</option>
@@ -277,10 +268,7 @@ export default function ProfilePage({ onLogout }) {
                 </label>
               </div>
 
-              <button
-                className="perfil-save"
-                disabled={saving}
-              >
+              <button className="perfil-save" disabled={saving}>
                 <Icon name="check" size={17} />
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>

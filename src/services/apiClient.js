@@ -22,6 +22,10 @@ export async function apiRequest(path, options = {}) {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
+    if (response.status === 401 && token) {
+      localStorage.removeItem(SESSION_KEY);
+      window.dispatchEvent(new Event('calendar-session-changed'));
+    }
     const error = new Error(data?.message || 'No se pudo completar la petición.');
     error.status = response.status;
     error.errors = data?.errors || [];

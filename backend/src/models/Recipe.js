@@ -12,7 +12,7 @@ const Receta = sequelize.define('Receta', {
   imagen: { type: DataTypes.TEXT, allowNull: true },
   ingredientes: { type: DataTypes.JSON, allowNull: false, defaultValue: [] },
   pasos: { type: DataTypes.JSON, allowNull: false, defaultValue: [] },
-  usuarioId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false }
+  cuentaId: { type: DataTypes.INTEGER, allowNull: false }
 }, {
   tableName: 'recetas',
   timestamps: true,

@@ -50,11 +50,11 @@ after(async () => {
   if (server) await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 });
 
-function autenticarComo(id = 1) {
+function autenticarComo(id = 1, cuentaId = 100 + id) {
   Usuario.findByPk = async userId => Number(userId) === Number(id)
-    ? { id, nombre: `Usuario ${id}`, email: `u${id}@test.local` }
+    ? { id, nombre: `Usuario ${id}`, email: `u${id}@test.local`, cuentaId, rol: 'propietario', cuenta: { tipo: 'individual' } }
     : null;
-  return createToken(id);
+  return { token: createToken(id), cuentaId };
 }
 
 async function api(path, { token, method = 'GET', body } = {}) {
@@ -77,7 +77,7 @@ test('POST /api/compra exige autenticación', async () => {
 });
 
 test('POST /api/compra rechaza cantidad 0 antes de llegar al controller', async () => {
-  const token = autenticarComo(1);
+  const { token } = autenticarComo(1);
   let createCalled = false;
   ProductoCompra.create = async () => { createCalled = true; };
   const { response, data } = await api('/api/compra', { token, method: 'POST', body: { nombre: 'Leche', cantidad: 0, unidad: 'L', categoria: 'Lácteos' } });
@@ -86,37 +86,37 @@ test('POST /api/compra rechaza cantidad 0 antes de llegar al controller', async 
   assert.equal(createCalled, false);
 });
 
-test('POST /api/compra crea el producto para el usuario autenticado', async () => {
-  const token = autenticarComo(7);
+test('POST /api/compra crea el producto para la cuenta autenticada', async () => {
+  const { token, cuentaId } = autenticarComo(7);
   let received;
   ProductoCompra.create = async payload => { received = payload; return { id: 99, ...payload }; };
   const { response, data } = await api('/api/compra', { token, method: 'POST', body: { nombre: 'Arroz', cantidad: 500, unidad: 'g', categoria: 'Despensa' } });
   assert.equal(response.status, 201);
-  assert.equal(received.usuarioId, 7);
+  assert.equal(received.cuentaId, cuentaId);
   assert.equal(received.estado, 'apuntado');
   assert.equal(data.nombre, 'Arroz');
 });
 
-test('PUT /api/compra/:id no permite editar un producto de otro usuario', async () => {
-  const token = autenticarComo(3);
+test('PUT /api/compra/:id limita edición a la cuenta autenticada', async () => {
+  const { token, cuentaId } = autenticarComo(3);
   let whereReceived;
   ProductoCompra.findOne = async options => { whereReceived = options.where; return null; };
   const { response } = await api('/api/compra/22', { token, method: 'PUT', body: { nombre: 'Pasta', cantidad: 1, unidad: 'kg', categoria: 'Despensa', estado: 'comprado' } });
   assert.equal(response.status, 404);
-  assert.deepEqual(whereReceived, { id: '22', usuarioId: 3 });
+  assert.deepEqual(whereReceived, { id: '22', cuentaId });
 });
 
-test('DELETE /api/compra/:id limita el borrado al usuario autenticado', async () => {
-  const token = autenticarComo(4);
+test('DELETE /api/compra/:id limita borrado a la cuenta autenticada', async () => {
+  const { token, cuentaId } = autenticarComo(4);
   let whereReceived;
   ProductoCompra.destroy = async options => { whereReceived = options.where; return 0; };
   const { response } = await api('/api/compra/15', { token, method: 'DELETE' });
   assert.equal(response.status, 404);
-  assert.deepEqual(whereReceived, { id: '15', usuarioId: 4 });
+  assert.deepEqual(whereReceived, { id: '15', cuentaId });
 });
 
 test('POST /api/compra/desde-calendario resta nevera y lista antes de crear faltantes', async () => {
-  const token = autenticarComo(5);
+  const { token, cuentaId } = autenticarComo(5);
   Comida.findAll = async () => [{ modo: 'receta', recetaId: 10 }];
   Receta.findAll = async () => [{ id: 10, ingredientes: [{ nombre: 'Arroz', cantidad: 1, unidad: 'kg' }, { nombre: 'Leche', cantidad: 1, unidad: 'L' }] }];
   ProductoCompra.findAll = async () => [
@@ -131,10 +131,11 @@ test('POST /api/compra/desde-calendario resta nevera y lista antes de crear falt
   assert.equal(rowsCreated.length, 1);
   assert.equal(rowsCreated[0].nombre, 'Arroz');
   assert.equal(rowsCreated[0].cantidad, 500);
+  assert.equal(rowsCreated[0].cuentaId, cuentaId);
 });
 
 test('generar dos veces no vuelve a crear un ingrediente ya cubierto por la primera generación', async () => {
-  const token = autenticarComo(8);
+  const { token } = autenticarComo(8);
   Comida.findAll = async () => [{ modo: 'receta', recetaId: 30 }];
   Receta.findAll = async () => [{ id: 30, ingredientes: [{ nombre: 'Pasta', cantidad: 500, unidad: 'g' }] }];
 
