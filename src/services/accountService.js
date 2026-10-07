@@ -34,3 +34,11 @@ export function removeAccountMember(usuarioId) {
 export function leaveAccount() {
   return apiRequest('/cuenta/abandonar', { method: 'POST' });
 }
+
+export function cancelAccountInvitation(id) {
+  return apiRequest(`/cuenta/invitaciones/${id}`, { method: 'DELETE' });
+}
+
+export function transferAccountOwnership(usuarioId) {
+  return apiRequest(`/cuenta/propiedad/${usuarioId}`, { method: 'POST' });
+}

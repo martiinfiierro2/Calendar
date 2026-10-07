@@ -6,6 +6,7 @@ function saveSession(data) {
   const usuario = data.usuario || data.user;
   const session = { ...usuario, token: data.token };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  window.dispatchEvent(new Event('calendar-session-changed'));
   return session;
 }
 
@@ -56,8 +57,12 @@ export async function refreshSession() {
 
   try {
     const data = await authRequest('/autenticacion/yo', '/auth/me');
+    // Una respuesta tardía no debe restaurar una sesión que ya se cerró.
+    if (getSession()?.token !== session.token) return getSession();
     return saveSession({ usuario: data.usuario || data.user, token: session.token });
-  } catch {
+  } catch (error) {
+    if (error.status !== 401) throw error;
+    if (getSession()?.token !== session.token) return getSession();
     logoutUser();
     return null;
   }
@@ -65,4 +70,5 @@ export async function refreshSession() {
 
 export function logoutUser() {
   localStorage.removeItem(SESSION_KEY);
+  window.dispatchEvent(new Event('calendar-session-changed'));
 }

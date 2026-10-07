@@ -25,10 +25,12 @@ BEGIN
   FOREACH tabla IN ARRAY ARRAY['recetas', 'comidas', 'lista_compra', 'consumos']
   LOOP
     EXECUTE format('ALTER TABLE %I ADD COLUMN IF NOT EXISTS "cuentaId" INTEGER', tabla);
-    EXECUTE format(
-      'UPDATE %I t SET "cuentaId" = u."cuentaId" FROM usuarios u WHERE t."usuarioId" = u.id AND t."cuentaId" IS NULL',
-      tabla
-    );
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = tabla AND column_name = 'usuarioId') THEN
+      EXECUTE format(
+        'UPDATE %I t SET "cuentaId" = u."cuentaId" FROM usuarios u WHERE t."usuarioId" = u.id AND t."cuentaId" IS NULL', tabla
+      );
+    END IF;
     EXECUTE format('ALTER TABLE %I ALTER COLUMN "cuentaId" SET NOT NULL', tabla);
   END LOOP;
 END $$;
@@ -52,7 +54,7 @@ BEGIN
   END LOOP;
 END $$;
 
--- Desde este punto el ownership funcional pertenece a la cuenta.
+-- Los datos funcionales pertenecen a la familia; los perfiles siguen siendo privados.
 ALTER TABLE recetas DROP COLUMN IF EXISTS "usuarioId";
 ALTER TABLE comidas DROP COLUMN IF EXISTS "usuarioId";
 ALTER TABLE lista_compra DROP COLUMN IF EXISTS "usuarioId";

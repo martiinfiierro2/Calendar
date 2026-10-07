@@ -1,4 +1,9 @@
+import { allowedData } from '../utils/allowedData.js';
+
+
 import { Receta } from '../models/index.js';
+
+const fields = ['nombre', 'categoria', 'tiempo', 'raciones', 'dificultad', 'favorito', 'imagen', 'ingredientes', 'pasos'];
 
 export async function listRecipes(req, res, next) {
   try {
@@ -9,7 +14,7 @@ export async function listRecipes(req, res, next) {
 
 export async function createRecipe(req, res, next) {
   try {
-    const receta = await Receta.create({ ...req.body, cuentaId: req.user.cuentaId });
+    const receta = await Receta.create({ ...allowedData(req.body, fields), cuentaId: req.user.cuentaId });
     res.status(201).json(receta);
   } catch (error) { next(error); }
 }
@@ -19,8 +24,7 @@ export async function updateRecipe(req, res, next) {
     const receta = await Receta.findOne({ where: { id: req.params.id, cuentaId: req.user.cuentaId } });
     if (!receta) return res.status(404).json({ message: 'Receta no encontrada.' });
 
-    const datos = { ...req.body };
-    delete datos.cuentaId;
+    const datos = allowedData(req.body, fields);
     await receta.update(datos);
     res.json(receta);
   } catch (error) { next(error); }

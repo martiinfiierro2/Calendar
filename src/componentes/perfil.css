@@ -375,3 +375,27 @@
   .perfil-invite-form { grid-template-columns: 1fr; }
   .perfil-invite-form button { min-height: 40px; }
 }
+
+.perfil-member-actions, .perfil-invitation-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.perfil-invitation-row > span { flex: 1; overflow-wrap: anywhere; }
+.perfil-member-actions button, .perfil-invitation-row button {
+  font: inherit;
+  cursor: pointer;
+  padding: 6px 10px;
+  border: 1px solid #d6ddd8;
+  border-radius: 8px;
+  background: #fff;
+}
+.perfil-member-actions button:disabled, .perfil-invitation-row button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.email-verification-page { padding: 24px; }
+.email-verification-page button { margin: 12px 0; padding: 10px 16px; }
+.email-verification-page a { display: block; margin-top: 16px; }

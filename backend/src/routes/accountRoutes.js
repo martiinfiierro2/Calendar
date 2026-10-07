@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import {
   acceptInvitation,
+  cancelInvitation,
+  transferOwnership,
   convertToGroup,
   getAccount,
   inviteMember,
@@ -22,10 +24,12 @@ router.patch('/tipo/grupal', convertToGroup);
 router.get('/invitaciones/mias', listMyInvitations);
 router.post(
   '/invitaciones',
-  body('email').isEmail().withMessage('Email no válido.'),
+  body('email').trim().isEmail().withMessage('Email no válido.'),
   validateRequest,
   inviteMember
 );
+router.delete('/invitaciones/:invitacionId', cancelInvitation);
+router.post('/propiedad/:usuarioId', transferOwnership);
 router.post('/invitaciones/:token/aceptar', acceptInvitation);
 router.post('/invitaciones/:token/rechazar', rejectInvitation);
 router.delete('/miembros/:usuarioId', removeMember);

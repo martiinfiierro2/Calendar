@@ -1,13 +1,13 @@
 import 'dotenv/config';
 import { sequelize } from '../src/models/index.js';
+import { prepareDatabase } from '../src/config/migrateDatabase.js';
 
-// Crea las tablas que falten antes del primer despliegue.
 try {
-  await sequelize.authenticate();
-  await sequelize.sync();
-  console.log('Base de datos sincronizada correctamente.');
-  await sequelize.close();
+  await prepareDatabase();
+  console.log('Base de datos preparada; migraciones registradas correctamente.');
 } catch (error) {
-  console.error('No se pudo sincronizar la base de datos:', error);
-  process.exit(1);
+  console.error('No se pudo preparar la base de datos:', error);
+  process.exitCode = 1;
+} finally {
+  await sequelize.close();
 }

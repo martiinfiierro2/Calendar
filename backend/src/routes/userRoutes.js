@@ -13,6 +13,7 @@ router.get('/', getUser);
 router.put('/', [
   body('email')
     .optional()
+    .trim()
     .isEmail()
     .withMessage('Email no válido.'),
 

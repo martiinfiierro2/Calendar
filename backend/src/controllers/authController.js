@@ -1,3 +1,4 @@
+import { trySendingVerification } from '../services/emailVerificationService.js';
 import bcrypt from 'bcryptjs';
 import { Cuenta, Usuario, sequelize } from '../models/index.js';
 import { createToken } from '../utils/token.js';
@@ -7,7 +8,9 @@ function usuarioPublico(usuario) {
     id: usuario.id,
     nombre: usuario.nombre,
     email: usuario.email,
+    emailVerificado: usuario.emailVerificado,
     cuentaId: usuario.cuentaId,
+    rol: usuario.rol,
     tipoCuenta: usuario.cuenta?.tipo || null
   };
 }
@@ -59,9 +62,8 @@ export async function registrar(req, res, next) {
 
     usuario.cuenta = cuenta;
 
-    res
-      .status(201)
-      .json(respuestaSesion(usuario, createToken(usuario.id)));
+    const verificacionCorreo = await trySendingVerification(usuario.id);
+    res.status(201).json({ ...respuestaSesion(usuario, createToken(usuario.id)), verificacionCorreo });
   } catch (error) {
     if (!transaction.finished) await transaction.rollback();
     next(error);

@@ -7,6 +7,10 @@ const Usuario = sequelize.define('Usuario', {
   email: { type: DataTypes.STRING(160), allowNull: false, unique: true },
   hashContrasena: { type: DataTypes.STRING(255), allowNull: false },
   recordatorios: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+  emailVerificado: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+  emailVerificacionHash: { type: DataTypes.STRING(64), allowNull: true },
+  emailVerificacionExpiraEn: { type: DataTypes.DATE, allowNull: true },
+  emailVerificacionEnviadaEn: { type: DataTypes.DATE, allowNull: true },
   cuentaId: { type: DataTypes.INTEGER, allowNull: false },
   rol: {
     type: DataTypes.ENUM('propietario', 'miembro'),

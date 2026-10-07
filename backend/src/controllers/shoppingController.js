@@ -1,3 +1,6 @@
+import { allowedData } from '../utils/allowedData.js';
+
+
 import { Comida, Consumo, ProductoCompra, Receta } from '../models/index.js';
 import { procesarComidasPendientes } from '../services/consumptionService.js';
 import { Op } from 'sequelize';
@@ -23,6 +26,8 @@ function sumarDias(fecha, dias) {
   date.setUTCDate(date.getUTCDate() + dias);
   return date.toISOString().slice(0, 10);
 }
+
+const fields = ['nombre', 'cantidad', 'unidad', 'categoria', 'estado'];
 
 export async function listShopping(req, res, next) {
   try {
@@ -53,7 +58,7 @@ export async function clearConsumptions(req, res, next) {
 
 export async function createShoppingItem(req, res, next) {
   try {
-    const producto = await ProductoCompra.create({ ...req.body, estado: req.body.estado || 'apuntado', cuentaId: req.user.cuentaId });
+    const producto = await ProductoCompra.create({ ...allowedData(req.body, fields), estado: req.body.estado || 'apuntado', cuentaId: req.user.cuentaId });
     res.status(201).json(producto);
   } catch (error) { next(error); }
 }
@@ -62,8 +67,7 @@ export async function updateShoppingItem(req, res, next) {
   try {
     const producto = await ProductoCompra.findOne({ where: { id: req.params.id, cuentaId: req.user.cuentaId } });
     if (!producto) return res.status(404).json({ message: 'Producto no encontrado.' });
-    const datos = { ...req.body };
-    delete datos.cuentaId;
+    const datos = allowedData(req.body, fields);
     await producto.update(datos);
     res.json(producto);
   } catch (error) { next(error); }

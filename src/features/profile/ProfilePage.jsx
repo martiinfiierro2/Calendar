@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logoutUser } from '../../services/authService';
+import { logoutUser, refreshSession } from '../../services/authService';
+import { resendEmailVerification } from '../../services/emailVerificationService';
 import { getUser, updateUser } from '../../services/userService';
 import Icon from '../../shared/Icon';
 import AccountManagement from './AccountManagement';
@@ -15,6 +16,8 @@ export default function ProfilePage({ onLogout }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
+  const [sendingVerification, setSendingVerification] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -52,6 +55,8 @@ export default function ProfilePage({ onLogout }) {
       const saved = await updateUser(data);
       setProfile(saved);
       setDraft(saved);
+      setVerificationMessage(saved.verificacionCorreo?.message || '');
+      await refreshSession();
       setEditing(false);
     } catch (err) {
       setError(err.message || 'No se pudo guardar el perfil.');
@@ -75,6 +80,16 @@ export default function ProfilePage({ onLogout }) {
 
   const toggle = field => {
     setProfile(current => ({ ...current, [field]: !current[field] }));
+  };
+
+  const resendVerification = async () => {
+    if (sendingVerification) return;
+    setSendingVerification(true);
+    try {
+      const result = await resendEmailVerification();
+      setVerificationMessage(result.message);
+    } catch (err) { setVerificationMessage(err.message || 'No se pudo enviar el correo.'); }
+    finally { setSendingVerification(false); }
   };
 
   const logout = () => {
@@ -118,7 +133,29 @@ export default function ProfilePage({ onLogout }) {
           </div>
         </section>
 
-        <AccountManagement />
+        <section className="perfil-seccion">
+          <h2>Verificación del correo</h2>
+          {profile.emailVerificado ? <p>Correo verificado.</p> : (
+            <>
+              <p>Verifica {profile.email} para aceptar invitaciones a cuentas familiares. Revisa el enlace enviado al registrarte.</p>
+              <button type="button" disabled={sendingVerification} onClick={resendVerification}>
+                {sendingVerification ? 'Enviando...' : 'Reenviar correo de verificación'}
+              </button>
+            </>
+          )}
+          {verificationMessage && <p role="status">{verificationMessage}</p>}
+        </section>
+
+        <AccountManagement
+          emailVerified={profile.emailVerificado}
+          onLeave={logout}
+          onAccountChanged={async () => {
+            await refreshSession();
+            const updated = await getUser();
+            setProfile(updated);
+            setDraft(updated);
+          }}
+        />
 
         <section className="perfil-stats">
           <div>
