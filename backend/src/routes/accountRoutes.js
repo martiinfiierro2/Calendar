@@ -8,6 +8,7 @@ import {
   convertToIndividual,
   getAccount,
   inviteMember,
+  resendInvitation,
   leaveAccount,
   listMyInvitations,
   rejectInvitation,
@@ -38,6 +39,7 @@ router.post(
   inviteMember
 );
 router.delete('/invitaciones/:invitacionId', cancelInvitation);
+router.post('/invitaciones/:invitacionId/reenviar', resendInvitation);
 router.post('/propiedad/:usuarioId', transferOwnership);
 router.delete('/miembros/:usuarioId', removeMember);
 router.post('/abandonar', leaveAccount);

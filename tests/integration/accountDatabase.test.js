@@ -309,3 +309,43 @@ test('conversión concurrente con admisión no deja una cuenta individual con do
   const members = await models.Usuario.count({ where: { cuentaId: owner.cuentaId } });
   assert.ok(account.tipo === 'grupal' ? members === 2 : members === 1);
 });
+
+test('invitar envía el enlace al destinatario y reenviar conserva el token con límite y permisos', async () => {
+  const owner = await register('owner', 'grupal'), other = await register('other');
+  const { testMailbox } = await import('../../backend/src/services/emailVerificationService.js');
+  const response = await api('/cuenta/invitaciones', owner, 'POST', { email: 'target@example.test' });
+  assert.equal(response.status, 201);
+  assert.equal(response.body.envioCorreo.enviada, true);
+  const message = testMailbox.findLast(item => item.email === 'target@example.test');
+  assert.equal(message.subject, 'Invitación a una cuenta familiar de Calendar');
+  assert.equal(new URL(message.url).pathname, '/invitacion');
+  assert.equal(new URLSearchParams(new URL(message.url).hash.slice(1)).get('token'), response.body.token);
+  const path = `/cuenta/invitaciones/${response.body.id}/reenviar`;
+  assert.equal((await api(path, owner, 'POST')).status, 429);
+  assert.equal((await api(path, other, 'POST')).status, 404);
+  await models.sequelize.query(`UPDATE invitaciones_cuenta SET "actualizadoEn" = NOW() - INTERVAL '61 seconds' WHERE id = :id`, { replacements: { id: response.body.id } });
+  assert.equal((await api(path, owner, 'POST')).body.envioCorreo.enviada, true);
+  assert.equal((await api(path, owner, 'POST')).status, 429);
+  assert.equal((await models.InvitacionCuenta.findByPk(response.body.id)).token, response.body.token);
+  await api(`/cuenta/invitaciones/${response.body.id}`, owner, 'DELETE');
+  assert.equal((await api(path, owner, 'POST')).status, 404);
+});
+
+test('un fallo al enviar conserva la invitación y permite reintentar sin crear otro enlace', async () => {
+  const owner = await register('owner', 'grupal');
+  const transport = process.env.MAIL_TRANSPORT;
+  let response;
+  try {
+    process.env.MAIL_TRANSPORT = 'unavailable-test-transport';
+    response = await api('/cuenta/invitaciones', owner, 'POST', { email: 'target@example.test' });
+    assert.equal(response.status, 201);
+    assert.equal(response.body.envioCorreo.enviada, false);
+    assert.match(response.body.envioCorreo.message, /no pudimos enviar/);
+  } finally { process.env.MAIL_TRANSPORT = transport; }
+  await models.sequelize.query(`UPDATE invitaciones_cuenta SET "actualizadoEn" = NOW() - INTERVAL '61 seconds' WHERE id = :id`, { replacements: { id: response.body.id } });
+  const retry = await api(`/cuenta/invitaciones/${response.body.id}/reenviar`, owner, 'POST');
+  assert.equal(retry.status, 200);
+  assert.equal(retry.body.envioCorreo.enviada, true);
+  assert.equal(await models.InvitacionCuenta.count(), 1);
+  assert.equal((await models.InvitacionCuenta.findByPk(response.body.id)).token, response.body.token);
+});

@@ -1,3 +1,4 @@
+import { sendAccountInvitation } from '../services/emailVerificationService.js';
 import crypto from 'node:crypto';
 import { Op } from 'sequelize';
 import { Cuenta, InvitacionCuenta, Usuario, sequelize } from '../models/index.js';
@@ -109,7 +110,8 @@ export async function inviteMember(req, res, next) {
       // Solo el propietario y el destinatario autenticados pueden obtener este enlace.
       return { id: invitacion.id, email, token: invitacion.token, estado: invitacion.estado, expiraEn: invitacion.expiraEn };
     });
-    res.status(201).json(result);
+    const envioCorreo = await sendAccountInvitation(result);
+    res.status(201).json({ ...result, envioCorreo });
   } catch (error) { next(error); }
 }
 
@@ -226,5 +228,25 @@ export async function listMyInvitations(req, res, next) {
       order: [['creadoEn', 'DESC']]
     });
     res.json(invitaciones);
+  } catch (error) { next(error); }
+}
+
+export async function resendInvitation(req, res, next) {
+  try {
+    const invitation = await changeAccount(req, async (user, transaction) => {
+      requireOwner(user);
+      const pending = await InvitacionCuenta.findOne({
+        where: { id: req.params.invitacionId, cuentaId: user.cuentaId, estado: 'pendiente' },
+        transaction, lock: transaction.LOCK.UPDATE
+      });
+      if (!pending) fail(404, 'Invitación no encontrada o ya utilizada.');
+      if (pending.expiraEn <= new Date()) fail(410, 'Renueva la invitación caducada antes de enviarla.');
+      if (Date.now() - pending.actualizadoEn.getTime() < 60000) fail(429, 'Espera un minuto antes de reenviar la invitación.');
+      pending.changed('actualizadoEn', true);
+      await pending.save({ transaction });
+      return pending.toJSON();
+    });
+    const envioCorreo = await sendAccountInvitation(invitation);
+    res.json({ envioCorreo });
   } catch (error) { next(error); }
 }

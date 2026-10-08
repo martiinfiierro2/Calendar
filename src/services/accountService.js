@@ -46,3 +46,7 @@ export function transferAccountOwnership(usuarioId) {
 export function convertAccountToIndividual() {
   return apiRequest('/cuenta/tipo/individual', { method: 'PATCH' });
 }
+
+export function resendAccountInvitation(id) {
+  return apiRequest(`/cuenta/invitaciones/${id}/reenviar`, { method: 'POST' });
+}

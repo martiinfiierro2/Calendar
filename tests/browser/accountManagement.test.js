@@ -244,7 +244,7 @@ test('individual y familiar muestran gestión distinta; conversión y enlace se 
   await page.getByRole('button', { name: 'Convertir en cuenta familiar', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Tu familia', exact: true })).toBeVisible();
   await page.getByPlaceholder('email@ejemplo.com', { exact: true }).fill('nuevo@example.test');
-  await page.getByRole('button', { name: 'Crear invitación', exact: true }).click();
+  await page.getByRole('button', { name: 'Enviar invitación', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Copiar enlace', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Copiar enlace', exact: true }).click();
   const link = await page.getByLabel('Enlace de invitación', { exact: true }).inputValue();

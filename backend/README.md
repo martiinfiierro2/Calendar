@@ -130,6 +130,7 @@ Todas las rutas requieren autenticación:
 - `PATCH /api/cuenta/tipo/grupal`: convertir en cuenta familiar (propietario).
 - `PATCH /api/cuenta/tipo/individual`: convertir en individual si queda un solo miembro; conserva datos y cancela invitaciones pendientes (propietario).
 - `POST /api/cuenta/invitaciones`: invitar por email; renueva una invitación caducada con un token nuevo (propietario).
+- `POST /api/cuenta/invitaciones/:invitacionId/reenviar`: reenviar por correo una invitación vigente propia, sin cambiar el token y con intervalo mínimo de un minuto (propietario).
 - `DELETE /api/cuenta/invitaciones/:invitacionId`: cancelar una invitación pendiente o caducada (propietario).
 - `GET /api/cuenta/invitaciones/mias`: invitaciones vigentes del email de la sesión.
 - `POST /api/cuenta/invitaciones/aceptar`, body `{ "token": "..." }`: aceptar una invitación propia vigente tras verificar el correo.
@@ -138,7 +139,7 @@ Todas las rutas requieren autenticación:
 - `DELETE /api/cuenta/miembros/:usuarioId`: expulsar y eliminar el usuario de un miembro (propietario).
 - `POST /api/cuenta/abandonar`: abandonar y eliminar el propio usuario.
 
-El propietario obtiene un enlace `/invitacion#token=...`, puede copiarlo y enviarlo al destinatario. Solo ese correo, autenticado y verificado, puede aceptar. El enlace caduca en siete días, puede cancelarse y se consume al aceptar o rechazar. Renovar una invitación caducada invalida el enlace anterior. No se envía correo de invitación automáticamente. La página retira el token del historial y lo conserva temporalmente en sessionStorage para continuar tras iniciar sesión; el token se envía a la API en el body. Las rutas antiguas con token en el path se mantienen por compatibilidad y se ocultan en los logs HTTP.
+El propietario obtiene un enlace `/invitacion#token=...`, puede copiarlo y enviarlo al destinatario. Solo ese correo, autenticado y verificado, puede aceptar. El enlace caduca en siete días, puede cancelarse y se consume al aceptar o rechazar. Renovar una invitación caducada invalida el enlace anterior. Crear o renovar una invitación envía automáticamente el enlace al correo indicado mediante Resend. La respuesta incluye `envioCorreo.enviada` y un mensaje; si la entrega falla, la invitación se conserva y puede reenviarse o copiarse. La página retira el token del historial y lo conserva temporalmente en sessionStorage para continuar tras iniciar sesión; el token se envía a la API en el body. Las rutas antiguas con token en el path se mantienen por compatibilidad y se ocultan en los logs HTTP.
 
 El registro con `invitationToken` no requiere `accountType` y crea un usuario pendiente con `cuentaId = NULL`, sin crear una cuenta individual. Comprueba el correo destinatario, la vigencia de la invitación y la existencia del propietario antes de crear el usuario. Verificar el correo no admite automáticamente: el usuario debe pulsar Aceptar invitación. Si abre el correo en otro navegador, al iniciar sesión puede recuperar sus invitaciones vigentes. Si la invitación deja de estar disponible, puede pedir otra o cancelar su registro pendiente mediante `DELETE /api/autenticacion/registro-pendiente` y registrarse de nuevo. Este endpoint rechaza usuarios que ya tienen cuenta.
 

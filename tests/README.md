@@ -73,3 +73,5 @@ La suite de base de datos también incluye 11 pruebas de verificación de email:
 
 
 El flujo de alta incluye pruebas de bloqueo antes de verificar (API y rutas del navegador), registro invitado sin cuenta provisional, enlaces ajenos/caducados/cancelados, unicidad del email en registros concurrentes, conversión familiar a individual y su carrera con aceptación, y cancelación de un registro pendiente. Las pruebas en Chromium completan el registro normal y por invitación, abren el correo en otra pestaña, comprueban el aviso al cambiar de cuenta y generan enlaces desde la gestión familiar. Un email ya verificado puede aceptar sin recibir una segunda verificación.
+
+El envío de invitaciones también se prueba con el transporte controlado: destinatario, asunto y enlace correctos, fallo de entrega con conservación de la invitación, reintento con el mismo token, permisos y límite de reenvío. No se envían correos reales durante estas pruebas.

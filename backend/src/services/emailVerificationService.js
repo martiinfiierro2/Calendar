@@ -12,7 +12,7 @@ function failure(status, message) {
   return error;
 }
 
-function verificationLink(token) {
+function verificationLink(token, path = '/verificar-email') {
   if (!process.env.FRONTEND_URL) throw failure(503, 'El envío de verificación no está disponible.');
   let base;
   try { base = new URL(process.env.FRONTEND_URL); }
@@ -20,7 +20,7 @@ function verificationLink(token) {
   if (!['http:', 'https:'].includes(base.protocol) || (process.env.NODE_ENV === 'production' && base.protocol !== 'https:')) {
     throw failure(503, 'El envío de verificación no está disponible.');
   }
-  const url = new URL('/verificar-email', base);
+  const url = new URL(path, base);
   // El fragmento no se envía al servidor web ni aparece en sus logs.
   url.hash = new URLSearchParams({ token }).toString();
   return url.toString();
@@ -41,7 +41,7 @@ async function deliver(message) {
     response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: process.env.MAIL_FROM, to: [message.email], subject: 'Verifica tu correo en Calendar', text: message.text }),
+      body: JSON.stringify({ from: process.env.MAIL_FROM, to: [message.email], subject: message.subject || 'Verifica tu correo en Calendar', text: message.text }),
       signal: AbortSignal.timeout(10000)
     });
   } catch { throw failure(503, 'No se pudo enviar la verificación. Inténtalo más tarde.'); }
@@ -109,5 +109,18 @@ export async function trySendingVerification(userId) {
     return { enviada: true, message: result.message };
   } catch {
     return { enviada: false, message: 'Tu usuario se ha guardado, pero no pudimos enviar el enlace. Puedes reenviarlo desde la pantalla de verificación.' };
+  }
+}
+
+export async function sendAccountInvitation(invitation) {
+  try {
+    const url = verificationLink(invitation.token, '/invitacion');
+    await deliver({
+      email: invitation.email, url, subject: 'Invitación a una cuenta familiar de Calendar',
+      text: `Te han invitado a compartir una cuenta familiar de Calendar. Compartiréis calendario, recetas, compra y nevera; tu perfil seguirá siendo privado.\n\n${url}\n\nInicia sesión o regístrate con este correo, verifícalo si es necesario y confirma que quieres unirte. Este enlace caduca en 7 días. Si no esperabas esta invitación, ignora el mensaje.`
+    });
+    return { enviada: true, message: 'Invitación enviada por correo. También puedes copiar el enlace.' };
+  } catch {
+    return { enviada: false, message: 'La invitación se ha guardado, pero no pudimos enviar el correo. Puedes reenviarlo o copiar el enlace.' };
   }
 }

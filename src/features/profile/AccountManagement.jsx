@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   acceptAccountInvitation, cancelAccountInvitation, convertAccountToGroup,
-  convertAccountToIndividual, getAccount, getMyAccountInvitations, inviteAccountMember, leaveAccount,
+  convertAccountToIndividual, resendAccountInvitation, getAccount, getMyAccountInvitations, inviteAccountMember, leaveAccount,
   rejectAccountInvitation, removeAccountMember, transferAccountOwnership
 } from '../../services/accountService';
 import { invitationLink } from '../../services/invitationLink';
@@ -76,7 +76,7 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
   const sendInvite = event => {
     event.preventDefault();
     if (!email.trim()) return;
-    run(async () => { const invitation = await inviteAccountMember(email); setShareLink(invitationLink(invitation.token)); setMessage('Invitación creada. Copia el enlace y envíalo a la persona invitada.'); setEmail(''); });
+    run(async () => { const invitation = await inviteAccountMember(email); setShareLink(invitationLink(invitation.token)); setMessage(invitation.envioCorreo.message); setEmail(''); });
   };
 
   const copyInvitation = async token => {
@@ -146,7 +146,7 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
         {isFamily && currentIsOwner && (
           <form className="perfil-invite-form" onSubmit={sendInvite}>
             <input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="email@ejemplo.com" aria-label="Email del nuevo miembro" required />
-            <button disabled={busy || !email.trim()}>Crear invitación</button>
+            <button disabled={busy || !email.trim()}>Enviar invitación</button>
           </form>
         )}
         {isFamily && currentIsOwner && account.invitaciones?.length > 0 && (
@@ -155,7 +155,8 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
             {account.invitaciones.map(invitation => (
               <div className="perfil-invitation-row" key={invitation.id}>
                 <span>{invitation.email} · {invitation.caducada ? 'Caducada' : 'Pendiente'}</span>
-                {invitation.caducada ? <button type="button" disabled={busy} onClick={() => run(async () => { const renewed = await inviteAccountMember(invitation.email); setShareLink(invitationLink(renewed.token)); setMessage('Invitación renovada. Comparte el nuevo enlace; el anterior ya no funciona.'); })}>Renovar</button> : <button type="button" disabled={busy} onClick={() => copyInvitation(invitation.token)}>Copiar enlace</button>}
+                {invitation.caducada ? <button type="button" disabled={busy} onClick={() => run(async () => { const renewed = await inviteAccountMember(invitation.email); setShareLink(invitationLink(renewed.token)); setMessage(renewed.envioCorreo.message); })}>Renovar</button> : <button type="button" disabled={busy} onClick={() => copyInvitation(invitation.token)}>Copiar enlace</button>}
+                {!invitation.caducada && <button type="button" disabled={busy} onClick={() => run(async () => setMessage((await resendAccountInvitation(invitation.id)).envioCorreo.message))}>Reenviar correo</button>}
                 <button type="button" disabled={busy} onClick={() => run(async () => { await cancelAccountInvitation(invitation.id); setShareLink(''); })}>Cancelar</button>
               </div>
             ))}

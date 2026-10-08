@@ -8,7 +8,7 @@ La primera versión se fusionó en main en `22ce23a`. Esta revisión desarrolla 
 - El registro normal permite elegir cuenta individual o familiar, pero la aplicación y las rutas de datos exigen verificar el correo antes de usarla. Cambiar el email vuelve a bloquear el acceso hasta confirmar la nueva dirección.
 - El propietario puede convertir individual en familiar conservando los datos. Para volver a individual debe quedar un solo miembro; se cancelan los enlaces pendientes y se conservan los datos de la cuenta.
 - Las pantallas distinguen gestión individual y familiar, con el estilo de tarjetas, verde e iconos de la aplicación.
-- Las invitaciones tienen un enlace que se puede copiar y enviar, caducan en siete días y están asociadas al correo invitado. Un enlace reenviado a otra persona no autoriza su entrada. El propietario puede cancelarlo o renovar uno caducado.
+- Crear o renovar una invitación envía el enlace automáticamente al destinatario con Resend. También se puede copiar el enlace o reenviar el correo, con un intervalo mínimo de un minuto. Si el proveedor falla, la interfaz avisa y se conserva la invitación para reintentar. Las invitaciones caducan en siete días y están asociadas al correo invitado. Un enlace reenviado a otra persona no autoriza su entrada. El propietario puede cancelarlo o renovar uno caducado.
 - El registro desde una invitación crea un usuario pendiente sin cuenta individual provisional. Solo después de verificar el correo y aceptar explícitamente se incorpora a la familia. Verificar no admite automáticamente.
 - Si el usuario ya verificó su correo, no se pide otra verificación. Si tiene una cuenta anterior, la interfaz explica que dejará de acceder a ella y que sus datos no se fusionarán.
 - Un registro invitado sin una invitación disponible puede recuperarse con otro enlace para el mismo correo o cancelarse sin afectar a los datos familiares. La cancelación no puede borrar usuarios con cuenta activa.
@@ -18,13 +18,13 @@ La primera versión se fusionó en main en `22ce23a`. Esta revisión desarrolla 
 ## Cobertura ejecutada
 
 - 34 pruebas existentes de utilidades y API con modelos simulados.
-- 17 pruebas de cuentas con PostgreSQL real: privacidad, datos familiares, aislamiento, campos internos, roles, concurrencia, propiedad, expulsión, abandono, revocación, bloqueo sin verificación, alta por enlace, email único, conversión a individual y cancelación del registro pendiente.
+- 19 pruebas de cuentas con PostgreSQL real: privacidad, datos familiares, aislamiento, campos internos, roles, concurrencia, propiedad, expulsión, abandono, revocación, bloqueo sin verificación, alta por enlace, email único, conversión a individual y cancelación del registro pendiente.
 - 8 pruebas de migraciones con PostgreSQL real: base nueva, esquema anterior a multicuenta, instalación sin consumos, SQL aplicado a mano, rollback/reintento, esquema histórico, copia/restauración y actualización desde la versión con 007 aplicada.
 - 11 pruebas de verificación de email: hash, caducidad, uso único/concurrente, reenvío, cambio de correo, fallos del proveedor, contrato Resend y eliminación del registro invitado pendiente.
 - 11 pruebas en Chromium con API y PostgreSQL: gestión de cuentas, errores/reintentos, privacidad, registro normal y por enlace, apertura del correo en otra pestaña, conversión, enlace compartible y aceptación sin repetir verificación.
 - 1 regresión de seguridad: destinatario sin email verificado rechazado.
 
-Total: 82 pruebas, sin fallos ni pruebas omitidas. También se comprobaron lint, build y las pantallas de activación, invitación y gestión en una pantalla móvil de 390 × 844.
+Total: 84 pruebas, sin fallos ni pruebas omitidas. También se comprobaron lint, build y las pantallas de activación, invitación y gestión en una pantalla móvil de 390 × 844.
 
 ## Preparación del despliegue
 
