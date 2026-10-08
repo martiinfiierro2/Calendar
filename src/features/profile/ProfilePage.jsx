@@ -98,8 +98,8 @@ export default function ProfilePage({ onLogout }) {
     navigate('/login', { replace: true });
   };
 
-  if (loading) return <div>Cargando perfil...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <div className="app-state" role="status">Cargando perfil...</div>;
+  if (error) return <div className="app-state app-error" role="alert">{error}</div>;
 
   return (
     <div className="perfil-app">
@@ -160,13 +160,13 @@ export default function ProfilePage({ onLogout }) {
         <section className="perfil-stats">
           <div>
             <span><Icon name="users" size={18} /></span>
-            <strong>{profile.raciones}</strong>
+            <strong>{profile.raciones ?? 'Sin configurar'}</strong>
             <small>Raciones por defecto</small>
           </div>
 
           <div>
             <span><Icon name="sliders" size={18} /></span>
-            <strong>{profile.dieta}</strong>
+            <strong>{profile.dieta || 'Sin configurar'}</strong>
             <small>Preferencia alimentaria</small>
           </div>
         </section>
@@ -248,7 +248,8 @@ export default function ProfilePage({ onLogout }) {
                     type="number"
                     min="1"
                     max="12"
-                    value={draft.raciones}
+                    value={draft.raciones ?? ''}
+                    placeholder="Sin configurar"
                     onChange={event => setDraft({ ...draft, raciones: event.target.value })}
                   />
                 </label>
@@ -256,9 +257,10 @@ export default function ProfilePage({ onLogout }) {
                 <label>
                   Dieta
                   <select
-                    value={draft.dieta}
+                    value={draft.dieta || ''}
                     onChange={event => setDraft({ ...draft, dieta: event.target.value })}
                   >
+                    <option value="">Sin configurar</option>
                     <option>Sin preferencias</option>
                     <option>Vegetariana</option>
                     <option>Vegana</option>

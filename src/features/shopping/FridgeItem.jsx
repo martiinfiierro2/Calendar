@@ -1,3 +1,4 @@
+import { formatQuantity } from '../../utils/formatQuantity';
 import React from 'react';
 import Icon from '../../shared/Icon';
 
@@ -23,7 +24,7 @@ export default function FridgeItem({ item, onReturn }) {
 
       <div className="compra-item-info">
         <strong>{item.nombre}</strong>
-        <span>{item.cantidad} {item.unidad || 'ud'}</span>
+        <span>{formatQuantity(item.cantidad)} {item.unidad || 'ud'}</span>
       </div>
 
       <button

@@ -18,7 +18,6 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [shareLink, setShareLink] = useState('');
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -76,18 +75,29 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
   const sendInvite = event => {
     event.preventDefault();
     if (!email.trim()) return;
-    run(async () => { const invitation = await inviteAccountMember(email); setShareLink(invitationLink(invitation.token)); setMessage(invitation.envioCorreo.message); setEmail(''); });
+    run(async () => { const invitation = await inviteAccountMember(email); setMessage(invitation.envioCorreo.message); setEmail(''); });
   };
 
   const copyInvitation = async token => {
     const link = invitationLink(token);
-    setShareLink(link);
     setError('');
     try {
       await navigator.clipboard.writeText(link);
       setMessage('Enlace copiado. Ya puedes enviarlo a la persona invitada.');
     } catch {
-      setMessage('Selecciona y copia el enlace que aparece debajo para compartirlo.');
+      const previousFocus = document.activeElement;
+      const field = document.createElement('textarea');
+      field.value = link;
+      field.style.position = 'fixed';
+      field.style.left = '-9999px';
+      document.body.append(field);
+      field.select();
+      let copied = false;
+      try { copied = document.execCommand('copy'); }
+      catch { /* El envío por correo sigue disponible si el portapapeles no se permite. */ }
+      finally { field.remove(); previousFocus?.focus({ preventScroll: true }); }
+      if (copied) setMessage('Enlace copiado. Ya puedes enviarlo a la persona invitada.');
+      else setError('No se pudo copiar el enlace. Puedes usar Reenviar correo.');
     }
   };
 
@@ -141,7 +151,7 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
           <button type="button" className="perfil-account-action" disabled={busy} onClick={() => run(convertAccountToGroup)}>Convertir en cuenta familiar</button>
         )}
         {isFamily && currentIsOwner && account.cuenta.usuarios.length === 1 && <button type="button" className="perfil-account-action perfil-account-secondary" disabled={busy} onClick={() => {
-          if (window.confirm('¿Convertir en cuenta individual? Conservarás tus datos y se cancelarán todas las invitaciones pendientes.')) run(async () => { await convertAccountToIndividual(); setShareLink(''); });
+          if (window.confirm('¿Convertir en cuenta individual? Conservarás tus datos y se cancelarán todas las invitaciones pendientes.')) run(convertAccountToIndividual);
         }}>Convertir en cuenta individual</button>}
         {isFamily && currentIsOwner && (
           <form className="perfil-invite-form" onSubmit={sendInvite}>
@@ -155,9 +165,9 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
             {account.invitaciones.map(invitation => (
               <div className="perfil-invitation-row" key={invitation.id}>
                 <span>{invitation.email} · {invitation.caducada ? 'Caducada' : 'Pendiente'}</span>
-                {invitation.caducada ? <button type="button" disabled={busy} onClick={() => run(async () => { const renewed = await inviteAccountMember(invitation.email); setShareLink(invitationLink(renewed.token)); setMessage(renewed.envioCorreo.message); })}>Renovar</button> : <button type="button" disabled={busy} onClick={() => copyInvitation(invitation.token)}>Copiar enlace</button>}
+                {invitation.caducada ? <button type="button" disabled={busy} onClick={() => run(async () => { const renewed = await inviteAccountMember(invitation.email); setMessage(renewed.envioCorreo.message); })}>Renovar</button> : <button type="button" disabled={busy} onClick={() => copyInvitation(invitation.token)}>Copiar enlace</button>}
                 {!invitation.caducada && <button type="button" disabled={busy} onClick={() => run(async () => setMessage((await resendAccountInvitation(invitation.id)).envioCorreo.message))}>Reenviar correo</button>}
-                <button type="button" disabled={busy} onClick={() => run(async () => { await cancelAccountInvitation(invitation.id); setShareLink(''); })}>Cancelar</button>
+                <button type="button" disabled={busy} onClick={() => run(() => cancelAccountInvitation(invitation.id))}>Cancelar</button>
               </div>
             ))}
           </div>
@@ -168,11 +178,6 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
         {isFamily && currentIsOwner && account.cuenta.usuarios.length > 1 && <p>Para abandonar la cuenta, primero transfiere la propiedad a otro miembro.</p>}
       </div>
       {message && <p className="perfil-account-status" role="status">{message}</p>}
-      {isFamily && shareLink && <div className="perfil-share-link">
-        <label htmlFor="family-invitation-link">Enlace de invitación</label>
-        <input id="family-invitation-link" readOnly value={shareLink} onFocus={event => event.target.select()} />
-        <small>Válido durante 7 días. Solo puede aceptarlo el correo invitado tras verificarse.</small>
-      </div>}
       {incoming.length > 0 && (
         <div className="perfil-incoming">
           <strong>Invitaciones recibidas</strong>

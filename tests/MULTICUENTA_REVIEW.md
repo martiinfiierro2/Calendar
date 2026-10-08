@@ -21,10 +21,10 @@ La primera versión se fusionó en main en `22ce23a`. Esta revisión desarrolla 
 - 20 pruebas de cuentas con PostgreSQL real: privacidad, datos familiares, aislamiento, campos internos, roles, concurrencia, propiedad, expulsión, abandono, revocación, bloqueo sin verificación, alta por enlace, email único, conversión a individual y cancelación del registro pendiente.
 - 8 pruebas de migraciones con PostgreSQL real: base nueva, esquema anterior a multicuenta, instalación sin consumos, SQL aplicado a mano, rollback/reintento, esquema histórico, copia/restauración y actualización desde la versión con 007 aplicada.
 - 11 pruebas de verificación de email: hash, caducidad, uso único/concurrente, reenvío, cambio de correo, fallos del proveedor, contrato Resend y eliminación del registro invitado pendiente.
-- 13 pruebas en Chromium con API y PostgreSQL: gestión de cuentas, errores/reintentos, privacidad, registro normal y por enlace, apertura del correo en otra pestaña, conversión, enlace compartible y aceptación sin repetir verificación.
+- 15 pruebas en Chromium con API y PostgreSQL: gestión de cuentas, errores/reintentos, privacidad, registro normal y por enlace, apertura del correo en otra pestaña, conversión, enlace compartible y aceptación sin repetir verificación.
 - 1 regresión de seguridad: destinatario sin email verificado rechazado.
 
-Total: 87 pruebas, sin fallos ni pruebas omitidas. También se comprobaron lint, build y las pantallas de activación, invitación y gestión en una pantalla móvil de 390 × 844.
+Total: 89 pruebas, sin fallos ni pruebas omitidas. También se comprobaron lint, build y las pantallas de activación, invitación y gestión en una pantalla móvil de 390 × 844.
 
 ## Preparación del despliegue
 
@@ -33,3 +33,5 @@ Total: 87 pruebas, sin fallos ni pruebas omitidas. También se comprobaron lint,
 3. Desplegar conjuntamente backend y frontend. Los usuarios históricos no verificados también deben confirmar el correo antes de acceder a los datos de Calendar.
 
 La invitación elige registro o inicio de sesión según el destinatario, utilizando solo un token vigente. La API prueba que no hay consulta pública por email ni exposición de datos personales y comprueba enlaces caducados/cancelados y coincidencia de sesión. Chromium completa el acceso de un usuario existente y el cambio desde una sesión de otro correo; el registro invitado comprueba que se muestra su formulario directamente.
+
+La revisión visual elimina el bloque persistente del enlace (la copia usa el portapapeles), ordena las hojas CSS para conservar la geometría móvil, mantiene los siete días visibles y comprueba formularios accesibles en pantallas bajas. También prueba una foto de receta fallida con imagen de reserva. Ver `tests/VISUAL_REVIEW.md`.

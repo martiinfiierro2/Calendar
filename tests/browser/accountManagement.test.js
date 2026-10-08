@@ -246,8 +246,10 @@ test('individual y familiar muestran gestión distinta; conversión y enlace se 
   await page.getByPlaceholder('email@ejemplo.com', { exact: true }).fill('nuevo@example.test');
   await page.getByRole('button', { name: 'Enviar invitación', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Copiar enlace', exact: true })).toBeVisible();
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.getByRole('button', { name: 'Copiar enlace', exact: true }).click();
-  const link = await page.getByLabel('Enlace de invitación', { exact: true }).inputValue();
+  await expect(page.getByLabel('Enlace de invitación', { exact: true })).toHaveCount(0);
+  const link = await page.evaluate(() => navigator.clipboard.readText());
   assert.ok(link.startsWith(frontend + '/invitacion#token='));
   const token = new URLSearchParams(new URL(link).hash.slice(1)).get('token');
   assert.equal((await models.InvitacionCuenta.findOne({ where: { email: 'nuevo@example.test' } })).token, token);
@@ -334,4 +336,47 @@ test('una sesión de otro correo avisa y Cambiar de sesión conserva la invitaci
   await page.locator('form').getByRole('button', { name: 'Entrar', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Aceptar invitación', exact: true })).toBeVisible();
   assert.equal((await models.InvitacionCuenta.findByPk(invitation.id)).estado, 'pendiente');
+});
+
+test('los siete días caben y los formularios siguen accesibles en móvil estrecho y bajo', async () => {
+  const owner = await register('propietario');
+  const page = await pageFor(owner);
+  for (const width of [320, 390, 768]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto(frontend + '/');
+    await page.getByRole('button', { name: 'Semana', exact: true }).click();
+    const days = page.locator('.semana-dia-cabecera');
+    await expect(days).toHaveCount(7);
+    for (const day of await days.all()) await expect(day).toBeInViewport({ ratio: 1 });
+  }
+  await page.setViewportSize({ width: 320, height: 480 });
+  await page.goto(frontend + '/recetas');
+  await page.getByRole('button', { name: 'Nueva receta', exact: true }).click();
+  await page.locator('.receta-form-submit').scrollIntoViewIfNeeded();
+  await expect(page.locator('.receta-form-submit')).toBeInViewport({ ratio: 1 });
+  assert.equal(await page.locator('.footer').evaluate(el => {
+    const rect = el.getBoundingClientRect();
+    return Boolean(document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest('.recetas-modal-layer'));
+  }), true, 'La hoja de receta debe cubrir la navegación inferior');
+  await page.goto(frontend + '/perfil');
+  await page.getByRole('button', { name: 'Editar perfil', exact: true }).click();
+  await page.locator('.perfil-save').scrollIntoViewIfNeeded();
+  await expect(page.locator('.perfil-save')).toBeInViewport({ ratio: 1 });
+});
+
+test('una foto de receta que falla muestra una imagen de reserva también en el detalle', async () => {
+  const owner = await register('propietario');
+  const recipe = await api('/recetas', owner, 'POST', {
+    nombre: 'Receta sin foto disponible', imagen: 'https://images.example.test/unavailable.jpg'
+  });
+  const page = await pageFor(owner);
+  await page.context().route('**/unavailable.jpg', route => route.abort());
+  await page.goto(frontend + '/recetas');
+  const cardImage = page.locator('.receta-imagen-wrap img');
+  await expect(cardImage).toHaveAttribute('src', '/recipe-placeholder.svg');
+  await expect.poll(() => cardImage.evaluate(el => el.complete && el.naturalWidth > 0)).toBe(true);
+  await page.getByRole('button', { name: `Ver receta ${recipe.nombre}`, exact: true }).click();
+  const detailImage = page.locator('.receta-detalle-imagen img');
+  await expect(detailImage).toHaveAttribute('src', '/recipe-placeholder.svg');
+  await expect.poll(() => detailImage.evaluate(el => el.complete && el.naturalWidth > 0)).toBe(true);
 });

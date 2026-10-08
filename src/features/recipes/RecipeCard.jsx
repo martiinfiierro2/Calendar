@@ -1,3 +1,4 @@
+import RecipeImage from '../../shared/RecipeImage';
 import React from 'react';
 import Icon from '../../shared/Icon';
 
@@ -20,7 +21,7 @@ export default function RecipeCard({ recipe, onOpen, onToggleFavorite }) {
       aria-label={`Ver receta ${recipe.nombre}`}
     >
       <div className="receta-imagen-wrap">
-        <img src={recipe.imagen} alt={recipe.nombre} className="receta-imagen" />
+        <RecipeImage src={recipe.imagen} alt={recipe.nombre} className="receta-imagen" />
         <button
           className={`receta-favorito ${recipe.favorito ? 'activo' : ''}`}
           onClick={event => {

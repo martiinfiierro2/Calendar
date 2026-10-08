@@ -402,10 +402,6 @@
 
 .perfil-account-secondary { background: #edf5ee; color: #3c7046; border: 1px solid #d7e6d9; }
 .perfil-account-status { padding: 12px; border: 1px solid #dcebdd; border-radius: 12px; background: #f2f8f2; color: #416349; font-size: 11px; line-height: 1.5; }
-.perfil-share-link { display: grid; gap: 8px; margin-top: 10px; padding: 14px; border: 1px solid #dce6dd; border-radius: 14px; background: #fff; }
-.perfil-share-link label { font-size: 12px; font-weight: 800; color: #344b3a; }
-.perfil-share-link input { min-width: 0; width: 100%; padding: 12px; border: 1px solid #dde4dd; border-radius: 10px; background: #f6faf6; color: #55715b; font-size: 12px; }
-.perfil-share-link small { color: var(--mutedText); font-size: 10px; line-height: 1.5; }
 .perfil-cuenta-card > p { margin: 12px; color: var(--mutedText); font-size: 12px; line-height: 1.6; }
 .perfil-invitation-row button, .perfil-member-actions button { font-size: 11px; min-height: 36px; }
 .perfil-email-verified { display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px 14px; border: 1px solid #dcebdd; border-radius: 12px; background: #f2f8f2; color: #416349; font-size: 12px; }

@@ -265,7 +265,7 @@ export default function ListView({ onChangeView }) {
       <ToogleListFridge view="lista" onChange={onChangeView} />
 
       <div className="compra-lista">
-        {error && <div className="compra-empty"><p>{error}</p></div>}
+        {error && <div className="app-error" role="alert">{error}</div>}
 
         {loading ? (
           <div className="compra-empty"><p>Cargando lista...</p></div>
