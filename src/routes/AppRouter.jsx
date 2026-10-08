@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import ActivationPage from '../features/auth/ActivationPage';
+import InvitationPage from '../features/auth/InvitationPage';
+import { getPendingInvitation } from '../services/invitationLink';
 import EmailVerificationPage from '../features/auth/EmailVerificationPage';
 import LoginPage from '../features/auth/LoginPage';
 import CalendarPage from '../features/calendar/CalendarPage';
@@ -10,8 +13,11 @@ import { getSession, refreshSession } from '../services/authService';
 import Footer from '../shared/Footer';
 
 // Centraliza la protección de rutas para no repetir la misma comprobación.
-function ProtectedRoute({ authenticated, children }) {
-  return authenticated ? children : <Navigate to="/login" replace />;
+function ProtectedRoute({ session, children }) {
+  if (!session?.token) return <Navigate to="/login" replace />;
+  if (!session.emailVerificado) return <Navigate to="/activar-cuenta" replace />;
+  if (!session.cuentaId) return <Navigate to="/invitacion" replace />;
+  return children;
 }
 
 export default function AppRouter() {
@@ -19,7 +25,7 @@ export default function AppRouter() {
   const [session, setSession] = useState(getSession);
   const [checkingSession, setCheckingSession] = useState(Boolean(getSession()?.token));
   const authenticated = Boolean(session?.token);
-  const onLoginScreen = ['/login', '/verificar-email'].includes(location.pathname);
+  const onLoginScreen = ['/login', '/verificar-email', '/activar-cuenta', '/invitacion'].includes(location.pathname);
 
   useEffect(() => {
     const syncSession = () => {
@@ -58,7 +64,7 @@ export default function AppRouter() {
   const protectedPage = page => (
     <ProtectedRoute
       key={`${session?.id}:${session?.cuentaId}:${session?.rol}:${session?.emailVerificado}`}
-      authenticated={authenticated}
+      session={session}
     >{page}</ProtectedRoute>
   );
 
@@ -72,8 +78,10 @@ export default function AppRouter() {
         <Routes>
           <Route
             path="/login"
-            element={authenticated ? <Navigate to="/" replace /> : <LoginPage onAuth={setSession} />}
+            element={authenticated ? <Navigate to={getPendingInvitation() ? '/invitacion' : '/'} replace /> : <LoginPage onAuth={setSession} />}
           />
+          <Route path="/activar-cuenta" element={<ActivationPage session={session} />} />
+          <Route path="/invitacion" element={<InvitationPage key={session?.id || 'guest'} session={session} onAuth={setSession} />} />
           <Route path="/verificar-email" element={<EmailVerificationPage />} />
           <Route path="/" element={protectedPage(<CalendarPage />)} />
           <Route path="/recetas" element={protectedPage(<RecipesPage />)} />
@@ -83,7 +91,7 @@ export default function AppRouter() {
         </Routes>
       </main>
 
-      {authenticated && !onLoginScreen && <Footer />}
+      {authenticated && session.emailVerificado && session.cuentaId && !onLoginScreen && <Footer />}
     </div>
   );
 }

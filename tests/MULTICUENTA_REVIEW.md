@@ -1,37 +1,33 @@
-# Validación previa al merge de multicuenta
+# Validación de multicuenta
 
-Validación de los cambios de multicuenta desarrollados sobre `43d48d4`.
+La primera versión se fusionó en main en `22ce23a`. Esta revisión desarrolla el flujo de alta e invitación en la rama `multicuenta`, sin una nueva fusión a main.
 
-## Problema corregido durante las pruebas
+## Comportamiento
 
-El adaptador PostgreSQL de Sequelize transforma consultas que empiezan con `SELECT table_name FROM information_schema.tables`. El runner de migraciones esperaba objetos y concluía erróneamente que una base existente estaba vacía. Se cambió la consulta a una selección explícita con alias. Los casos de actualización desde main y recuperación tras fallo cubren esta regresión.
-
-## Bloqueo resuelto: identidad del invitado
-
-`npm run test:security` reproduce el caso siguiente:
-
-1. El propietario invita un email que todavía no tiene usuario registrado.
-2. Un tercero se registra escribiendo ese email, sin comprobar el buzón.
-3. La API devuelve las invitaciones de ese email a la sesión del tercero.
-4. El tercero intenta aceptar y la API rechaza con HTTP 403 porque su email no está verificado.
-
-La prueba exige rechazar la admisión sin demostrar que controla el email. Cambiar el email desde el perfil invalida la verificación anterior y los enlaces pendientes; el nuevo correo debe confirmarse de nuevo.
-
-La verificación mediante un enlace de un solo uso está implementada. El token se guarda como hash, caduca en 24 horas y no se devuelve por API. La regresión ejecuta el ataque y exige el rechazo, sin omitir ni desactivar la aserción.
+- Un correo tiene un solo usuario y una sola membresía activa. El índice de email tampoco distingue mayúsculas.
+- El registro normal permite elegir cuenta individual o familiar, pero la aplicación y las rutas de datos exigen verificar el correo antes de usarla. Cambiar el email vuelve a bloquear el acceso hasta confirmar la nueva dirección.
+- El propietario puede convertir individual en familiar conservando los datos. Para volver a individual debe quedar un solo miembro; se cancelan los enlaces pendientes y se conservan los datos de la cuenta.
+- Las pantallas distinguen gestión individual y familiar, con el estilo de tarjetas, verde e iconos de la aplicación.
+- Las invitaciones tienen un enlace que se puede copiar y enviar, caducan en siete días y están asociadas al correo invitado. Un enlace reenviado a otra persona no autoriza su entrada. El propietario puede cancelarlo o renovar uno caducado.
+- El registro desde una invitación crea un usuario pendiente sin cuenta individual provisional. Solo después de verificar el correo y aceptar explícitamente se incorpora a la familia. Verificar no admite automáticamente.
+- Si el usuario ya verificó su correo, no se pide otra verificación. Si tiene una cuenta anterior, la interfaz explica que dejará de acceder a ella y que sus datos no se fusionarán.
+- Un registro invitado sin una invitación disponible puede recuperarse con otro enlace para el mismo correo o cancelarse sin afectar a los datos familiares. La cancelación no puede borrar usuarios con cuenta activa.
+- El enlace usa un fragmento para evitar enviar el token al servidor web. La página lo retira del historial. La aceptación y el rechazo envían el token en el body; los logs HTTP ocultan los paths heredados con token.
+- Se mantienen la privacidad del perfil, los datos compartidos familiares y el borrado del usuario al abandonar o ser expulsado, sin crear una cuenta individual.
 
 ## Cobertura ejecutada
 
-- 34 pruebas existentes: utilidades, normalización y API con modelos simulados.
-- 10 pruebas de cuentas con PostgreSQL real: privacidad, compartición familiar, ausencia de fusión, aislamiento, campos internos, roles, invitaciones, concurrencia, propiedad, expulsión, abandono y revocación de acceso.
-- 7 pruebas de migraciones con PostgreSQL real: base nueva, main, tabla consumos ausente, SQL aplicado a mano, rollback/reintento, esquema histórico y copia/restauración.
-- 11 pruebas de verificación de email con PostgreSQL real y transporte de correo controlado.
-- 7 pruebas en Chromium: carga fallida/reintento, aceptación, transferencia, abandono y cancelación de confirmación, expulsión/cierre de sesión, cierre normal y renovación/cancelación de invitación y confirmación de email que desbloquea la aceptación.
+- 34 pruebas existentes de utilidades y API con modelos simulados.
+- 17 pruebas de cuentas con PostgreSQL real: privacidad, datos familiares, aislamiento, campos internos, roles, concurrencia, propiedad, expulsión, abandono, revocación, bloqueo sin verificación, alta por enlace, email único, conversión a individual y cancelación del registro pendiente.
+- 8 pruebas de migraciones con PostgreSQL real: base nueva, esquema anterior a multicuenta, instalación sin consumos, SQL aplicado a mano, rollback/reintento, esquema histórico, copia/restauración y actualización desde la versión con 007 aplicada.
+- 11 pruebas de verificación de email: hash, caducidad, uso único/concurrente, reenvío, cambio de correo, fallos del proveedor, contrato Resend y eliminación del registro invitado pendiente.
+- 11 pruebas en Chromium con API y PostgreSQL: gestión de cuentas, errores/reintentos, privacidad, registro normal y por enlace, apertura del correo en otra pestaña, conversión, enlace compartible y aceptación sin repetir verificación.
 - 1 regresión de seguridad: destinatario sin email verificado rechazado.
 
-## Pasos restantes
+Total: 82 pruebas, sin fallos ni pruebas omitidas. También se comprobaron lint, build y las pantallas de activación, invitación y gestión en una pantalla móvil de 390 × 844.
 
-1. Antes de actualizar producción, revisar el procedimiento de migración y realizar una copia de seguridad de la base de datos.
-2. Para el envío real, validar un dominio en Resend y configurar RESEND_API_KEY, MAIL_FROM y FRONTEND_URL en el backend. El envío se ha probado con un buzón de pruebas y el contrato Resend con respuestas simuladas; todavía no se ha verificado recepción externa.
-3. Antes de desplegar, comprobar una entrega real y aplicar la migración 007 junto con las demás.
+## Preparación del despliegue
 
-Antes de desplegar sobre una base real, crear su copia de seguridad y aplicar el procedimiento de actualización de `backend/README.md`. La restauración se ha comprobado con datos de prueba; no se ha migrado la base de desarrollo ni ninguna base de producción.
+1. Configurar Resend en el backend: dominio validado, `RESEND_API_KEY`, `MAIL_FROM` y `FRONTEND_URL`. La recepción externa de correo real sigue pendiente; las pruebas utilizan un buzón controlado y respuestas simuladas del proveedor.
+2. Crear una copia de seguridad y aplicar las migraciones pendientes mediante `npm run db:sync`, incluida `008_registro_invitado.sql`, siguiendo `backend/README.md`. Las pruebas no migran la base de desarrollo ni producción.
+3. Desplegar conjuntamente backend y frontend. Los usuarios históricos no verificados también deben confirmar el correo antes de acceder a los datos de Calendar.

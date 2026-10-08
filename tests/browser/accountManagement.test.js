@@ -31,7 +31,7 @@ before(async () => {
 beforeEach(async () => {
   for (const context of contexts) await context.close();
   contexts = [];
-  await models.sequelize.query('TRUNCATE cuentas RESTART IDENTITY CASCADE');
+  await models.sequelize.query('TRUNCATE usuarios, cuentas RESTART IDENTITY CASCADE');
 });
 after(async () => {
   if (browser) await browser.close();
@@ -50,7 +50,7 @@ async function api(path, user, method = 'GET', body) {
 }
 async function register(label, accountType = 'individual', verify = true) {
   const data = await api('/autenticacion/registro', null, 'POST', {
-    nombre: label, email: `${label}@example.test`, password: 'local-test-password', accountType
+    nombre: `Persona ${label}`, email: `${label}@example.test`, password: 'local-test-password', accountType
   });
   const user = { ...data.usuario, token: data.token };
   if (verify) await verifyTestEmail(user, apiBase);
@@ -181,7 +181,9 @@ test('el enlace verifica el correo y desbloquea Aceptar; el secreto desaparece d
   await invite(owner, member);
   const token = await latestVerificationToken(member.email);
   const page = await pageFor(member);
-  await expect(page.getByRole('button', { name: 'Aceptar', exact: true })).toBeDisabled();
+  await expect(page.getByRole('heading', { name: 'Verifica tu correo', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Aceptar', exact: true })).toHaveCount(0);
+  await expect(page.locator('footer')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Reenviar correo de verificación', exact: true })).toBeVisible();
   await page.goto(`${frontend}/verificar-email#token=${token}`);
   await expect(page.getByRole('button', { name: 'Confirmar mi correo', exact: true })).toBeVisible();
@@ -191,4 +193,111 @@ test('el enlace verifica el correo y desbloquea Aceptar; el secreto desaparece d
   await page.getByRole('link', { name: 'Ir a mi perfil', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Aceptar', exact: true })).toBeEnabled();
   await expect(page.getByText('Correo verificado.', { exact: true })).toBeVisible();
+});
+
+test('registro desde enlace: verifica, confirma y entra en la familia sin crear cuenta individual', async () => {
+  const owner = await register('propietario', 'grupal');
+  const invitation = await api('/cuenta/invitaciones', owner, 'POST', { email: 'nuevo@example.test' });
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  contexts.push(context);
+  const page = await context.newPage();
+  await page.goto(`${frontend}/invitacion#token=${invitation.token}`);
+  await expect(page).toHaveURL(`${frontend}/invitacion`);
+  await page.getByRole('button', { name: 'Crear cuenta', exact: true }).click();
+  await page.getByPlaceholder('Tu nombre', { exact: true }).fill('Nuevo familiar');
+  await page.getByPlaceholder('tu@email.com', { exact: true }).fill('nuevo@example.test');
+  await page.getByPlaceholder('Mínimo 6 caracteres', { exact: true }).fill('local-test-password');
+  await page.getByRole('button', { name: 'Crear usuario y verificar correo', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Verifica tu correo', exact: true })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Tipo de cuenta' })).toHaveCount(0);
+  assert.equal(await models.Cuenta.count(), 1);
+  const user = await models.Usuario.findOne({ where: { email: 'nuevo@example.test' } });
+  assert.equal(user.cuentaId, null);
+  if (process.env.CALENDAR_REVIEW_SCREENSHOTS) await page.screenshot({ path: '/tmp/calendar-activation-mobile.png' });
+  const verification = await latestVerificationToken(user.email);
+  // El correo se abre en otra pestaña: la invitación se recupera por la sesión.
+  const verificationPage = await context.newPage();
+  await verificationPage.goto(`${frontend}/verificar-email#token=${verification}`);
+  await verificationPage.getByRole('button', { name: 'Confirmar mi correo', exact: true }).click();
+  await expect(verificationPage.getByRole('status')).toContainText('Tu correo está verificado');
+  await verificationPage.getByRole('link', { name: 'Continuar con la invitación', exact: true }).click();
+  await expect(verificationPage.getByRole('button', { name: 'Aceptar invitación', exact: true })).toBeVisible();
+  assert.equal((await models.Usuario.findByPk(user.id)).cuentaId, null);
+  if (process.env.CALENDAR_REVIEW_SCREENSHOTS) await verificationPage.screenshot({ path: '/tmp/calendar-invitation-mobile.png' });
+  await verificationPage.getByRole('button', { name: 'Aceptar invitación', exact: true }).click();
+  await expect(verificationPage).toHaveURL(frontend + '/');
+  assert.equal((await models.Usuario.findByPk(user.id)).cuentaId, owner.cuentaId);
+  assert.equal(await models.Cuenta.count(), 1);
+  await verificationPage.goto(frontend + '/perfil');
+  await expect(verificationPage.getByRole('button', { name: 'Abandonar cuenta familiar', exact: true })).toBeVisible();
+  await expect(verificationPage.getByText(owner.email, { exact: true })).toHaveCount(0);
+  await expect(verificationPage.getByRole('button', { name: 'Reenviar correo de verificación', exact: true })).toHaveCount(0);
+});
+
+test('individual y familiar muestran gestión distinta; conversión y enlace se pueden usar desde móvil', async () => {
+  const owner = await register('propietario');
+  const page = await pageFor(owner);
+  await expect(page.getByRole('heading', { name: 'Tu cuenta', exact: true })).toBeVisible();
+  await expect(page.getByPlaceholder('email@ejemplo.com', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Abandonar cuenta familiar', exact: true })).toHaveCount(0);
+  if (process.env.CALENDAR_REVIEW_SCREENSHOTS) await page.screenshot({ path: '/tmp/calendar-individual-mobile.png' });
+  await page.getByRole('button', { name: 'Convertir en cuenta familiar', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Tu familia', exact: true })).toBeVisible();
+  await page.getByPlaceholder('email@ejemplo.com', { exact: true }).fill('nuevo@example.test');
+  await page.getByRole('button', { name: 'Crear invitación', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Copiar enlace', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Copiar enlace', exact: true }).click();
+  const link = await page.getByLabel('Enlace de invitación', { exact: true }).inputValue();
+  assert.ok(link.startsWith(frontend + '/invitacion#token='));
+  const token = new URLSearchParams(new URL(link).hash.slice(1)).get('token');
+  assert.equal((await models.InvitacionCuenta.findOne({ where: { email: 'nuevo@example.test' } })).token, token);
+  if (process.env.CALENDAR_REVIEW_SCREENSHOTS) await page.screenshot({ path: '/tmp/calendar-family-mobile.png' });
+  page.once('dialog', dialog => {
+    assert.match(dialog.message(), /cancelarán todas las invitaciones/);
+    return dialog.accept();
+  });
+  await page.getByRole('button', { name: 'Convertir en cuenta individual', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Tu cuenta', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copiar enlace', exact: true })).toHaveCount(0);
+  assert.equal(await models.InvitacionCuenta.count(), 0);
+  assert.equal(await models.Cuenta.count(), 1);
+});
+
+test('un usuario verificado abre el enlace, ve el cambio de cuenta y acepta sin verificar otra vez', async () => {
+  const owner = await register('propietario', 'grupal'), member = await register('participante');
+  const invitation = await api('/cuenta/invitaciones', owner, 'POST', { email: member.email });
+  const page = await pageFor(member);
+  await page.goto(`${frontend}/invitacion#token=${invitation.token}`);
+  await expect(page).toHaveURL(`${frontend}/invitacion`);
+  await expect(page.getByText(/Al aceptar, dejarás de acceder a tu cuenta actual/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Reenviar correo de verificación', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Aceptar invitación', exact: true }).click();
+  await expect(page).toHaveURL(frontend + '/');
+  assert.equal((await models.Usuario.findByPk(member.id)).cuentaId, owner.cuentaId);
+  assert.equal(await models.Cuenta.count(), 2);
+});
+
+test('registro normal elige tipo y bloquea calendario hasta confirmar el correo', async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  contexts.push(context);
+  const page = await context.newPage();
+  await page.goto(frontend + '/login');
+  await page.getByRole('button', { name: 'Crear cuenta', exact: true }).click();
+  await page.getByPlaceholder('Tu nombre', { exact: true }).fill('Nueva usuaria');
+  await page.getByPlaceholder('tu@email.com', { exact: true }).fill('individual@example.test');
+  await page.getByPlaceholder('Mínimo 6 caracteres', { exact: true }).fill('local-test-password');
+  await page.getByRole('button', { name: 'Continuar', exact: true }).click();
+  await page.getByRole('button', { name: 'Individual Solo para ti', exact: true }).click();
+  await page.getByRole('button', { name: 'Crear cuenta', exact: true }).last().click();
+  await expect(page.getByRole('heading', { name: 'Verifica tu correo', exact: true })).toBeVisible();
+  await page.goto(frontend + '/recetas');
+  await expect(page).toHaveURL(frontend + '/activar-cuenta');
+  await expect(page.getByRole('button', { name: 'Reenviar correo de verificación', exact: true })).toBeVisible();
+  const user = await models.Usuario.findOne({ where: { email: 'individual@example.test' } });
+  assert.equal((await models.Cuenta.findByPk(user.cuentaId)).tipo, 'individual');
+  await page.goto(`${frontend}/verificar-email#token=${await latestVerificationToken(user.email)}`);
+  await page.getByRole('button', { name: 'Confirmar mi correo', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Tu correo está verificado');
+  await page.getByRole('link', { name: 'Ir a mi perfil', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Tu cuenta', exact: true })).toBeVisible();
 });

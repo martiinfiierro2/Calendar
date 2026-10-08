@@ -45,7 +45,7 @@ export async function getAccount(req, res, next) {
     if (req.user.rol === 'propietario') {
       const invitaciones = await InvitacionCuenta.findAll({
         where: { cuentaId: req.user.cuentaId, estado: 'pendiente' },
-        attributes: ['id', 'email', 'estado', 'expiraEn', 'creadoEn'],
+        attributes: ['id', 'email', 'token', 'estado', 'expiraEn', 'creadoEn'],
         order: [['creadoEn', 'DESC']]
       });
       respuesta.invitaciones = invitaciones.map(invitation => ({
@@ -63,6 +63,21 @@ export async function convertToGroup(req, res, next) {
       const cuenta = await Cuenta.findByPk(user.cuentaId, { transaction });
       await cuenta.update({ tipo: 'grupal' }, { transaction });
       return { id: cuenta.id, tipo: cuenta.tipo };
+    });
+    res.json(result);
+  } catch (error) { next(error); }
+}
+
+export async function convertToIndividual(req, res, next) {
+  try {
+    const result = await changeAccount(req, async (user, transaction) => {
+      requireOwner(user);
+      const members = await Usuario.count({ where: { cuentaId: user.cuentaId }, transaction });
+      if (members !== 1) fail(409, 'La cuenta solo puede convertirse en individual cuando quede un miembro.');
+      await InvitacionCuenta.destroy({ where: { cuentaId: user.cuentaId, estado: 'pendiente' }, transaction });
+      const account = await Cuenta.findByPk(user.cuentaId, { transaction });
+      await account.update({ tipo: 'individual' }, { transaction });
+      return { id: account.id, tipo: account.tipo };
     });
     res.json(result);
   } catch (error) { next(error); }
@@ -91,8 +106,8 @@ export async function inviteMember(req, res, next) {
       const invitacion = pendiente
         ? await pendiente.update(values, { transaction })
         : await InvitacionCuenta.create(values, { transaction });
-      // El destinatario obtiene el token desde su sesión, nunca desde un log o URL pública.
-      return { id: invitacion.id, email, estado: invitacion.estado, expiraEn: invitacion.expiraEn };
+      // Solo el propietario y el destinatario autenticados pueden obtener este enlace.
+      return { id: invitacion.id, email, token: invitacion.token, estado: invitacion.estado, expiraEn: invitacion.expiraEn };
     });
     res.status(201).json(result);
   } catch (error) { next(error); }
@@ -116,7 +131,7 @@ export async function acceptInvitation(req, res, next) {
     const result = await changeAccount(req, async (user, transaction) => {
       if (!user.emailVerificado) fail(403, 'Verifica tu correo antes de aceptar invitaciones.');
       const invitacion = await InvitacionCuenta.findOne({
-        where: { token: req.params.token, estado: 'pendiente' }, transaction,
+        where: { token: req.body.token || req.params.token, estado: 'pendiente' }, transaction,
         lock: transaction.LOCK.UPDATE
       });
       if (!invitacion) fail(404, 'Invitación no encontrada o ya utilizada.');
@@ -127,12 +142,14 @@ export async function acceptInvitation(req, res, next) {
       });
       if (!propietario) fail(410, 'Esta cuenta ya no tiene un propietario que pueda admitir miembros.');
       if (invitacion.cuentaId !== user.cuentaId) {
-        const miembros = await Usuario.count({ where: { cuentaId: user.cuentaId }, transaction });
-        if (miembros > 1) fail(409, 'Tu cuenta actual tiene otros miembros. No puedes cambiar de cuenta.');
-        // La cuenta anterior quedará sin miembros; no admite nuevas entradas.
-        await InvitacionCuenta.destroy({
-          where: { cuentaId: user.cuentaId, estado: 'pendiente' }, transaction
-        });
+        if (user.cuentaId) {
+          const miembros = await Usuario.count({ where: { cuentaId: user.cuentaId }, transaction });
+          if (miembros > 1) fail(409, 'Tu cuenta actual tiene otros miembros. No puedes cambiar de cuenta.');
+          // La cuenta anterior quedará sin miembros; no admite nuevas entradas.
+          await InvitacionCuenta.destroy({
+            where: { cuentaId: user.cuentaId, estado: 'pendiente' }, transaction
+          });
+        }
         // No se fusionan datos ni perfiles. Los datos de la cuenta anterior se conservan allí.
         await user.update({ cuentaId: invitacion.cuentaId, rol: 'miembro' }, { transaction });
       }
@@ -147,7 +164,7 @@ export async function rejectInvitation(req, res, next) {
   try {
     await changeAccount(req, async (user, transaction) => {
       const invitacion = await InvitacionCuenta.findOne({
-        where: { token: req.params.token, email: user.email.toLowerCase(), estado: 'pendiente' }, transaction
+        where: { token: req.body.token || req.params.token, email: user.email.toLowerCase(), estado: 'pendiente' }, transaction
       });
       if (!invitacion) fail(404, 'Invitación no encontrada o ya utilizada.');
       await invitacion.update({ estado: 'rechazada' }, { transaction });

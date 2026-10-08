@@ -135,9 +135,9 @@ export default function ProfilePage({ onLogout }) {
 
         <section className="perfil-seccion">
           <h2>Verificación del correo</h2>
-          {profile.emailVerificado ? <p>Correo verificado.</p> : (
+          {profile.emailVerificado ? <p className="perfil-email-verified"><Icon name="check" size={16} />Correo verificado.</p> : (
             <>
-              <p>Verifica {profile.email} para aceptar invitaciones a cuentas familiares. Revisa el enlace enviado al registrarte.</p>
+              <p>Verifica {profile.email} para activar tu acceso a Calendar. Revisa el enlace enviado al registrarte.</p>
               <button type="button" disabled={sendingVerification} onClick={resendVerification}>
                 {sendingVerification ? 'Enviando...' : 'Reenviar correo de verificación'}
               </button>

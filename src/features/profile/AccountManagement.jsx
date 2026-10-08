@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
   acceptAccountInvitation, cancelAccountInvitation, convertAccountToGroup,
-  getAccount, getMyAccountInvitations, inviteAccountMember, leaveAccount,
+  convertAccountToIndividual, getAccount, getMyAccountInvitations, inviteAccountMember, leaveAccount,
   rejectAccountInvitation, removeAccountMember, transferAccountOwnership
 } from '../../services/accountService';
+import { invitationLink } from '../../services/invitationLink';
 import Icon from '../../shared/Icon';
 
 async function fetchAccountState() {
@@ -16,6 +17,8 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
   const [incoming, setIncoming] = useState([]);
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [shareLink, setShareLink] = useState('');
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +46,7 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
     try {
       setBusy(true);
       setError('');
+      setMessage('');
       await action();
       if (leaving) {
         onLeave?.();
@@ -66,12 +70,25 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
   );
 
   const currentIsOwner = account.usuarioActual.rol === 'propietario';
+  const isFamily = account.cuenta.tipo === 'grupal';
   const memberLabel = user => user.id === account.usuarioActual.id ? 'Tú' : `Miembro #${user.id}`;
 
   const sendInvite = event => {
     event.preventDefault();
     if (!email.trim()) return;
-    run(async () => { await inviteAccountMember(email); setEmail(''); });
+    run(async () => { const invitation = await inviteAccountMember(email); setShareLink(invitationLink(invitation.token)); setMessage('Invitación creada. Copia el enlace y envíalo a la persona invitada.'); setEmail(''); });
+  };
+
+  const copyInvitation = async token => {
+    const link = invitationLink(token);
+    setShareLink(link);
+    setError('');
+    try {
+      await navigator.clipboard.writeText(link);
+      setMessage('Enlace copiado. Ya puedes enviarlo a la persona invitada.');
+    } catch {
+      setMessage('Selecciona y copia el enlace que aparece debajo para compartirlo.');
+    }
   };
 
   const remove = user => {
@@ -96,20 +113,20 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
 
   return (
     <section className="perfil-seccion">
-      <h2>Cuenta familiar</h2>
+      <h2>{isFamily ? 'Tu familia' : 'Tu cuenta'}</h2>
       <div className="perfil-cuenta-card">
         <div className="perfil-cuenta-header">
-          <span className="perfil-ajuste-icon"><Icon name="users" size={18} /></span>
+          <span className="perfil-ajuste-icon"><Icon name={isFamily ? 'users' : 'user'} size={18} /></span>
           <div>
             <strong>{account.cuenta.tipo === 'grupal' ? 'Cuenta familiar' : 'Cuenta individual'}</strong>
             <small>{account.cuenta.usuarios.length} {account.cuenta.usuarios.length === 1 ? 'miembro' : 'miembros'}</small>
           </div>
         </div>
-        <p>Todos ven los datos de la cuenta. Tu perfil, email y preferencias son privados.</p>
-        {account.cuenta.usuarios.map(user => (
+        <p>{isFamily ? 'Un mismo calendario, recetas y compra para toda la familia. Tu perfil, email y preferencias son privados.' : 'Tu calendario, recetas y compra son solo para ti. Puedes convertir esta cuenta en familiar conservando tus datos.'}</p>
+        {isFamily && account.cuenta.usuarios.map(user => (
           <div className="perfil-miembro" key={user.id}>
             <span className="perfil-miembro-avatar"><Icon name="user" size={16} /></span>
-            <div><strong>{memberLabel(user)}</strong><small>{user.rol}</small></div>
+            <div><strong>{memberLabel(user)}</strong><small>{user.rol === 'propietario' ? 'Propietario' : 'Miembro'}</small></div>
             {currentIsOwner && user.rol !== 'propietario' && (
               <div className="perfil-member-actions">
                 <button type="button" disabled={busy} onClick={() => transfer(user)}>Transferir propiedad</button>
@@ -123,29 +140,38 @@ export default function AccountManagement({ onAccountChanged, onLeave, emailVeri
         {currentIsOwner && account.cuenta.tipo === 'individual' && (
           <button type="button" className="perfil-account-action" disabled={busy} onClick={() => run(convertAccountToGroup)}>Convertir en cuenta familiar</button>
         )}
-        {currentIsOwner && account.cuenta.tipo === 'grupal' && (
+        {isFamily && currentIsOwner && account.cuenta.usuarios.length === 1 && <button type="button" className="perfil-account-action perfil-account-secondary" disabled={busy} onClick={() => {
+          if (window.confirm('¿Convertir en cuenta individual? Conservarás tus datos y se cancelarán todas las invitaciones pendientes.')) run(async () => { await convertAccountToIndividual(); setShareLink(''); });
+        }}>Convertir en cuenta individual</button>}
+        {isFamily && currentIsOwner && (
           <form className="perfil-invite-form" onSubmit={sendInvite}>
             <input type="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="email@ejemplo.com" aria-label="Email del nuevo miembro" required />
-            <button disabled={busy || !email.trim()}>Invitar</button>
+            <button disabled={busy || !email.trim()}>Crear invitación</button>
           </form>
         )}
-        {currentIsOwner && account.invitaciones?.length > 0 && (
+        {isFamily && currentIsOwner && account.invitaciones?.length > 0 && (
           <div className="perfil-pending">
             <small>Invitaciones enviadas</small>
             {account.invitaciones.map(invitation => (
               <div className="perfil-invitation-row" key={invitation.id}>
                 <span>{invitation.email} · {invitation.caducada ? 'Caducada' : 'Pendiente'}</span>
-                {invitation.caducada && <button type="button" disabled={busy} onClick={() => run(() => inviteAccountMember(invitation.email))}>Renovar</button>}
-                <button type="button" disabled={busy} onClick={() => run(() => cancelAccountInvitation(invitation.id))}>Cancelar</button>
+                {invitation.caducada ? <button type="button" disabled={busy} onClick={() => run(async () => { const renewed = await inviteAccountMember(invitation.email); setShareLink(invitationLink(renewed.token)); setMessage('Invitación renovada. Comparte el nuevo enlace; el anterior ya no funciona.'); })}>Renovar</button> : <button type="button" disabled={busy} onClick={() => copyInvitation(invitation.token)}>Copiar enlace</button>}
+                <button type="button" disabled={busy} onClick={() => run(async () => { await cancelAccountInvitation(invitation.id); setShareLink(''); })}>Cancelar</button>
               </div>
             ))}
           </div>
         )}
-        {(!currentIsOwner || account.cuenta.usuarios.length === 1) && (
+        {isFamily && (!currentIsOwner || account.cuenta.usuarios.length === 1) && (
           <button type="button" className="perfil-account-action perfil-account-leave" disabled={busy} onClick={leave}>Abandonar cuenta familiar</button>
         )}
-        {currentIsOwner && account.cuenta.usuarios.length > 1 && <p>Para abandonar la cuenta, primero transfiere la propiedad a otro miembro.</p>}
+        {isFamily && currentIsOwner && account.cuenta.usuarios.length > 1 && <p>Para abandonar la cuenta, primero transfiere la propiedad a otro miembro.</p>}
       </div>
+      {message && <p className="perfil-account-status" role="status">{message}</p>}
+      {isFamily && shareLink && <div className="perfil-share-link">
+        <label htmlFor="family-invitation-link">Enlace de invitación</label>
+        <input id="family-invitation-link" readOnly value={shareLink} onFocus={event => event.target.select()} />
+        <small>Válido durante 7 días. Solo puede aceptarlo el correo invitado tras verificarse.</small>
+      </div>}
       {incoming.length > 0 && (
         <div className="perfil-incoming">
           <strong>Invitaciones recibidas</strong>

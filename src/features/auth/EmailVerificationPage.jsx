@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { verifyEmail } from '../../services/emailVerificationService';
+import AuthPanel from './AuthPanel';
+import { getPendingInvitation } from '../../services/invitationLink';
 import { getSession, refreshSession } from '../../services/authService';
 
 export default function EmailVerificationPage() {
@@ -32,17 +34,16 @@ export default function EmailVerificationPage() {
   };
 
   return (
-    <section className="perfil-seccion email-verification-page">
-      <h1>Verifica tu correo</h1>
-      {!token ? <p role="alert">Abre el enlace que te enviamos por correo. Puedes solicitar uno nuevo desde tu perfil.</p> : (
+    <AuthPanel icon={verified ? 'check' : 'mail'} eyebrow="Tu acceso a Calendar" title={verified ? 'Correo confirmado' : 'Verifica tu correo'}>
+      {!token ? <p role="alert">Abre el enlace que te enviamos por correo. Puedes solicitar uno nuevo al iniciar sesión.</p> : (
         <>
-          {!verified && <p>Confirma tu correo para aceptar invitaciones a cuentas familiares. Hazlo solo si solicitaste este registro o cambio de email.</p>}
-          {!verified && <button type="button" disabled={busy} onClick={confirm}>{busy ? 'Verificando...' : 'Confirmar mi correo'}</button>}
+          {!verified && <p>Confirma tu correo para activar tu acceso a Calendar. Hazlo solo si solicitaste este registro o cambio de email.</p>}
+          {!verified && <button className="login-submit" type="button" disabled={busy} onClick={confirm}>{busy ? 'Verificando...' : 'Confirmar mi correo'}</button>}
         </>
       )}
-      {status && <p role="status">{status}</p>}
-      {error && <p role="alert">{error}</p>}
-      <Link to={getSession()?.token ? '/perfil' : '/login'}>{getSession()?.token ? 'Ir a mi perfil' : 'Iniciar sesión'}</Link>
-    </section>
+      {status && <p className="auth-status" role="status">{status}</p>}
+      {error && <p className="login-error" role="alert">{error}</p>}
+      <Link className="auth-text-button" to={getSession()?.token ? !getSession().cuentaId || getPendingInvitation() ? '/invitacion' : '/perfil' : '/login'}>{getSession()?.token ? !getSession().cuentaId || getPendingInvitation() ? 'Continuar con la invitación' : 'Ir a mi perfil' : 'Iniciar sesión'}</Link>
+    </AuthPanel>
   );
 }

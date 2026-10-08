@@ -11,7 +11,7 @@ const Usuario = sequelize.define('Usuario', {
   emailVerificacionHash: { type: DataTypes.STRING(64), allowNull: true },
   emailVerificacionExpiraEn: { type: DataTypes.DATE, allowNull: true },
   emailVerificacionEnviadaEn: { type: DataTypes.DATE, allowNull: true },
-  cuentaId: { type: DataTypes.INTEGER, allowNull: false },
+  cuentaId: { type: DataTypes.INTEGER, allowNull: true },
   rol: {
     type: DataTypes.ENUM('propietario', 'miembro'),
     allowNull: false,

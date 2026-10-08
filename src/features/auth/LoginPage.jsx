@@ -4,7 +4,7 @@ import { hasSession, loginUser, registerUser } from '../../services/authService'
 import Icon from '../../shared/Icon';
 import '../../componentes/login.css';
 
-export default function LoginPage({ onAuth }) {
+export default function LoginPage({ onAuth, invitationToken }) {
   const [mode, setMode] = useState('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,6 +35,10 @@ export default function LoginPage({ onAuth }) {
       return;
     }
 
+    if (invitationToken) {
+      submit({ preventDefault() {} });
+      return;
+    }
     setRegisterStep(2);
   };
 
@@ -62,7 +66,7 @@ export default function LoginPage({ onAuth }) {
       return;
     }
 
-    if (mode === 'registro' && !accountType) {
+    if (mode === 'registro' && !invitationToken && !accountType) {
       setError('Selecciona el tipo de cuenta que quieres crear.');
       return;
     }
@@ -70,7 +74,7 @@ export default function LoginPage({ onAuth }) {
     try {
       setLoading(true);
       const session = mode === 'registro'
-        ? await registerUser({ nombre: name, email, password, accountType })
+        ? await registerUser({ nombre: name, email, password, accountType, invitationToken })
         : await loginUser({ email, password });
       onAuth(session);
     } catch (err) {
@@ -103,7 +107,7 @@ export default function LoginPage({ onAuth }) {
 
         <div className="login-copy">
           <span className="login-eyebrow">
-            {mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
+            {invitationToken ? 'Te han invitado a una familia' : mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
           </span>
           <h2>
             {mode === 'login'
@@ -114,10 +118,10 @@ export default function LoginPage({ onAuth }) {
           </h2>
           <p>
             {mode === 'login'
-              ? 'Accede a tu calendario, recetas y lista de la compra.'
+              ? invitationToken ? 'Inicia sesión con el correo invitado para confirmar que quieres unirte.' : 'Accede a tu calendario, recetas y lista de la compra.'
               : isAccountStep
                 ? 'Elige cómo quieres organizar y compartir tu calendario, recetas y lista de la compra.'
-                : 'Crea tus datos de acceso y en el siguiente paso podrás elegir el tipo de cuenta.'}
+                : invitationToken ? 'Usa el correo al que te invitaron. Después lo verificarás y confirmarás tu entrada en la familia.' : 'Crea tus datos de acceso y después elige el tipo de cuenta. Verificaremos tu correo antes de empezar.'}
           </p>
         </div>
 
@@ -126,7 +130,7 @@ export default function LoginPage({ onAuth }) {
           <button className={mode === 'registro' ? 'activo' : ''} onClick={() => changeMode('registro')} type="button">Crear cuenta</button>
         </div>
 
-        {isRegister && (
+        {isRegister && !invitationToken && (
           <div className="register-progress" aria-label={`Paso ${registerStep} de 2`}>
             <div className="register-progress-copy">
               <span>Paso {registerStep} de 2</span>
@@ -210,8 +214,8 @@ export default function LoginPage({ onAuth }) {
 
             {error && <div className="login-error" role="alert">{error}</div>}
 
-            <button className="login-submit" type="button" onClick={changeToAccount}>
-              Continuar
+            <button className="login-submit" type="button" onClick={changeToAccount} disabled={loading}>
+              {invitationToken ? loading ? 'Creando...' : 'Crear usuario y verificar correo' : 'Continuar'}
             </button>
           </div>
         }
@@ -240,8 +244,8 @@ export default function LoginPage({ onAuth }) {
               >
                 <span className="account-icon"><Icon name="users" size={30} strokeWidth={1.9} /></span>
                 <span className="account-option-text">
-                  <strong>Compartida</strong>
-                  <small>Para familia o grupo</small>
+                  <strong>Familiar</strong>
+                  <small>Una cuenta para tu hogar</small>
                 </span>
               </button>
             </div>
@@ -262,7 +266,7 @@ export default function LoginPage({ onAuth }) {
           </div>
         }
 
-        <p className="login-nota">Tu cuenta se sincroniza con la API y tus datos quedan asociados a tu usuario.</p>
+        <p className="login-nota">Un correo, un usuario y una sola cuenta. Tus datos personales son privados.</p>
       </section>
     </div>
   );

@@ -20,11 +20,11 @@ export function getMyAccountInvitations() {
 }
 
 export function acceptAccountInvitation(token) {
-  return apiRequest(`/cuenta/invitaciones/${token}/aceptar`, { method: 'POST' });
+  return apiRequest('/cuenta/invitaciones/aceptar', { method: 'POST', body: JSON.stringify({ token }) });
 }
 
 export function rejectAccountInvitation(token) {
-  return apiRequest(`/cuenta/invitaciones/${token}/rechazar`, { method: 'POST' });
+  return apiRequest('/cuenta/invitaciones/rechazar', { method: 'POST', body: JSON.stringify({ token }) });
 }
 
 export function removeAccountMember(usuarioId) {
@@ -41,4 +41,8 @@ export function cancelAccountInvitation(id) {
 
 export function transferAccountOwnership(usuarioId) {
   return apiRequest(`/cuenta/propiedad/${usuarioId}`, { method: 'POST' });
+}
+
+export function convertAccountToIndividual() {
+  return apiRequest('/cuenta/tipo/individual', { method: 'PATCH' });
 }

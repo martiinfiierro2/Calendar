@@ -128,16 +128,21 @@ Todas las rutas requieren autenticación:
 
 - `GET /api/cuenta`: cuenta, roles de miembros y rol del usuario actual. Solo el propietario ve los emails de las invitaciones enviadas.
 - `PATCH /api/cuenta/tipo/grupal`: convertir en cuenta familiar (propietario).
+- `PATCH /api/cuenta/tipo/individual`: convertir en individual si queda un solo miembro; conserva datos y cancela invitaciones pendientes (propietario).
 - `POST /api/cuenta/invitaciones`: invitar por email; renueva una invitación caducada con un token nuevo (propietario).
 - `DELETE /api/cuenta/invitaciones/:invitacionId`: cancelar una invitación pendiente o caducada (propietario).
 - `GET /api/cuenta/invitaciones/mias`: invitaciones vigentes del email de la sesión.
-- `POST /api/cuenta/invitaciones/:token/aceptar`: aceptar una invitación propia vigente.
-- `POST /api/cuenta/invitaciones/:token/rechazar`: rechazar una invitación propia.
+- `POST /api/cuenta/invitaciones/aceptar`, body `{ "token": "..." }`: aceptar una invitación propia vigente tras verificar el correo.
+- `POST /api/cuenta/invitaciones/rechazar`, body `{ "token": "..." }`: rechazar una invitación propia tras verificar el correo.
 - `POST /api/cuenta/propiedad/:usuarioId`: transferir la propiedad a otro miembro de la misma cuenta (propietario).
 - `DELETE /api/cuenta/miembros/:usuarioId`: expulsar y eliminar el usuario de un miembro (propietario).
 - `POST /api/cuenta/abandonar`: abandonar y eliminar el propio usuario.
 
-El destinatario ve la invitación al entrar en su perfil; no se envía correo automáticamente. La interfaz pide confirmación antes de aceptar, transferir propiedad, abandonar o expulsar.
+El propietario obtiene un enlace `/invitacion#token=...`, puede copiarlo y enviarlo al destinatario. Solo ese correo, autenticado y verificado, puede aceptar. El enlace caduca en siete días, puede cancelarse y se consume al aceptar o rechazar. Renovar una invitación caducada invalida el enlace anterior. No se envía correo de invitación automáticamente. La página retira el token del historial y lo conserva temporalmente en sessionStorage para continuar tras iniciar sesión; el token se envía a la API en el body. Las rutas antiguas con token en el path se mantienen por compatibilidad y se ocultan en los logs HTTP.
+
+El registro con `invitationToken` no requiere `accountType` y crea un usuario pendiente con `cuentaId = NULL`, sin crear una cuenta individual. Comprueba el correo destinatario, la vigencia de la invitación y la existencia del propietario antes de crear el usuario. Verificar el correo no admite automáticamente: el usuario debe pulsar Aceptar invitación. Si abre el correo en otro navegador, al iniciar sesión puede recuperar sus invitaciones vigentes. Si la invitación deja de estar disponible, puede pedir otra o cancelar su registro pendiente mediante `DELETE /api/autenticacion/registro-pendiente` y registrarse de nuevo. Este endpoint rechaza usuarios que ya tienen cuenta.
+
+Cada correo tiene un único usuario y cada usuario una sola membresía activa. La migración 008 permite registros pendientes sin cuenta y añade un índice único de email sin distinguir mayúsculas. Las pantallas de cuenta individual muestran la conversión a familiar; las familiares muestran miembros, invitaciones y conversión a individual cuando queda una persona.
 
 ## Actualización de una base existente
 
@@ -147,18 +152,18 @@ Antes de actualizar una base con datos:
 
 1. Detén las escrituras de la versión anterior y crea una copia de seguridad con `pg_dump "$DATABASE_URL" -Fc -f calendar-before-multicuenta.dump`. Protege el archivo, que contiene datos personales.
 2. Desde `backend`, ejecuta `npm run db:sync` con las variables de la base que quieres actualizar.
-3. Despliega conjuntamente la API y el frontend de `multicuenta`. No vuelvas a arrancar la API de `main` contra el esquema migrado: ya no utiliza `usuarioId` para las recetas, calendario y compra.
+3. Despliega conjuntamente la API y el frontend de `multicuenta`. No vuelvas a arrancar una API anterior a multicuenta contra el esquema migrado: ya no utiliza `usuarioId` para las recetas, calendario y compra.
 
-Para volver a `main` después de una migración confirmada, restaura la copia en una base vacía separada con `pg_restore --no-owner --no-acl --dbname="$RESTORE_DATABASE_URL" calendar-before-multicuenta.dump`, y apunta la versión anterior a esa base. Conserva también los cambios posteriores antes de restaurar. No hay una migración inversa automática, porque una cuenta familiar puede contener datos creados por varios participantes.
+Para volver a una versión anterior a multicuenta después de una migración confirmada, restaura la copia en una base vacía separada con `pg_restore --no-owner --no-acl --dbname="$RESTORE_DATABASE_URL" calendar-before-multicuenta.dump`, y apunta la versión anterior a esa base. Conserva también los cambios posteriores antes de restaurar. No hay una migración inversa automática, porque una cuenta familiar puede contener datos creados por varios participantes.
 
 Estas instrucciones de migración y los flujos de cuenta deben validarse en una base de ensayo antes de producción; no sustituyen las pruebas de integración.
 
 
 ## Verificación de email con Resend
 
-El registro y el cambio de email envían un enlace de verificación de un solo uso que caduca en 24 horas. La base guarda únicamente el SHA-256 del token. Al confirmar se elimina el hash; cambiar el email invalida cualquier enlace anterior y vuelve a marcar el correo como no verificado. Los usuarios históricos también deben verificar su correo para aceptar nuevas invitaciones; no se da por probado un email que nunca se confirmó.
+El registro y el cambio de email envían un enlace de verificación de un solo uso que caduca en 24 horas. La base guarda únicamente el SHA-256 del token. Al confirmar se elimina el hash; cambiar el email invalida cualquier enlace anterior y vuelve a marcar el correo como no verificado. Los usuarios históricos también deben verificar su correo antes de usar Calendar; no se da por probado un email que nunca se confirmó.
 
-Un usuario no verificado puede usar su cuenta, pero la API rechaza con 403 la aceptación de invitaciones, aunque conozca su token. El estado de verificación se consulta con la sesión y no puede alterarse desde el body del perfil. El perfil muestra el estado y permite reenviar el correo, con un intervalo mínimo de un minuto. Si el proveedor falla, el usuario no se pierde y se permite reintentar; un enlace anterior que sí llegó se conserva.
+Un usuario no verificado puede iniciar sesión, consultar o corregir su perfil privado y reenviar la verificación. La API rechaza con 403 el acceso a recetas, calendario, compra, nevera, consumos y gestión de cuentas, así como la aceptación o rechazo de invitaciones. Tras verificar, un invitado sin cuenta sigue sin acceder a datos compartidos hasta aceptar una invitación. El estado de verificación se consulta con la sesión y no puede alterarse desde el body del perfil. La pantalla de activación bloquea la navegación a la aplicación y permite corregir el email o reenviar el correo, con un intervalo mínimo de un minuto. Si el proveedor falla, el usuario no se pierde y se permite reintentar; un enlace anterior que sí llegó se conserva.
 
 Configura en el backend de Vercel (o en el entorno que ejecute la API):
 

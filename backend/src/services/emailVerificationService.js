@@ -76,7 +76,7 @@ export async function sendEmailVerification(userId) {
     const url = verificationLink(token);
     await deliver({
       email: issued.email, url,
-      text: `Confirma tu correo para aceptar invitaciones a cuentas familiares de Calendar:\n\n${url}\n\nEste enlace caduca en 24 horas y solo se puede usar una vez. Si no solicitaste este registro o cambio de correo, no confirmes el enlace y descarta este mensaje.`
+      text: `Confirma tu correo para activar tu acceso a Calendar:\n\n${url}\n\nEste enlace caduca en 24 horas y solo se puede usar una vez. Si no solicitaste este registro o cambio de correo, no confirmes el enlace y descarta este mensaje.`
     });
   } catch (error) {
     // Un fallo de entrega no bloquea un reintento ni invalida un enlace anterior que sí llegó.
@@ -93,13 +93,13 @@ export async function confirmEmailVerification(token) {
     const user = await Usuario.findOne({ where: { emailVerificacionHash: hash }, transaction, lock: transaction.LOCK.UPDATE });
     if (!user) throw failure(400, 'El enlace no es válido o ya se utilizó.');
     if (!user.emailVerificacionExpiraEn || user.emailVerificacionExpiraEn <= new Date()) {
-      throw failure(410, 'El enlace ha caducado. Solicita uno nuevo desde tu perfil.');
+      throw failure(410, 'El enlace ha caducado. Solicita uno nuevo desde la pantalla de verificación.');
     }
     await user.update({
       emailVerificado: true, emailVerificacionHash: null,
       emailVerificacionExpiraEn: null, emailVerificacionEnviadaEn: null
     }, { transaction });
-    return { message: 'Tu correo está verificado. Ya puedes aceptar invitaciones.' };
+    return { message: 'Tu correo está verificado. Ya puedes continuar en Calendar.' };
   });
 }
 
@@ -108,6 +108,6 @@ export async function trySendingVerification(userId) {
     const result = await sendEmailVerification(userId);
     return { enviada: true, message: result.message };
   } catch {
-    return { enviada: false, message: 'Tu usuario se ha guardado, pero no pudimos enviar el enlace. Puedes reenviarlo desde tu perfil.' };
+    return { enviada: false, message: 'Tu usuario se ha guardado, pero no pudimos enviar el enlace. Puedes reenviarlo desde la pantalla de verificación.' };
   }
 }

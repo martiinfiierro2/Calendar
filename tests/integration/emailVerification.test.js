@@ -21,7 +21,7 @@ before(async () => {
 beforeEach(async () => {
   savedEnvironment = Object.fromEntries(['MAIL_TRANSPORT', 'RESEND_API_KEY', 'MAIL_FROM', 'NODE_ENV', 'FRONTEND_URL'].map(key => [key, process.env[key]]));
   testMailbox.length = 0;
-  await models.sequelize.query('TRUNCATE cuentas RESTART IDENTITY CASCADE');
+  await models.sequelize.query('TRUNCATE usuarios, cuentas RESTART IDENTITY CASCADE');
 });
 afterEach(() => {
   globalThis.fetch = originalFetch;
@@ -180,9 +180,17 @@ test('el transporte de pruebas no entrega ni verifica nada en producción', asyn
   assert.equal((await models.Usuario.findByPk(user.id)).emailVerificado, false);
 });
 
-test('eliminar un usuario invalida también el enlace de verificación pendiente', async () => {
-  const user = await register();
-  const token = await latestVerificationToken(user.email);
-  assert.equal((await api('/cuenta/abandonar', user.token, {})).status, 204);
+test('cancelar un usuario invitado pendiente invalida también su enlace de verificación', async () => {
+  const owner = await register();
+  await verify(await latestVerificationToken(owner.email));
+  const invitation = await api('/cuenta/invitaciones', owner.token, { email: 'target@example.test' });
+  assert.equal(invitation.status, 201);
+  const registered = await api('/autenticacion/registro', null, {
+    nombre: 'Invitado', email: 'target@example.test', password: 'local-test-password', invitationToken: invitation.body.token
+  });
+  assert.equal(registered.status, 201);
+  const token = await latestVerificationToken('target@example.test');
+  assert.equal((await api('/autenticacion/registro-pendiente', registered.body.token, undefined, 'DELETE')).status, 204);
   assert.equal((await verify(token)).status, 400);
+  assert.equal(await models.Cuenta.count(), 1);
 });
