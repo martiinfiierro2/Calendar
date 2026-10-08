@@ -124,7 +124,9 @@ Cerrar sesión de forma habitual únicamente elimina la sesión del navegador: n
 
 ### Gestión de cuenta
 
-Todas las rutas requieren autenticación:
+Todas las rutas requieren autenticación salvo la consulta de acceso mediante una invitación válida:
+
+- `POST /api/cuenta/invitaciones/acceso`, body `{ "token": "..." }`: comprueba vigencia y propietario y devuelve solo si el destinatario tiene usuario y, cuando hay sesión autenticada, si esta coincide. No acepta búsquedas por email ni devuelve perfiles o emails. La respuesta no se almacena en caché.
 
 - `GET /api/cuenta`: cuenta, roles de miembros y rol del usuario actual. Solo el propietario ve los emails de las invitaciones enviadas.
 - `PATCH /api/cuenta/tipo/grupal`: convertir en cuenta familiar (propietario).
@@ -185,3 +187,5 @@ El enlace utiliza un fragmento (`/verificar-email#token=...`) para que el secret
 La migración 007 añade los campos e índice necesarios. `npm run db:sync` la registra y aplica como las demás. El transporte `MAIL_TRANSPORT=test` es exclusivo de `NODE_ENV=test`, utiliza un buzón en memoria y se rechaza en producción. No se utilizan mensajes de consola como sustituto del envío real.
 
 Las pruebas cubren el contrato HTTPS con Resend usando una respuesta simulada y el flujo completo con un buzón de pruebas. Antes de activar el envío en producción hay que configurar estas variables y comprobar la recepción de un correo real; no se ha acreditado entrega real sin una clave y un dominio remitente.
+
+Al abrir una invitación, la web muestra directamente registro si el destinatario aún no tiene usuario, o inicio de sesión si ya existe. Las pestañas generales de acceso se sustituyen por una opción discreta para cambiar de formulario. Una sesión abierta con otro correo muestra un aviso y permite cambiar de sesión conservando la invitación.

@@ -349,3 +349,22 @@ test('un fallo al enviar conserva la invitación y permite reintentar sin crear 
   assert.equal(await models.InvitacionCuenta.count(), 1);
   assert.equal((await models.InvitacionCuenta.findByPk(response.body.id)).token, response.body.token);
 });
+
+test('un enlace válido elige acceso sin exponer perfiles ni permitir consultar cualquier correo', async () => {
+  const owner = await register('owner', 'grupal');
+  const created = await api('/cuenta/invitaciones', owner, 'POST', { email: 'new@example.test' });
+  const token = created.body.token;
+  let response = await api('/cuenta/invitaciones/acceso', null, 'POST', { token });
+  assert.deepEqual(response.body, { registered: false, sessionMatches: null });
+  const signup = await api('/autenticacion/registro', null, 'POST', { nombre: 'Nuevo', email: 'new@example.test', password: 'local-test-password', invitationToken: token });
+  const member = { ...signup.body.usuario, token: signup.body.token };
+  assert.deepEqual((await api('/cuenta/invitaciones/acceso', null, 'POST', { token })).body, { registered: true, sessionMatches: null });
+  assert.deepEqual((await api('/cuenta/invitaciones/acceso', member, 'POST', { token })).body, { registered: true, sessionMatches: true });
+  assert.deepEqual((await api('/cuenta/invitaciones/acceso', owner, 'POST', { token })).body, { registered: true, sessionMatches: false });
+  assert.equal((await api('/cuenta/invitaciones/acceso', null, 'POST', { email: owner.email })).status, 400);
+  assert.equal((await api('/cuenta/invitaciones/acceso', null, 'POST', { token: '0'.repeat(64) })).status, 404);
+  await models.InvitacionCuenta.update({ expiraEn: new Date(Date.now() - 1000) }, { where: { id: created.body.id } });
+  assert.equal((await api('/cuenta/invitaciones/acceso', null, 'POST', { token })).status, 410);
+  await api(`/cuenta/invitaciones/${created.body.id}`, owner, 'DELETE');
+  assert.equal((await api('/cuenta/invitaciones/acceso', null, 'POST', { token })).status, 404);
+});

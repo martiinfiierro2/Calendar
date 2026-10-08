@@ -50,3 +50,7 @@ export function convertAccountToIndividual() {
 export function resendAccountInvitation(id) {
   return apiRequest(`/cuenta/invitaciones/${id}/reenviar`, { method: 'POST' });
 }
+
+export function getInvitationAccess(token) {
+  return apiRequest('/cuenta/invitaciones/acceso', { method: 'POST', body: JSON.stringify({ token }) });
+}

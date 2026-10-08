@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import {
   acceptInvitation,
+  invitationAccess,
   cancelInvitation,
   transferOwnership,
   convertToGroup,
@@ -19,6 +20,12 @@ import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = Router();
 
+// Solo un enlace válido permite conocer el flujo de acceso del destinatario.
+router.post('/invitaciones/acceso',
+  body('token').isHexadecimal().isLength({ min: 64, max: 64 }), validateRequest,
+  (req, res, next) => req.headers.authorization ? requireAuth(req, res, next) : next(),
+  invitationAccess
+);
 router.use(requireAuth);
 
 // Estos endpoints también sirven a registros invitados sin cuenta activa.

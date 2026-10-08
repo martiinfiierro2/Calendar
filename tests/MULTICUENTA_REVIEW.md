@@ -18,16 +18,18 @@ La primera versión se fusionó en main en `22ce23a`. Esta revisión desarrolla 
 ## Cobertura ejecutada
 
 - 34 pruebas existentes de utilidades y API con modelos simulados.
-- 19 pruebas de cuentas con PostgreSQL real: privacidad, datos familiares, aislamiento, campos internos, roles, concurrencia, propiedad, expulsión, abandono, revocación, bloqueo sin verificación, alta por enlace, email único, conversión a individual y cancelación del registro pendiente.
+- 20 pruebas de cuentas con PostgreSQL real: privacidad, datos familiares, aislamiento, campos internos, roles, concurrencia, propiedad, expulsión, abandono, revocación, bloqueo sin verificación, alta por enlace, email único, conversión a individual y cancelación del registro pendiente.
 - 8 pruebas de migraciones con PostgreSQL real: base nueva, esquema anterior a multicuenta, instalación sin consumos, SQL aplicado a mano, rollback/reintento, esquema histórico, copia/restauración y actualización desde la versión con 007 aplicada.
 - 11 pruebas de verificación de email: hash, caducidad, uso único/concurrente, reenvío, cambio de correo, fallos del proveedor, contrato Resend y eliminación del registro invitado pendiente.
-- 11 pruebas en Chromium con API y PostgreSQL: gestión de cuentas, errores/reintentos, privacidad, registro normal y por enlace, apertura del correo en otra pestaña, conversión, enlace compartible y aceptación sin repetir verificación.
+- 13 pruebas en Chromium con API y PostgreSQL: gestión de cuentas, errores/reintentos, privacidad, registro normal y por enlace, apertura del correo en otra pestaña, conversión, enlace compartible y aceptación sin repetir verificación.
 - 1 regresión de seguridad: destinatario sin email verificado rechazado.
 
-Total: 84 pruebas, sin fallos ni pruebas omitidas. También se comprobaron lint, build y las pantallas de activación, invitación y gestión en una pantalla móvil de 390 × 844.
+Total: 87 pruebas, sin fallos ni pruebas omitidas. También se comprobaron lint, build y las pantallas de activación, invitación y gestión en una pantalla móvil de 390 × 844.
 
 ## Preparación del despliegue
 
 1. Configurar Resend en el backend: dominio validado, `RESEND_API_KEY`, `MAIL_FROM` y `FRONTEND_URL`. La recepción externa de correo real sigue pendiente; las pruebas utilizan un buzón controlado y respuestas simuladas del proveedor.
 2. Crear una copia de seguridad y aplicar las migraciones pendientes mediante `npm run db:sync`, incluida `008_registro_invitado.sql`, siguiendo `backend/README.md`. Las pruebas no migran la base de desarrollo ni producción.
 3. Desplegar conjuntamente backend y frontend. Los usuarios históricos no verificados también deben confirmar el correo antes de acceder a los datos de Calendar.
+
+La invitación elige registro o inicio de sesión según el destinatario, utilizando solo un token vigente. La API prueba que no hay consulta pública por email ni exposición de datos personales y comprueba enlaces caducados/cancelados y coincidencia de sesión. Chromium completa el acceso de un usuario existente y el cambio desde una sesión de otro correo; el registro invitado comprueba que se muestra su formulario directamente.

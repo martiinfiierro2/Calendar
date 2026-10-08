@@ -250,3 +250,16 @@ export async function resendInvitation(req, res, next) {
     res.json({ envioCorreo });
   } catch (error) { next(error); }
 }
+
+export async function invitationAccess(req, res, next) {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const invitation = await InvitacionCuenta.findOne({ where: { token: req.body.token, estado: 'pendiente' } });
+    if (!invitation) fail(404, 'La invitación no existe o ya se utilizó.');
+    if (invitation.expiraEn <= new Date()) fail(410, 'La invitación ha caducado. Pide un enlace nuevo.');
+    const owner = await Usuario.findOne({ where: { cuentaId: invitation.cuentaId, rol: 'propietario' }, attributes: ['id'] });
+    if (!owner) fail(410, 'La cuenta ya no admite esta invitación.');
+    const recipient = await Usuario.findOne({ where: { email: invitation.email }, attributes: ['id'] });
+    res.json({ registered: Boolean(recipient), sessionMatches: req.user ? req.user.email.toLowerCase() === invitation.email : null });
+  } catch (error) { next(error); }
+}

@@ -203,7 +203,7 @@ test('registro desde enlace: verifica, confirma y entra en la familia sin crear 
   const page = await context.newPage();
   await page.goto(`${frontend}/invitacion#token=${invitation.token}`);
   await expect(page).toHaveURL(`${frontend}/invitacion`);
-  await page.getByRole('button', { name: 'Crear cuenta', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Crea tu acceso para unirte a tu familia', exact: true })).toBeVisible();
   await page.getByPlaceholder('Tu nombre', { exact: true }).fill('Nuevo familiar');
   await page.getByPlaceholder('tu@email.com', { exact: true }).fill('nuevo@example.test');
   await page.getByPlaceholder('Mínimo 6 caracteres', { exact: true }).fill('local-test-password');
@@ -300,4 +300,38 @@ test('registro normal elige tipo y bloquea calendario hasta confirmar el correo'
   await expect(page.getByRole('status')).toContainText('Tu correo está verificado');
   await page.getByRole('link', { name: 'Ir a mi perfil', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Tu cuenta', exact: true })).toBeVisible();
+});
+
+test('el enlace de un usuario existente abre directamente iniciar sesión y permite aceptar', async () => {
+  const owner = await register('propietario', 'grupal'), target = await register('destinatario');
+  const invitation = await api('/cuenta/invitaciones', owner, 'POST', { email: target.email });
+  const context = await browser.newContext();
+  contexts.push(context);
+  const page = await context.newPage();
+  await page.goto(`${frontend}/invitacion#token=${invitation.token}`);
+  await expect(page.getByRole('heading', { name: 'Inicia sesión para unirte a tu familia', exact: true })).toBeVisible();
+  await expect(page.getByPlaceholder('Tu nombre', { exact: true })).toHaveCount(0);
+  await page.getByPlaceholder('tu@email.com', { exact: true }).fill(target.email);
+  await page.getByPlaceholder('Mínimo 6 caracteres', { exact: true }).fill('local-test-password');
+  await page.locator('form').getByRole('button', { name: 'Entrar', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Aceptar invitación', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Aceptar invitación', exact: true }).click();
+  await expect(page).toHaveURL(frontend + '/');
+  assert.equal((await models.Usuario.findByPk(target.id)).cuentaId, owner.cuentaId);
+});
+
+test('una sesión de otro correo avisa y Cambiar de sesión conserva la invitación', async () => {
+  const owner = await register('propietario', 'grupal'), target = await register('destinatario');
+  const invitation = await api('/cuenta/invitaciones', owner, 'POST', { email: target.email });
+  const page = await pageFor(owner);
+  await page.goto(`${frontend}/invitacion#token=${invitation.token}`);
+  await expect(page.getByRole('heading', { name: 'Esta invitación es para otro correo', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Aceptar invitación', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Cambiar de sesión', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Inicia sesión para unirte a tu familia', exact: true })).toBeVisible();
+  await page.getByPlaceholder('tu@email.com', { exact: true }).fill(target.email);
+  await page.getByPlaceholder('Mínimo 6 caracteres', { exact: true }).fill('local-test-password');
+  await page.locator('form').getByRole('button', { name: 'Entrar', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Aceptar invitación', exact: true })).toBeVisible();
+  assert.equal((await models.InvitacionCuenta.findByPk(invitation.id)).estado, 'pendiente');
 });

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { acceptAccountInvitation, getMyAccountInvitations, rejectAccountInvitation } from '../../services/accountService';
+import { getInvitationAccess, acceptAccountInvitation, getMyAccountInvitations, rejectAccountInvitation } from '../../services/accountService';
 import { logoutUser, refreshSession, cancelPendingRegistration } from '../../services/authService';
 import { clearPendingInvitation, getPendingInvitation, rememberInvitation } from '../../services/invitationLink';
 import LoginPage from './LoginPage';
@@ -14,6 +14,8 @@ export default function InvitationPage({ session, onAuth }) {
   const [loading, setLoading] = useState(Boolean(session?.token));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [access, setAccess] = useState(null);
+  const [accessError, setAccessError] = useState('');
 
   useEffect(() => {
     rememberInvitation(token);
@@ -30,7 +32,26 @@ export default function InvitationPage({ session, onAuth }) {
     return () => { active = false; };
   }, [session?.token]);
 
-  if (!session?.token) return <LoginPage onAuth={onAuth} invitationToken={token} />;
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    getInvitationAccess(token)
+      .then(data => { if (active) setAccess(data); })
+      .catch(err => { if (active) setAccessError(err.message); });
+    return () => { active = false; };
+  }, [token, session?.token]);
+
+  if (token && !access) return <AuthPanel icon="users" eyebrow="Invitación familiar" title="Únete a tu familia">
+    {accessError ? <><p className="login-error" role="alert">{accessError}</p>
+      <button className="login-back" onClick={() => window.location.reload()}>Reintentar</button>
+      <Link className="auth-text-button" to="/login" onClick={clearPendingInvitation}>Volver al acceso</Link></> : <p role="status">Comprobando invitación...</p>}
+  </AuthPanel>;
+  if (session?.token && access?.sessionMatches === false) return <AuthPanel icon="users" eyebrow="Invitación familiar" title="Esta invitación es para otro correo">
+    <p>Tu sesión actual usa {session.email}. Para aceptar, accede con el correo al que llegó la invitación.</p>
+    <button className="login-submit" onClick={logoutUser}>Cambiar de sesión</button>
+    {session.cuentaId && <Link className="auth-text-button" to="/perfil">Volver a mi cuenta</Link>}
+  </AuthPanel>;
+  if (!session?.token) return <LoginPage key={token || 'normal'} onAuth={onAuth} invitationToken={token} initialMode={access?.registered ? 'login' : token ? 'registro' : 'login'} />;
   if (!session.emailVerificado) return <ActivationPage session={session} />;
 
   const run = async action => {

@@ -4,8 +4,8 @@ import { hasSession, loginUser, registerUser } from '../../services/authService'
 import Icon from '../../shared/Icon';
 import '../../componentes/login.css';
 
-export default function LoginPage({ onAuth, invitationToken }) {
-  const [mode, setMode] = useState('login');
+export default function LoginPage({ onAuth, invitationToken, initialMode = 'login' }) {
+  const [mode, setMode] = useState(initialMode);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -110,7 +110,9 @@ export default function LoginPage({ onAuth, invitationToken }) {
             {invitationToken ? 'Te han invitado a una familia' : mode === 'login' ? 'Bienvenido de nuevo' : 'Crea tu cuenta'}
           </span>
           <h2>
-            {mode === 'login'
+            {invitationToken
+              ? mode === 'login' ? 'Inicia sesión para unirte a tu familia' : 'Crea tu acceso para unirte a tu familia'
+              : mode === 'login'
               ? 'Organiza tus comidas'
               : isAccountStep
                 ? '¿Cómo vas a usar Calendar?'
@@ -125,10 +127,10 @@ export default function LoginPage({ onAuth, invitationToken }) {
           </p>
         </div>
 
-        <div className="login-tabs" role="tablist" aria-label="Acceso">
+        {!invitationToken && <div className="login-tabs" role="tablist" aria-label="Acceso">
           <button className={mode === 'login' ? 'activo' : ''} onClick={() => changeMode('login')} type="button">Entrar</button>
           <button className={mode === 'registro' ? 'activo' : ''} onClick={() => changeMode('registro')} type="button">Crear cuenta</button>
-        </div>
+        </div>}
 
         {isRegister && !invitationToken && (
           <div className="register-progress" aria-label={`Paso ${registerStep} de 2`}>
@@ -266,6 +268,9 @@ export default function LoginPage({ onAuth, invitationToken }) {
           </div>
         }
 
+        {invitationToken && <button type="button" className="auth-text-button" disabled={loading} onClick={() => changeMode(mode === 'login' ? 'registro' : 'login')}>
+          {mode === 'login' ? 'Necesito crear mi acceso' : 'Ya tengo usuario: iniciar sesión'}
+        </button>}
         <p className="login-nota">Un correo, un usuario y una sola cuenta. Tus datos personales son privados.</p>
       </section>
     </div>
