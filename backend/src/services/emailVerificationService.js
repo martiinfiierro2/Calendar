@@ -12,7 +12,7 @@ function failure(status, message) {
   return error;
 }
 
-function verificationLink(token) {
+function verificationLink(token, path = '/verificar-email') {
   if (!process.env.FRONTEND_URL) throw failure(503, 'El envío de verificación no está disponible.');
   let base;
   try { base = new URL(process.env.FRONTEND_URL); }
@@ -20,7 +20,7 @@ function verificationLink(token) {
   if (!['http:', 'https:'].includes(base.protocol) || (process.env.NODE_ENV === 'production' && base.protocol !== 'https:')) {
     throw failure(503, 'El envío de verificación no está disponible.');
   }
-  const url = new URL('/verificar-email', base);
+  const url = new URL(path, base);
   // El fragmento no se envía al servidor web ni aparece en sus logs.
   url.hash = new URLSearchParams({ token }).toString();
   return url.toString();
@@ -41,7 +41,7 @@ async function deliver(message) {
     response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: process.env.MAIL_FROM, to: [message.email], subject: 'Verifica tu correo en Calendar', text: message.text }),
+      body: JSON.stringify({ from: process.env.MAIL_FROM, to: [message.email], subject: message.subject || 'Verifica tu correo en Calendar', text: message.text }),
       signal: AbortSignal.timeout(10000)
     });
   } catch { throw failure(503, 'No se pudo enviar la verificación. Inténtalo más tarde.'); }
@@ -76,7 +76,7 @@ export async function sendEmailVerification(userId) {
     const url = verificationLink(token);
     await deliver({
       email: issued.email, url,
-      text: `Confirma tu correo para aceptar invitaciones a cuentas familiares de Calendar:\n\n${url}\n\nEste enlace caduca en 24 horas y solo se puede usar una vez. Si no solicitaste este registro o cambio de correo, no confirmes el enlace y descarta este mensaje.`
+      text: `Confirma tu correo para activar tu acceso a Calendar:\n\n${url}\n\nEste enlace caduca en 24 horas y solo se puede usar una vez. Si no solicitaste este registro o cambio de correo, no confirmes el enlace y descarta este mensaje.`
     });
   } catch (error) {
     // Un fallo de entrega no bloquea un reintento ni invalida un enlace anterior que sí llegó.
@@ -93,13 +93,13 @@ export async function confirmEmailVerification(token) {
     const user = await Usuario.findOne({ where: { emailVerificacionHash: hash }, transaction, lock: transaction.LOCK.UPDATE });
     if (!user) throw failure(400, 'El enlace no es válido o ya se utilizó.');
     if (!user.emailVerificacionExpiraEn || user.emailVerificacionExpiraEn <= new Date()) {
-      throw failure(410, 'El enlace ha caducado. Solicita uno nuevo desde tu perfil.');
+      throw failure(410, 'El enlace ha caducado. Solicita uno nuevo desde la pantalla de verificación.');
     }
     await user.update({
       emailVerificado: true, emailVerificacionHash: null,
       emailVerificacionExpiraEn: null, emailVerificacionEnviadaEn: null
     }, { transaction });
-    return { message: 'Tu correo está verificado. Ya puedes aceptar invitaciones.' };
+    return { message: 'Tu correo está verificado. Ya puedes continuar en Calendar.' };
   });
 }
 
@@ -108,6 +108,19 @@ export async function trySendingVerification(userId) {
     const result = await sendEmailVerification(userId);
     return { enviada: true, message: result.message };
   } catch {
-    return { enviada: false, message: 'Tu usuario se ha guardado, pero no pudimos enviar el enlace. Puedes reenviarlo desde tu perfil.' };
+    return { enviada: false, message: 'Tu usuario se ha guardado, pero no pudimos enviar el enlace. Puedes reenviarlo desde la pantalla de verificación.' };
+  }
+}
+
+export async function sendAccountInvitation(invitation) {
+  try {
+    const url = verificationLink(invitation.token, '/invitacion');
+    await deliver({
+      email: invitation.email, url, subject: 'Invitación a una cuenta familiar de Calendar',
+      text: `Te han invitado a compartir una cuenta familiar de Calendar. Compartiréis calendario, recetas, compra y nevera; tu perfil seguirá siendo privado.\n\n${url}\n\nInicia sesión o regístrate con este correo, verifícalo si es necesario y confirma que quieres unirte. Este enlace caduca en 7 días. Si no esperabas esta invitación, ignora el mensaje.`
+    });
+    return { enviada: true, message: 'Invitación enviada por correo. También puedes copiar el enlace.' };
+  } catch {
+    return { enviada: false, message: 'La invitación se ha guardado, pero no pudimos enviar el correo. Puedes reenviarlo o copiar el enlace.' };
   }
 }

@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import { createMeal, deleteMeal, listMeals, updateMeal } from '../controllers/mealController.js';
-import { requireAuth } from '../middleware/authMiddleware.js';
+import { requireAuth, requireActiveAccount } from '../middleware/authMiddleware.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = Router();
-router.use(requireAuth);
+router.use(requireAuth, requireActiveAccount);
 
 const UNIDADES = ['ud', 'g', 'kg', 'ml', 'L'];
 

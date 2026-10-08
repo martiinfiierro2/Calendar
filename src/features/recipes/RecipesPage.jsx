@@ -290,6 +290,7 @@ export default function RecipesPage() {
         )}
       </div>
 
+      {error && recipes.length > 0 && !form && <div className="app-error" role="alert">{error}</div>}
       <RecipeDetail
         recipe={detail}
         onClose={() => setDetail(null)}
@@ -304,6 +305,7 @@ export default function RecipesPage() {
         onChange={setForm}
         onClose={closeForm}
         onSubmit={submitForm}
+        error={error}
       />
     </div>
   );

@@ -67,9 +67,9 @@ export default function WeekView({ date, meals, onBackMonth, onChangeWeek, onCha
                   ))}
                 </div>
 
-                <button className="semana-anadir" onClick={() => onAdd('14:00', day)}>
+                <button className="semana-anadir" aria-label={`Añadir comida para ${day.toLocaleDateString('es-ES')}`} onClick={() => onAdd('14:00', day)}>
                   <Icon name="plus" size={15} />
-                  Añadir
+                  <span>Añadir</span>
                 </button>
               </section>
             );

@@ -1,6 +1,7 @@
 // Regresión de seguridad: no basta con escribir el email invitado en el registro.
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import { verifyTestEmail } from '../helpers/testEmail.js';
 import { createTestDatabase } from '../helpers/postgresDatabase.js';
 
 let database, models, server, base;
@@ -32,6 +33,7 @@ test('registrar un email ajeno sin demostrar su propiedad no debe permitir entra
     nombre: 'Propietario', email: 'owner@example.test', password: 'test-password', accountType: 'grupal'
   });
   assert.equal(owner.status, 201);
+  await verifyTestEmail(owner.body.usuario, base);
   await models.Receta.create({ nombre: 'Datos de la familia', cuentaId: owner.body.usuario.cuentaId });
   assert.equal((await api('/cuenta/invitaciones', owner.body.token, { email: 'familiar@example.test' })).status, 201);
   // Un tercero reclama el email antes de que el destinatario se registre.

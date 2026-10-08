@@ -22,3 +22,19 @@ export async function requireAuth(req, res, next) {
     return res.status(401).json({ message: 'Token inválido o caducado.' });
   }
 }
+
+export function requireVerifiedEmail(req, res, next) {
+  if (!req.user.emailVerificado) {
+    return res.status(403).json({ code: 'EMAIL_NOT_VERIFIED', message: 'Verifica tu correo antes de usar Calendar.' });
+  }
+  next();
+}
+
+export function requireActiveAccount(req, res, next) {
+  requireVerifiedEmail(req, res, () => {
+    if (!req.user.cuentaId) {
+      return res.status(403).json({ code: 'ACCOUNT_PENDING', message: 'Acepta tu invitación para entrar en la familia.' });
+    }
+    next();
+  });
+}

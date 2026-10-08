@@ -32,6 +32,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
+// Compatibilidad con clientes antiguos: ocultar tokens de invitación en URLs de logs.
+morgan.token('url', req => req.originalUrl.replace(/(invitaciones\/)[a-f0-9]{64}(\/)/g, '$1[oculto]$2'));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 app.get('/api/estado', (req, res) => {

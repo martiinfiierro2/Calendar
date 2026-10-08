@@ -1,3 +1,4 @@
+import { formatQuantity } from '../../../utils/formatQuantity';
 import React, { useEffect, useMemo, useState } from 'react';
 import { CATEGORIAS_COMPRA } from '../../../config/appConfig';
 import {
@@ -109,7 +110,7 @@ export default function FridgeView({ onChangeView }) {
       <ToogleListFridge view="nevera" onChange={onChangeView} />
 
       <div className="compra-lista">
-        {error && <div className="compra-empty"><p>{error}</p></div>}
+        {error && <div className="app-error" role="alert">{error}</div>}
 
         {loading ? (
           <div className="compra-empty"><p>Cargando nevera...</p></div>
@@ -163,7 +164,7 @@ export default function FridgeView({ onChangeView }) {
                   <span className="nevera-usado-icono"><Icon name="check" size={14} /></span>
                   <div>
                     <strong>{item.nombreProducto}</strong>
-                    <span>{item.cantidad} {item.unidad} consumidos</span>
+                    <span>{formatQuantity(item.cantidad)} {item.unidad} consumidos</span>
                     <span>{formatearFecha(item.fecha)} · {String(item.hora || '').slice(0, 5)} · {item.comidaNombre}</span>
                   </div>
                 </div>

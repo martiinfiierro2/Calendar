@@ -47,7 +47,7 @@ node --test tests/integration/normalizationConsistency.test.js
 
 Estos son tests unitarios de la lógica de `nevera/lista de compra`. No necesitan base de datos ni API desplegada.
 
-Todavía faltan tests de integración reales contra Express/Sequelize y tests de componentes React. Para esos conviene decidir después si incorporar Vitest + React Testing Library y una base de datos de test.
+Las pruebas de integración real de multicuenta y las pruebas de interfaz se describen a continuación.
 
 ## Multicuenta: PostgreSQL real y navegador
 
@@ -70,3 +70,8 @@ La regresión de seguridad no está omitida ni marcada como éxito esperado: la 
 
 
 La suite de base de datos también incluye 11 pruebas de verificación de email: token guardado como hash, caducidad, uso único/concurrente, reenvío limitado, cambio de email, rechazo del token anterior, fallo del proveedor, contrato Resend, transporte de pruebas prohibido en producción y eliminación del usuario. El buzón de pruebas solo existe en memoria dentro de cada proceso y nunca envía correos externos. Los helpers de familias verifican el email mediante el endpoint real antes de aceptar invitaciones.
+
+
+El flujo de alta incluye pruebas de bloqueo antes de verificar (API y rutas del navegador), registro invitado sin cuenta provisional, enlaces ajenos/caducados/cancelados, unicidad del email en registros concurrentes, conversión familiar a individual y su carrera con aceptación, y cancelación de un registro pendiente. Las pruebas en Chromium completan el registro normal y por invitación, abren el correo en otra pestaña, comprueban el aviso al cambiar de cuenta y generan enlaces desde la gestión familiar. Un email ya verificado puede aceptar sin recibir una segunda verificación.
+
+El envío de invitaciones también se prueba con el transporte controlado: destinatario, asunto y enlace correctos, fallo de entrega con conservación de la invitación, reintento con el mismo token, permisos y límite de reenvío. No se envían correos reales durante estas pruebas.

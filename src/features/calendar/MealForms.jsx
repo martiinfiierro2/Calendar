@@ -1,3 +1,4 @@
+import RecipeImage from '../../shared/RecipeImage';
 import React, { useEffect, useMemo, useState } from 'react';
 import { TIPOS_COMIDA } from '../../config/appConfig';
 import { getRecipes } from '../../services/recipeService';
@@ -96,7 +97,7 @@ export function RecipeMealForm({ date, initialHour, initialMeal, onClose, onSave
               className={`selector-receta-card ${selectedRecipe?.id === recipe.id ? 'seleccionada' : ''}`}
               onClick={() => setSelectedRecipe(recipe)}
             >
-              <img src={recipe.imagen} alt={recipe.nombre} />
+              <RecipeImage src={recipe.imagen} alt={recipe.nombre} />
               <span>{recipe.nombre}</span>
             </button>
           ))}

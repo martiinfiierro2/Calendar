@@ -1,3 +1,4 @@
+import RecipeImage from '../../shared/RecipeImage';
 import React from 'react';
 import Icon from '../../shared/Icon';
 import { ingredientToText } from '../../utils/unitUtils';
@@ -12,7 +13,7 @@ export default function RecipeDetail({ recipe, onClose, onEdit, onDelete, onTogg
 
       <section className="receta-detalle-sheet">
         <div className="receta-detalle-imagen">
-          <img src={recipe.imagen} alt={recipe.nombre} />
+          <RecipeImage src={recipe.imagen} alt={recipe.nombre} />
           <button className="recetas-floating-btn izquierda" onClick={onClose} aria-label="Volver">
             <Icon name="back" />
           </button>

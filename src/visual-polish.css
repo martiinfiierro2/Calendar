@@ -1,0 +1,118 @@
+/* Ajustes compartidos, después de las hojas de cada pantalla. */
+:root { --mutedText: #657269; }
+
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+  outline: 3px solid #77bc81;
+  outline-offset: 3px;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #77bc81;
+  outline-offset: 2px;
+}
+button:disabled { cursor: default; opacity: .55; }
+
+.recetas-cabecera, .compra-header, .perfil-header {
+  flex-shrink: 0;
+  min-height: 72px;
+  gap: 12px;
+  padding: 18px var(--header-padding) 12px;
+}
+.recetas-cabecera h1, .compra-header h1, .perfil-header h1 {
+  margin: 2px 0 0;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -.03em;
+}
+.recetas-eyebrow, .compra-eyebrow, .perfil-eyebrow {
+  display: block;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: .08em;
+}
+.footer { height: calc(68px + env(safe-area-inset-bottom, 0px)); }
+.footer a { color: #657269; }
+
+.perfil-identidad > div:last-child { min-width: 0; }
+.perfil-identidad h2, .perfil-identidad p { overflow-wrap: anywhere; }
+.perfil-invite-form button { min-height: 44px; font-size: 12px; }
+.perfil-pending { gap: 10px; padding-top: 4px; }
+.perfil-pending > small { font-size: 11px; }
+.perfil-invitation-row {
+  padding: 12px;
+  border: 1px solid #e1e8e2;
+  border-radius: 12px;
+  background: #f8faf8;
+  gap: 8px;
+}
+.perfil-invitation-row > span {
+  flex: 1 0 100%;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.perfil-invitation-row button { flex: 1; min-height: 40px; font-size: 11px; font-weight: 700; }
+.perfil-invitation-row button:last-child { background: #fff4f4; border-color: #ecd8d8; color: #a34b4b; }
+.perfil-miembro > .perfil-member-actions { grid-column: 2 / -1; flex-direction: row; gap: 8px; }
+.perfil-member-actions button { min-height: 40px; }
+.perfil-member-actions .perfil-miembro-remove { width: 40px; flex-shrink: 0; background: #fff2f2; color: #a34b4b; }
+.perfil-incoming > div { flex-wrap: wrap; }
+.perfil-incoming span { font-size: 12px; line-height: 1.5; }
+.perfil-incoming button { min-height: 40px; font-size: 12px; }
+.perfil-account-status, .perfil-account-error { font-size: 12px; line-height: 1.5; }
+
+.compra-item { grid-template-columns: 32px minmax(0, 1fr) 36px 36px; gap: 6px; min-height: 64px; }
+.compra-item-info strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.compra-delete { width: 36px; height: 40px; color: #657269; }
+.compra-check { width: 30px; height: 32px; }
+.compra-item-info span { font-size: 11px; }
+
+.perfil-sheet, .compra-sheet, .menu-anadir {
+  max-height: calc(100% - 24px - env(safe-area-inset-top, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.receta-detalle-sheet { overflow-y: auto; overscroll-behavior: contain; }
+.receta-detalle-contenido h2 { overflow-wrap: anywhere; }
+.receta-detalle-scroll { max-height: none; overflow: visible; }
+.receta-form { overscroll-behavior: contain; }
+.receta-form-submit, .perfil-save, .compra-save { flex-shrink: 0; min-height: 46px; }
+.recetas-header .recetas-search-wrap { min-width: 0; flex: 1; }
+
+.app-state { margin: 18px 14px; padding: 24px 18px; border: 1px solid #e1e8e2; border-radius: 16px; background: #fff; color: var(--mutedText); text-align: center; font-size: 13px; line-height: 1.6; }
+.app-error { flex-shrink: 0; margin: 10px 14px; padding: 12px 14px; border: 1px solid #efd5d5; border-radius: 12px; background: #fff4f4; color: #a34b4b; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.receta-form .app-error { margin: 0; }
+
+@media (max-width: 600px) {
+  input, textarea, select { font-size: 16px !important; }
+}
+@media (max-width: 380px) {
+  .perfil-invite-form { grid-template-columns: minmax(0, 1fr); }
+  .recetas-cabecera, .compra-header, .perfil-header { gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+.main-container > .app-state, .main-container > .app-error {
+  width: calc(100% - 28px);
+  max-width: calc(100% - 28px);
+  height: auto;
+  align-self: center;
+  flex: 0 0 auto;
+}
+.compra-app .selector-vista button { min-width: 0; min-height: 40px; padding: 8px 10px; gap: 6px; font-size: 12px; white-space: nowrap; }
+.semana-dia-cabecera span { font-size: 9px; }
+.semana-evento-hora { font-size: 9px; }
+.semana-evento-nombre { font-size: 10px; line-height: 1.3; }
+.semana-vacio { color: var(--mutedText); font-size: 9px; }
+@media (max-width: 380px) { .semana-anadir span { display: none; } }
+.compra-options-menu > button { flex-shrink: 0; }
+.perfil-stats strong { overflow-wrap: anywhere; }

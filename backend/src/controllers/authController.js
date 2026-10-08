@@ -1,6 +1,6 @@
 import { trySendingVerification } from '../services/emailVerificationService.js';
 import bcrypt from 'bcryptjs';
-import { Cuenta, Usuario, sequelize } from '../models/index.js';
+import { Cuenta, InvitacionCuenta, Usuario, sequelize } from '../models/index.js';
 import { createToken } from '../utils/token.js';
 
 function usuarioPublico(usuario) {
@@ -29,6 +29,7 @@ export async function registrar(req, res, next) {
   const transaction = await sequelize.transaction();
 
   try {
+    await sequelize.query('SELECT pg_advisory_xact_lock(724116, 2)', { transaction });
     const nombre = req.body.nombre.trim();
     const email = req.body.email.trim().toLowerCase();
     const accountType = req.body.accountType;
@@ -45,9 +46,23 @@ export async function registrar(req, res, next) {
       });
     }
 
-    const cuenta = await Cuenta.create({
-      tipo: accountType
-    }, { transaction });
+    let cuenta = null;
+    if (req.body.invitationToken) {
+      const invitation = await InvitacionCuenta.findOne({
+        where: { token: req.body.invitationToken, estado: 'pendiente', email },
+        transaction, lock: transaction.LOCK.UPDATE
+      });
+      const owner = invitation && await Usuario.findOne({
+        where: { cuentaId: invitation.cuentaId, rol: 'propietario' }, transaction
+      });
+      if (!invitation || invitation.expiraEn <= new Date() || !owner) {
+        const error = new Error('La invitación no está disponible para este correo. Comprueba el email o pide un enlace nuevo.');
+        error.status = 400;
+        throw error;
+      }
+    } else {
+      cuenta = await Cuenta.create({ tipo: accountType }, { transaction });
+    }
 
     const hashContrasena = await bcrypt.hash(req.body.password, 12);
 
@@ -55,7 +70,8 @@ export async function registrar(req, res, next) {
       nombre,
       email,
       hashContrasena,
-      cuentaId: cuenta.id
+      cuentaId: cuenta?.id || null,
+      rol: cuenta ? 'propietario' : 'miembro'
     }, { transaction });
 
     await transaction.commit();
@@ -66,6 +82,7 @@ export async function registrar(req, res, next) {
     res.status(201).json({ ...respuestaSesion(usuario, createToken(usuario.id)), verificacionCorreo });
   } catch (error) {
     if (!transaction.finished) await transaction.rollback();
+    if (error.name === 'SequelizeUniqueConstraintError') return res.status(409).json({ message: 'Ya existe un usuario con ese email. Inicia sesión.' });
     next(error);
   }
 }
@@ -107,4 +124,17 @@ export function yo(req, res) {
     usuario,
     user: usuario
   });
+}
+
+export async function cancelPendingRegistration(req, res, next) {
+  try {
+    await sequelize.transaction(async transaction => {
+      await sequelize.query('SELECT pg_advisory_xact_lock(724116, 2)', { transaction });
+      const user = await Usuario.findByPk(req.user.id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!user) { const error = new Error('Sesión no válida.'); error.status = 401; throw error; }
+      if (user.cuentaId) { const error = new Error('Tu registro ya tiene una cuenta activa.'); error.status = 409; throw error; }
+      await user.destroy({ transaction });
+    });
+    res.status(204).end();
+  } catch (error) { next(error); }
 }

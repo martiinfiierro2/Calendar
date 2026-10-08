@@ -487,3 +487,38 @@
   .account-option { min-height: 132px; }
   .account-icon { width: 52px; height: 52px; }
 }
+
+.auth-card {
+  padding: 24px;
+  border: 1px solid #e0e9e1;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 12px 36px rgba(39, 79, 45, .06);
+}
+.auth-card-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  background: #edf7ee;
+  color: var(--appDecorationStrong);
+}
+.auth-card .login-copy { margin-bottom: 18px; }
+.auth-card p { color: #627067; font-size: 13px; line-height: 1.65; }
+.auth-email { padding: 12px 14px; border-radius: 12px; background: #f4f8f4; color: #344b3a; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+.auth-status { padding: 12px 14px; border: 1px solid #dcebdd; border-radius: 12px; background: #f2f8f2; }
+.auth-actions { display: grid; gap: 10px; margin-top: 20px; }
+.auth-actions > button { width: 100%; justify-content: center; }
+.auth-text-button { display: block; width: 100%; margin-top: 15px; padding: 8px; border: 0; background: transparent; color: #4e7155; text-align: center; text-decoration: none; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.auth-invitation { margin-top: 18px; padding-top: 18px; border-top: 1px solid #e8eee8; }
+.auth-invitation > strong, .auth-invitation > small { display: block; }
+.auth-invitation > strong { color: #304937; font-size: 15px; }
+.auth-invitation > small { margin-top: 6px; color: #7b897e; font-size: 11px; }
+.auth-card .auth-warning { padding: 12px; border: 1px solid #efdfbd; border-radius: 12px; background: #fff9ec; color: #836637; }
+.auth-email-form { margin-top: 16px; }
+.auth-email-form input { width: 100%; padding: 12px; border: 1px solid #dde4dd; border-radius: 11px; }
+.auth-card button:disabled { opacity: .55; cursor: default; }
+.auth-card button:focus-visible, .auth-card a:focus-visible { outline: 3px solid #abd8b0; outline-offset: 3px; }
+@media (max-width: 360px) { .auth-card { padding: 18px; } }

@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import { createRecipe, deleteRecipe, listRecipes, updateRecipe } from '../controllers/recipeController.js';
-import { requireAuth } from '../middleware/authMiddleware.js';
+import { requireAuth, requireActiveAccount } from '../middleware/authMiddleware.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = Router();
-router.use(requireAuth);
+router.use(requireAuth, requireActiveAccount);
 
 const rules = [
   body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio.'),

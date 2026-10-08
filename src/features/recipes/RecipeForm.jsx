@@ -4,7 +4,7 @@ import Icon from '../../shared/Icon';
 import { normalizeUnit, UNIT_OPTIONS } from '../../utils/unitUtils';
 
 // Formulario compartido para crear y editar recetas.
-export default function RecipeForm({ form, editing, onChange, onClose, onSubmit }) {
+export default function RecipeForm({ form, editing, onChange, onClose, onSubmit, error }) {
   if (!form) return null;
 
   const update = (field, value) => onChange({ ...form, [field]: value });
@@ -329,6 +329,7 @@ export default function RecipeForm({ form, editing, onChange, onClose, onSubmit 
             <textarea rows="6" value={form.pasos} onChange={event => update('pasos', event.target.value)} placeholder={'Cocer la pasta.\nPreparar la salsa.\nMezclar y servir.'} />
           </label>
 
+          {error && <div className="app-error" role="alert">{error}</div>}
           <button className="receta-form-submit" type="submit">
             {editing ? 'Guardar cambios' : 'Crear receta'}
           </button>

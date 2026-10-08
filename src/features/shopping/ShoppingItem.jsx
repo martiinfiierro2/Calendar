@@ -1,3 +1,4 @@
+import { formatQuantity } from '../../utils/formatQuantity';
 import React from 'react';
 import Icon from '../../shared/Icon';
 
@@ -22,7 +23,7 @@ export default function ShoppingItem({
       <div className="compra-item-info">
         <strong>{item.nombre}</strong>
         <span>
-          {item.cantidad} {item.unidad || ''}
+          {formatQuantity(item.cantidad)} {item.unidad || ''}
         </span>
       </div>
 

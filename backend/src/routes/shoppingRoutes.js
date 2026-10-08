@@ -11,12 +11,12 @@ import {
   updateShoppingItem
 } from '../controllers/shoppingController.js';
 
-import { requireAuth } from '../middleware/authMiddleware.js';
+import { requireAuth, requireActiveAccount } from '../middleware/authMiddleware.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 
 const router = Router();
 
-router.use(requireAuth);
+router.use(requireAuth, requireActiveAccount);
 
 const rules = [
   body('nombre')

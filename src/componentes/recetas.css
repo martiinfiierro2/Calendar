@@ -1,6 +1,5 @@
 /* Cabecera y búsqueda */
 .recetas-app {
-  position: relative;
   background: radial-gradient(circle at 88% 2%, rgba(99, 200, 108, .11), transparent 27%), var(--appBackground);
 }
 

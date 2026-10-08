@@ -52,7 +52,7 @@ after(async () => {
 
 function autenticarComo(id = 1, cuentaId = 100 + id) {
   Usuario.findByPk = async userId => Number(userId) === Number(id)
-    ? { id, nombre: `Usuario ${id}`, email: `u${id}@test.local`, cuentaId, rol: 'propietario', cuenta: { tipo: 'individual' } }
+    ? { id, nombre: `Usuario ${id}`, email: `u${id}@test.local`, emailVerificado: true, cuentaId, rol: 'propietario', cuenta: { tipo: 'individual' } }
     : null;
   return { token: createToken(id), cuentaId };
 }

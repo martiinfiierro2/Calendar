@@ -180,7 +180,7 @@ export default function CalendarPage() {
   if (loadingMeals) {
     return (
       <div className="contenedor-calendario">
-        <div style={{ padding: '24px', textAlign: 'center' }}>Cargando calendario...</div>
+        <div className="app-state" role="status">Cargando calendario...</div>
       </div>
     );
   }
@@ -188,7 +188,7 @@ export default function CalendarPage() {
   return (
     <div className="contenedor-calendario">
       {error && (
-        <div style={{ padding: '8px 14px', fontSize: '13px', textAlign: 'center' }}>{error}</div>
+        <div className="app-error" role="alert">{error}</div>
       )}
 
       {view === 'anyo' && (

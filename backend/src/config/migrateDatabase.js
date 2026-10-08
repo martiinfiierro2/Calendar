@@ -48,5 +48,6 @@ export async function prepareDatabase() {
     if (tables.has('perfiles') || tables.has('profiles')) await run('003_eliminar_tabla_perfiles.sql');
     await run('006_integridad_cuentas.sql');
     await run('007_verificacion_email.sql');
+    await run('008_registro_invitado.sql');
   });
 }

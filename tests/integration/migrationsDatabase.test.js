@@ -41,7 +41,7 @@ test('una base nueva arranca y repetir/concurrir la preparación no duplica migr
   await prepareDatabase();
   await Promise.all([prepareDatabase(), prepareDatabase()]);
   const [migrations] = await sequelize.query('SELECT nombre FROM calendar_migrations ORDER BY nombre');
-  assert.deepEqual(migrations.map(row => row.nombre), ['004_multicuenta.sql', '005_compartir_datos_cuenta.sql', '006_integridad_cuentas.sql', '007_verificacion_email.sql']);
+  assert.deepEqual(migrations.map(row => row.nombre), ['004_multicuenta.sql', '005_compartir_datos_cuenta.sql', '006_integridad_cuentas.sql', '007_verificacion_email.sql', '008_registro_invitado.sql']);
   const account = await models.Cuenta.create({ tipo: 'grupal' });
   const owner = await models.Usuario.create({ nombre: 'Owner', email: 'owner@example.test', hashContrasena: 'test-hash', cuentaId: account.id });
   await models.InvitacionCuenta.create({ cuentaId: account.id, email: 'target@example.test', invitadoPor: owner.id, token: 'first', expiraEn: new Date(Date.now() + 100000) });
@@ -165,4 +165,24 @@ test('una copia previa a migrar se puede restaurar en otra base con sus datos y 
     await rm(directory, { recursive: true, force: true });
     process.env.DATABASE_URL = database.connectionString;
   }
+});
+
+test('actualizar una base con 007 aplicada permite invitados pendientes y conserva familias existentes', async () => {
+  await prepareDatabase();
+  const account = await models.Cuenta.create({ tipo: 'grupal' });
+  const user = await models.Usuario.create({ nombre: 'Anterior', email: 'old@example.test', hashContrasena: 'test-only-hash', cuentaId: account.id, emailVerificado: true });
+  await models.Receta.create({ nombre: 'Receta existente', cuentaId: account.id });
+  // Reproduce el esquema de la versión ya fusionada en main.
+  await sequelize.query(`ALTER TABLE usuarios ALTER COLUMN "cuentaId" SET NOT NULL;
+    DROP INDEX usuarios_email_normalizado_unico;
+    DELETE FROM calendar_migrations WHERE nombre = '008_registro_invitado.sql'`);
+  await prepareDatabase();
+  await prepareDatabase();
+  const pending = await models.Usuario.create({ nombre: 'Pendiente', email: 'pending@example.test', hashContrasena: 'test-only-hash', cuentaId: null, rol: 'miembro' });
+  assert.equal(pending.cuentaId, null);
+  assert.equal((await models.Usuario.findByPk(user.id)).emailVerificado, true);
+  assert.equal((await models.Usuario.findByPk(user.id)).cuentaId, account.id);
+  assert.equal((await models.Receta.findOne()).nombre, 'Receta existente');
+  assert.equal(await models.Cuenta.count(), 1);
+  await assert.rejects(models.Usuario.create({ nombre: 'Duplicado', email: 'OLD@example.test', hashContrasena: 'test-only-hash', cuentaId: account.id }), error => error.name === 'SequelizeUniqueConstraintError');
 });
